@@ -1,0 +1,53 @@
+<!-- Strata template — rendered by /strata:init and /strata:adopt into docs/ADR-Lean.md.
+     ONE file holds ALL architecture decisions (not a directory of NNNN-*.md files).
+     Format per PROJECT_PATTERN §3. Append new ADRs at the bottom; never renumber.
+     Cite decisions in code/PRs as: `// per ADR #NN`. -->
+
+# {{PROJECT_NAME}} — ADR-Lean
+
+Single-file architecture decision log. Each decision is immutable once `accepted`;
+reopen only by adding an addendum (`## ADR #NN-addendum — ...`) or a superseding ADR.
+
+Status values: `accepted` · `superseded by #MM` · `proposed` · `deprecated`.
+
+---
+
+## ADR #01 — Secrets live only in `.env`, enforced by pre-commit (status: accepted)
+
+**Context:** A repo read by AI agents and humans will accumulate credentials. Leaked
+secrets in git history are expensive to purge and impossible to fully revoke.
+
+**Decision:** All secrets live in `.env` (gitignored, `chmod 600` on prod) using the
+`{{SERVICE_PREFIX}}_` prefix. A pre-commit hook (`scripts/pre-commit/check_secrets.sh`)
+greps staged files for private keys / cloud credentials / committed `.env` and blocks
+the commit. `.env.example` documents every variable with placeholder values.
+
+**Consequences:** Hardcoding a secret, committing a real `.env`, or bypassing the hook
+(`--no-verify`) without explicit human sign-off becomes an anti-pattern. A Vault /
+Secrets-Manager migration, if ever needed, gets its own ADR.
+
+**Date:** {{TODAY}}.
+
+---
+
+<!-- ============================================================
+     TEMPLATE — copy this block for each new decision.
+     Bump the number monotonically. Never reuse or renumber.
+     ============================================================ -->
+
+## ADR #NN — <Title> (status: proposed)
+
+**Context:** 2-3 lines on why the question came up.
+**Decision:** what was decided (one sentence).
+**Consequences:** what becomes an anti-pattern once this is accepted.
+**Date:** YYYY-MM-DD.
+
+<!-- Addendum form — refine an existing ADR WITHOUT reopening it:
+
+## ADR #NN-addendum — <what changed> (status: accepted)
+
+**Context:** new information since ADR #NN.
+**Decision:** the refinement (does not contradict the original; narrows or extends it).
+**Consequences:** ...
+**Date:** YYYY-MM-DD.
+-->

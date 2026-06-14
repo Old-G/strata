@@ -1,0 +1,73 @@
+<!-- Strata template — rendered by /strata:init and /strata:adopt.
+     Replace every {{PLACEHOLDER}}. Keep this file <= 200 lines (PROJECT_PATTERN §2).
+     Seven sections, in order: overview / phase status / stack / layout / commands / workflow / hard rules.
+     Link to docs/, never duplicate them. -->
+
+# {{PROJECT_NAME}}
+
+{{ONE_PARAGRAPH_OVERVIEW}}
+<!-- One paragraph: what this is, current phase, what works in prod right now (be honest — at init it is "Phase 0: planning, nothing in prod yet"). -->
+
+## Phase status — {{PHASE_STATUS_EMOJI}} {{PHASE_NAME}} ({{PHASE_DATE}})
+
+| Checkpoint | Status | Reference |
+|---|---|---|
+| Repo bootstrapped (structure + CI green) | {{CHK_BOOTSTRAP}} | this commit |
+| Architecture documented | {{CHK_ARCH}} | [Architecture](docs/Architecture.md) |
+| First feature shipped | ⬜ pending | — |
+
+<!-- Replace rows with real checkpoints once a roadmap exists. Omit this whole
+     section for a throwaway prototype (PROJECT_PATTERN §9 skip-list). -->
+
+## Stack
+
+{{STACK}}
+<!-- One line, joined with " · ". Example: FastAPI · Postgres · Docker Compose · pytest · ruff · GitHub Actions. No diagrams here — they live in docs/Architecture.md. -->
+
+## Layout
+
+- `docs/` — human-written source of truth: plan, specs, [ADR-Lean](docs/ADR-Lean.md), runbooks.
+- `raw/` — read-only mirror of `docs/` for AI ingest. **Never edit by hand.**
+- `wiki/` — AI-managed knowledge base. Query starts at [wiki/index.md](wiki/index.md). See [WIKI.md](WIKI.md).
+- `src/{{SERVICE_SLUG}}/` — application code.
+- `tests/` — unit + integration tests (≥80% coverage on new code).
+- `scripts/` — operational scripts (incl. `sync_raw_mirror.sh` for the docs→raw hook).
+<!-- For multi-service repos, add `services/<name>/` rows and state the repo strategy
+     (monorepo / nested independent / submodule) per PROJECT_PATTERN §5. -->
+
+## Commands
+
+```bash
+# Setup
+{{SETUP_CMD}}                    # e.g. pip install -e ".[dev]"  /  npm install
+
+# Test
+{{TEST_CMD}}                     # e.g. pytest -m "not integration"  /  npm test
+{{LINT_CMD}}                     # e.g. ruff check src tests
+
+# Run
+{{RUN_CMD}}                      # e.g. uvicorn {{SERVICE_SLUG}}.main:app --reload
+
+# Build / Deploy
+{{DEPLOY_CMD}}                   # e.g. docker compose up -d --build
+```
+
+ENV: all vars use the `{{SERVICE_PREFIX}}_` prefix. See [.env.example](.env.example) — copy to `.env` (gitignored, `chmod 600` on prod).
+
+## Workflow
+
+- **Plan mode → approval → execute.** No silent changes.
+- Use `/strata:feature` for new work (office-hours → plan → review council → TDD).
+- Run `/strata:audit` periodically to detect drift from this CLAUDE.md and the architecture canon.
+- Any edit to `docs/*.md` auto-mirrors to `raw/` (PostToolUse hook → `scripts/sync_raw_mirror.sh`); then run `/strata:wiki-ingest` to refresh `wiki/`.
+- `/compact` at 50% context. Delegate research to subagents.
+- Smoke-test after schema changes; deploy via git (push → pull → rebuild), never scp.
+
+## Hard rules
+
+- **Secrets only in `.env`** (gitignored, `chmod 600`) — never in code. Pre-commit `check_secrets.sh` blocks leaks (per ADR #01).
+- **`raw/` is read-only** — source of truth is `docs/`; AI reads the mirror.
+- **Database access read-only** until a write-path is explicitly designed and ADR'd.
+- **Architecture decisions are immutable** once accepted in [ADR-Lean](docs/ADR-Lean.md) — reopen only via a new addendum.
+- {{EXTRA_HARD_RULE}}
+<!-- Add stack/domain-specific invariants. Each rule should cite an ADR number. -->
