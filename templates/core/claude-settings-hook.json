@@ -1,0 +1,16 @@
+{
+  "_strata_note": "MERGE this `hooks` block into the project's .claude/settings.json — do NOT overwrite the whole file. If a `hooks.PostToolUse` array already exists, append this matcher entry to it. The hook mirrors any edited docs/*.md into raw/*.md (the read-only AI mirror) and appends a pending_ingest marker to wiki/log.md. The command path is project-relative, so it runs from the repo root; ensure scripts/sync_raw_mirror.sh exists and is executable (chmod +x).",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/sync_raw_mirror.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "strata",
+  "owner": {
+    "name": "Gleb Zavalov"
+  },
+  "description": "Strata — reusable AI-project framework, distributed as a single Claude Code plugin.",
+  "plugins": [
+    {
+      "name": "strata",
+      "source": "./",
+      "description": "Make any repo self-describing and self-correcting: AI-navigable wiki, architecture canon, spec->plan->TDD feature flow, a parallel review council, and drift detection with staged refactor.",
+      "version": "0.1.0",
+      "license": "MIT",
+      "category": "workflow",
+      "keywords": ["scaffolding", "architecture", "wiki", "drift-detection", "refactoring"]
+    }
+  ]
+}

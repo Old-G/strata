@@ -1,0 +1,50 @@
+# Strata template — rendered by /strata:init and /strata:adopt into the project .gitignore.
+# Merge into an existing .gitignore rather than overwriting it.
+
+# --- Secrets (never commit) ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*_rsa
+*_ed25519
+credentials.json
+service-account*.json
+
+# --- Python ---
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# --- Node / JS ---
+node_modules/
+.pnpm-store/
+npm-debug.log*
+yarn-error.log
+
+# --- Build artifacts ---
+dist/
+build/
+*.tsbuildinfo
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/*
+!.vscode/settings.json
+
+# --- NOTE: raw/ IS committed ---
+# raw/ is the read-only AI mirror of docs/ (see WIKI.md / PROJECT_PATTERN §1).
+# It is version-controlled on purpose so AI agents read a stable snapshot.
+# Do NOT add raw/ here. The sync_raw_mirror.sh hook keeps it in step with docs/.
