@@ -33,4 +33,4 @@ Initial release. Strata packaged as a Claude Code plugin.
 - Methodology adapts [gstack](https://github.com/garrytan/gstack) (MIT) and wraps
   [Superpowers](https://github.com/obra/superpowers); composes claude-mem and RTK as declared
   prerequisites (not bundled).
-- `PROJECT_PATTERN.md` ships in Russian (author's original); an English version is a planned follow-up.
+- All shipped templates and docs are in English.
