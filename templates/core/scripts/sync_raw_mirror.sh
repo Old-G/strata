@@ -22,8 +22,10 @@ mirror_one() {
   [[ -z "$src" ]] && return 0
 
   # Normalize: strip leading ./ and absolute repo prefix.
-  src="${src#./}"
-  src="${src#$REPO_ROOT/}"
+  # Quote the patterns so paths with glob metacharacters ([ * ?) are matched
+  # literally, not as globs (CSO review finding #3).
+  src="${src#"./"}"
+  src="${src#"$REPO_ROOT"/}"
 
   # Only mirror docs/*.md.
   case "$src" in
