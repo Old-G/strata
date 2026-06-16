@@ -1,64 +1,65 @@
-# WIKI.md — схема Karpathy-style self-maintaining wiki
+# WIKI.md — Karpathy-style self-maintaining wiki
 
-> Эта схема — инструкция для AI (Claude / любого агента), как **дисциплинированно** вести `wiki/`.
-> Источники истины: `docs/` (для людей) и `raw/` (зеркало для AI). `wiki/` — производное.
-> Версия: 1.0 · Дата: 2026-05-04
-
----
-
-## Принцип
-
-```
-docs/   ──cp──>   raw/   ──ingest──>   wiki/   ──query/lint──>   AI отвечает
-(люди)            (AI чит.)            (AI пиш.)
-```
-
-- **`docs/`** — то что пишут и читают люди. Source of truth.
-- **`raw/`** — read-only зеркало `docs/`. AI **только читает**. Никогда не редактирует.
-- **`wiki/`** — AI владеет полностью. Регенерируется из `raw/` через операцию `ingest`.
-
-После любого изменения в `docs/` обязателен прогон: `cp -p docs/<file>.md raw/<file>.md` → `ingest <file>`.
+> This protocol instructs an AI agent (Claude or any agent) how to **disciplinedly** maintain `wiki/`.
+> Sources of truth: `docs/` (for humans) and `raw/` (mirror for the AI). `wiki/` is derived.
+> Strata template — replace the examples below with your project's real entities as you ingest.
 
 ---
 
-## Operational mode (как запускается)
+## Principle
 
-| Этап | Режим | Что значит |
+```
+docs/   ──cp──>   raw/   ──ingest──>   wiki/   ──query/lint──>   AI answers
+(humans)          (AI reads)           (AI writes)
+```
+
+- **`docs/`** — written and read by humans. Source of truth.
+- **`raw/`** — read-only mirror of `docs/`. The AI **only reads** it, never edits it.
+- **`wiki/`** — fully owned by the AI. Regenerated from `raw/` via the `ingest` operation.
+
+After any change in `docs/`, always run: `cp -p docs/<file>.md raw/<file>.md` → `ingest <file>`.
+(In a Strata project this copy is done for you by the `sync_raw_mirror.sh` PostToolUse hook.)
+
+---
+
+## Operational mode (how it runs)
+
+| Stage | Mode | Meaning |
 |---|---|---|
-| **Сейчас (фаза 0-prep)** | **Ручной** | AI делает ingest/query/lint только по явной команде пользователя в чате. Никаких hook-ов, никаких cron-ов. Цель — обкатать `WIKI.md`-протокол на 18 файлах, поймать недочёты на ранней стадии. |
-| **Фаза 1+** | **Ручной + cron lint** | Через `schedule` skill заводится routine: раз в неделю запускается `lint` + diff `docs/` vs `raw/` (расхождения → отчёт в `wiki/log.md`). Ingest остаётся ручным. |
-| **Фаза 2+ (опционально)** | **+ hook** | Если ручной режим не справляется — добавим PostToolUse hook на `Edit|Write` по `docs/*.md` через `update-config` skill. Решение принимается по факту, не сейчас. |
+| **Bootstrap** | **Manual** | The AI runs ingest/query/lint only on explicit user command. No hooks, no cron. Goal: shake out the protocol on your first docs, catch issues early. |
+| **Growing** | **Manual + scheduled lint** | A routine runs `lint` + a `docs/` vs `raw/` diff on a schedule (e.g. weekly); drift is reported to `wiki/log.md`. Ingest stays manual. |
+| **Mature (optional)** | **+ hook** | If manual mode can't keep up, add a `PostToolUse` hook on `Edit\|Write` over `docs/*.md`. (Strata's `init`/`adopt` installs the docs→raw mirror hook into the project's `.claude/settings.json`.) |
 
-Переходы не ломающие: каждый следующий режим **добавляет** автоматику поверх предыдущего, `WIKI.md` остаётся единым протоколом.
+Transitions are non-breaking: each mode **adds** automation on top of the previous one; `WIKI.md` stays the single protocol.
 
 ---
 
-## Структура wiki/
+## Structure of wiki/
 
 ```
 wiki/
-├── index.md            # каталог: для каждой страницы — путь + однострочный TLDR
-├── log.md              # журнал операций ingest/query/lint с timestamp
-├── overview.md         # большая картина проекта; эволюционирует с каждым ingest
-├── glossary.md         # термины (Semantic Layer, Tool Contract Layer, Agno Dash, ...)
-├── sources/            # одна страница на каждый файл из raw/, краткое содержание
-├── entities/           # страницы по сущностям (компоненты, технологии, агенты)
-└── decisions/          # ADR — каждое решение отдельной страницей с ссылками
+├── index.md            # catalog: for each page — path + one-line TLDR
+├── log.md              # journal of ingest/query/lint operations with timestamps
+├── overview.md         # the big picture; evolves with each ingest
+├── glossary.md         # terms (domain vocabulary, with definitions)
+├── sources/            # one page per file in raw/, a summary (not a copy)
+├── entities/           # pages per entity (components, technologies, agents, roles)
+└── decisions/          # ADRs — one page per decision, with links
 ```
 
-### Соглашения о ссылках
+### Link conventions
 
-- Внутренние ссылки между страницами вики: `[[entity-name]]` — wiki-style. Цель: страница в `entities/` с тем же slug.
-- Ссылки на исходники в `raw/`: обычный markdown `[Architecture.md](../raw/Architecture.md)`.
-- Ссылки на исходники в `docs/` использовать только в `sources/<file>.md` в поле `source: ...` (frontmatter).
+- Internal links between wiki pages: `[[entity-name]]` — wiki-style. Target: a page in `entities/` with that slug.
+- Links to sources in `raw/`: plain markdown `[Architecture.md](../raw/Architecture.md)`.
+- Links to `docs/` sources only inside `sources/<file>.md` in the `source:` frontmatter field.
 
-### Frontmatter каждой страницы
+### Frontmatter on every page
 
 ```yaml
 ---
-title: <короткое имя>
+title: <short name>
 type: source|entity|decision|analysis|index
-source: raw/<file>.md   # для type=source
+source: raw/<file>.md   # for type=source
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 links: [[entity-a]], [[entity-b]]
@@ -67,83 +68,84 @@ links: [[entity-a]], [[entity-b]]
 
 ---
 
-## Три операции
+## The three operations
 
 ### 1. `ingest <raw-file>`
 
-Триггер: `ingest raw/<file>.md` (или «проингестим X»).
+Trigger: `ingest raw/<file>.md` (or "ingest X").
 
-AI должен:
+The AI must:
 
-1. Прочитать `raw/<file>.md` целиком.
-2. Создать/обновить `wiki/sources/<slug>.md` — резюме файла (3-7 параграфов): что это, ключевые тезисы, какие сущности затрагивает, какие решения фиксирует, какие открытые вопросы.
-3. Извлечь **сущности** (компоненты, технологии, роли, паттерны) и обновить страницы в `wiki/entities/`:
-   - Если сущность уже есть — добавить/уточнить раздел со ссылкой на этот source.
-   - Если новой нет — создать `wiki/entities/<slug>.md` с разделами: TLDR, Роль, Текущие решения, Связи (`[[...]]`), Источники.
-4. Если файл — ADR-источник — создать/обновить `wiki/decisions/<adr-slug>.md` (ADR номер + название).
-5. Дополнить `wiki/glossary.md` новыми терминами (короткие определения).
-6. Обновить `wiki/overview.md` — внести изменение в big-picture, если оно меняет структуру или фазы.
-7. Обновить `wiki/index.md` — добавить запись с TLDR в одну строку.
-8. Записать в `wiki/log.md`: `[YYYY-MM-DD HH:MM] ingest raw/<file>.md → создано/обновлено: <list>`.
+1. Read `raw/<file>.md` in full.
+2. Create/update `wiki/sources/<slug>.md` — a 3–7 paragraph summary: what it is, key claims, which entities it touches, which decisions it anchors, open questions.
+3. Extract **entities** (components, technologies, roles, patterns) and update pages in `wiki/entities/`:
+   - If the entity exists — add/refine a section linking to this source.
+   - If it's new — create `wiki/entities/<slug>.md` with sections: TLDR, Role, Current solutions, Related (`[[...]]`), Sources.
+4. If the file is an ADR source — create/update `wiki/decisions/<adr-slug>.md` (ADR number + title).
+5. Augment `wiki/glossary.md` with new terms (short definitions).
+6. Update `wiki/overview.md` if the change affects the big picture (structure or phases).
+7. Update `wiki/index.md` — add a one-line TLDR entry.
+8. Append to `wiki/log.md`: `[YYYY-MM-DDTHH:MM:SSZ] ingest raw/<file>.md → created/updated: <list>`.
 
-**Каскад**: один источник может затронуть 5-15 страниц вики. Это нормально.
+**Cascade**: one source may touch 5–15 wiki pages. That's normal.
 
-### 2. `query <вопрос>`
+### 2. `query <question>`
 
-Триггер: пользователь задал вопрос про проект.
+Trigger: the user asks a question about the project.
 
-AI должен:
+The AI must:
 
-1. **Сначала прочитать `wiki/index.md`**, не `raw/`. Найти релевантные страницы по TLDR.
-2. Прочитать релевантные страницы из `wiki/` (entities/, decisions/, sources/, overview.md).
-3. **Только если в вики не хватает деталей** — обратиться к конкретному `raw/<file>.md` (и тогда: вики неполная, отметить для будущего ingest).
-4. Сформулировать ответ со ссылками `[[entity]]` или `[ADR #X](decisions/...)`.
-5. Опционально (по согласованию с пользователем): сохранить ответ как `wiki/entities/analysis-<slug>.md` (type: analysis) и обновить index.
+1. **Read `wiki/index.md` first**, not `raw/`. Find relevant pages by their TLDR.
+2. Read the relevant pages from `wiki/` (entities/, decisions/, sources/, overview.md).
+3. **Only if the wiki lacks detail** — consult the specific `raw/<file>.md` (and note: the wiki is incomplete, flag it for a future ingest).
+4. Answer with `[[entity]]` or `[ADR #X](decisions/...)` links.
+5. Optionally (with the user's agreement): save the answer as `wiki/entities/analysis-<slug>.md` (type: analysis) and update the index.
 
 ### 3. `lint`
 
-Триггер: явная команда `lint` или раз в N ingest-ов.
+Trigger: an explicit `lint` command, or every N ingests.
 
-AI проходит по всему `wiki/` и ищет:
+The AI scans all of `wiki/` and looks for:
 
-- **Противоречия**: страница A говорит X, страница B говорит ¬X. Список → пользователь решает.
-- **Orphan-страницы**: нет входящих `[[ссылок]]`. Список → пользователь решает: linkify или удалить.
-- **Outdated**: страница ссылается на сущность, которая исчезла; цифры в overview не совпадают с актуальным состоянием sources.
-- **Missing cross-links**: упомянута сущность без `[[...]]`.
+- **Contradictions**: page A says X, page B says ¬X. List → the user decides.
+- **Orphan pages**: no incoming `[[links]]`. List → the user decides: linkify or delete.
+- **Outdated**: a page references an entity that no longer exists; numbers in overview don't match the current sources.
+- **Missing cross-links**: an entity is mentioned without `[[...]]`.
 
-Результат — секция в `wiki/log.md` под датой; **AI не правит автоматически**, только отчитывается.
-
----
-
-## Что НЕ делаем
-
-- **Никаких embeddings / vectorstores** до сотен страниц. `index.md` + структурный поиск достаточны.
-- **Не редактируем `raw/`** руками — это зеркало `docs/`. Меняем `docs/` → копируем → ingest.
-- **Не дублируем содержимое** — `wiki/sources/<X>.md` это **резюме**, не копия. Полный текст в `raw/<X>.md`.
-- **Не фиксируем эфемерное** — текущее состояние in-progress задач хранится в TodoWrite/плане, не в вики.
+Output — a section in `wiki/log.md` under the date; **the AI does NOT auto-fix**, it only reports.
+(`wiki/scripts/lint.py` is the mechanical helper for the structural checks.)
 
 ---
 
-## Workflow для частых сценариев
+## What we DON'T do
 
-| Сценарий | Действия |
+- **No embeddings / vector stores** until hundreds of pages. `index.md` + structural search is enough.
+- **Don't hand-edit `raw/`** — it's a mirror of `docs/`. Change `docs/` → copy → ingest.
+- **Don't duplicate content** — `wiki/sources/<X>.md` is a **summary**, not a copy. The full text lives in `raw/<X>.md`.
+- **Don't record the ephemeral** — in-progress task state lives in the plan/TodoWrite, not the wiki.
+
+---
+
+## Workflow for common scenarios
+
+| Scenario | Actions |
 |---|---|
-| Добавили/правили файл в `docs/` | `cp -p docs/<f>.md raw/<f>.md` → `ingest raw/<f>.md` |
-| Добавили новый сервис в `services/` | Создать `raw/services-<name>.md` с README сервиса → `ingest` |
-| Пользователь задал вопрос | `query <вопрос>` (читать вики, не raw) |
-| Запланировали еженедельную проверку | `lint` каждое 10-е изменение или раз в неделю |
-| Изменилась структура repo | re-ingest всех затронутых source-файлов; обновить `overview.md` секцию «Layout» |
+| Added/edited a file in `docs/` | `cp -p docs/<f>.md raw/<f>.md` → `ingest raw/<f>.md` |
+| Added a new service in `services/` | Create `raw/services-<name>.md` from the service README → `ingest` |
+| User asks a question | `query <question>` (read the wiki, not raw) |
+| Scheduled a weekly check | `lint` every Nth change or once a week |
+| Repo structure changed | re-ingest all affected source files; update the `overview.md` "Layout" section |
 
 ---
 
-## Минимальный bootstrap (что должно быть после первого прогона)
+## Minimal bootstrap (what should exist after the first run)
 
-- `wiki/index.md` — содержит запись на каждый файл из `raw/` (в начале — заглушки, заполняются по мере ingest).
-- `wiki/overview.md` — 1-2 страницы: что строим, фазы, текущая фаза, ключевые решения.
-- `wiki/glossary.md` — 15-20 терминов.
-- `wiki/sources/` — N markdown-файлов (по одному на каждый `raw/<f>.md`).
-- `wiki/entities/` — основные компоненты: langgraph, qdrant, mem0, agno-dash, mcp-priority, **pay-admin-mcp** (live 2026-05-19), **pay-admin-schema**, semantic-layer, knowledge-onboarding, deep-agents, self-rag, karpathy-wiki, и т.д.
-- `wiki/decisions/` — ADR-1..ADR-13 (из ADR-Lean.md) + место под ADR-14..#17.
-- `wiki/log.md` — bootstrap-запись с временем и списком созданного.
+- `wiki/index.md` — one entry per file in `raw/` (placeholders at first, filled in as you ingest).
+- `wiki/overview.md` — 1–2 pages: what you're building, phases, current phase, key decisions.
+- `wiki/glossary.md` — your domain's core terms.
+- `wiki/sources/` — one markdown file per `raw/<f>.md`.
+- `wiki/entities/` — your core components (e.g. `{{component-a}}`, `{{component-b}}`, `{{technology}}`, ...).
+- `wiki/decisions/` — one page per ADR from your `docs/ADR-Lean.md`.
+- `wiki/log.md` — a bootstrap entry with the timestamp and the list of what was created.
 
-После bootstrap-а должна работать verification: query «какие компоненты обязательны для фазы 0?» — ответ из `wiki/`, без чтения `raw/`.
+After bootstrap, this verification should pass: a `query` like "what components are required for phase 0?" is answered from `wiki/` alone, without reading `raw/`.

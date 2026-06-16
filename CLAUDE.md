@@ -12,7 +12,7 @@ staged refactor. **State:** v0.1.0 — initial build. This repo dogfoods its own
 | Entry skill `using-strata` routes to all commands | ✅ |
 | Skills: init / adopt / audit / refactor / feature / office-hours / autoplan / wiki-ingest | 🔄 building |
 | Council subagents (ceo / eng / design / cso) | 🔄 building |
-| Templates: core + python-fastapi stack pack | ✅ seeded (from lh_ai_brain) |
+| Templates: core + python-fastapi stack pack | ✅ seeded from a production project, genericized |
 | Verified by adopting a real external project | ⬜ pending (user will test elsewhere) |
 
 ## Stack

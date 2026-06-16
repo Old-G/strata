@@ -310,9 +310,9 @@ _OVERWRITE_SHRINK_THRESHOLD = 0.40  # if file shrank by ≥40% in one commit
 def check_entity_overwrites(files: dict[str, list[Path]], rpt: LintReport) -> None:
     """Detect destructive entity overwrites via git history.
 
-    Catches the Andrey-pattern: ingesting a new doc that uses the same
-    `entities/<slug>.md` filename for a different concept silently
-    replaces the prior content. The new file is usually much smaller
+    Catches the same-filename-overwrite pattern: ingesting a new doc that
+    reuses an existing `entities/<slug>.md` filename for a different concept
+    silently replaces the prior content. The new file is usually much smaller
     (different scope) — we flag any single-commit shrink of ≥40%.
 
     Only warns — intentional rewrites/cleanups will trigger this too.
@@ -441,30 +441,17 @@ def append_log(report: LintReport, dry_run: bool) -> None:
 #
 # Keep this list short and high-signal: only checks where drift would matter
 # operationally. Add new pairs when a real drift incident happens, not
-# speculatively.
-SEMANTIC_DRIFT_CHECKS: list[dict] = [
-    {
-        "entity": "wiki/entities/mcp-server-odoo.md",
-        "claim_pattern": r"\b(\d+)\s+tools?\b",
-        "source": "services/mcp-server-odoo/src/server.py",
-        "source_count": r"@\w+\.tool\(",
-        "description": "mcp-server-odoo tool count (entity claim vs @*.tool() in server.py)",
-    },
-    {
-        "entity": "wiki/entities/pay-admin-mcp.md",
-        "claim_pattern": r"\b(\d+)\s+tools?\b",
-        "source": "services/mcp-server-pay/src/server.py",
-        "source_count": r"@\w+\.tool\(",
-        "description": "pay-admin-mcp tool count (entity claim vs @*.tool() in server.py)",
-    },
-    {
-        "entity": "wiki/entities/mcp-priority.md",
-        "claim_pattern": r"\*\*(\d+)\s+tools?\*\*",
-        "source": "services/mcp-server-priority/server.py",
-        "source_count": r"@\w+\.tool\(",
-        "description": "mcp-priority tool count (entity bold claim vs @*.tool() in server.py)",
-    },
-]
+# speculatively. Ships EMPTY — populate it with your project's own pairs.
+#
+# Example entry shape (uncomment and adapt to your repo):
+#   {
+#       "entity": "wiki/entities/<your-component>.md",
+#       "claim_pattern": r"\b(\d+)\s+tools?\b",        # regex, one capture group = claimed count
+#       "source": "src/<your-component>/server.py",     # path glob to the source of truth
+#       "source_count": r"@\w+\.tool\(",                # regex counted in the source file
+#       "description": "<component> tool count (wiki claim vs source)",
+#   },
+SEMANTIC_DRIFT_CHECKS: list[dict] = []
 
 
 def check_semantic_drift(rpt: LintReport) -> None:
