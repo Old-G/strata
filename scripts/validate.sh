@@ -17,6 +17,26 @@ echo "== 2. plugin.json has required 'name' =="
 python3 -c "import json; assert json.load(open('.claude-plugin/plugin.json')).get('name'), 'missing name'" 2>/dev/null \
   && ok "plugin.json name present" || err "plugin.json missing 'name'"
 
+echo "== 2b. plugin.json skills/agents component fields are well-formed =="
+# A folder reference MUST be a string ("./agents/"). An array is only for listing
+# individual files; an array containing a folder path (["./agents/"]) is REJECTED by
+# the Claude Code validator. Catch that regression here.
+python3 - <<'PY' && ok "skills/agents fields well-formed" || err "plugin.json skills/agents field is malformed (folder must be a string, not an array)"
+import json, sys
+m = json.load(open(".claude-plugin/plugin.json"))
+bad = False
+for key in ("skills", "agents", "commands"):
+    v = m.get(key)
+    if v is None:
+        continue
+    if isinstance(v, list):
+        for item in v:
+            if isinstance(item, str) and item.rstrip().endswith("/"):
+                print(f"  {key}: array contains a folder path {item!r} — use a string instead", file=sys.stderr)
+                bad = True
+sys.exit(1 if bad else 0)
+PY
+
 echo "== 3. every skill has name + description frontmatter =="
 for f in skills/*/SKILL.md; do
   [ -f "$f" ] || continue

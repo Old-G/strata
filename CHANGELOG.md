@@ -6,6 +6,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-06-16
+
+### Fixed
+- **Plugin install failed** — `plugin.json` declared `"agents": ["./agents/"]` (an array containing a
+  folder), which the Claude Code manifest validator rejects. A folder reference must be a **string**
+  (`"agents": "./agents/"`), matching `skills`. `validate.sh` now catches this format regression.
+
 ## [0.1.0] — 2026-06-16
 
 Initial release. Strata packaged as a Claude Code plugin.
