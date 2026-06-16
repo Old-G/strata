@@ -6,6 +6,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.1.2] — 2026-06-16
+
+### Fixed
+- **Plugin install still failed with "agents: Invalid input".** The manifest schema only accepts
+  `.md` FILE paths for `agents` (not a directory), and the standard `skills/` and `agents/`
+  directories are **auto-discovered** — so the manifest needs no component-path fields at all.
+  Removed both `skills` and `agents` from `plugin.json`, matching every official plugin (superpowers,
+  claude-mem, pr-review-toolkit, … all ship metadata-only manifests). `validate.sh` now enforces the
+  real schema.
+
 ## [0.1.1] — 2026-06-16
 
 ### Fixed
