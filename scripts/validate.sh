@@ -17,23 +17,27 @@ echo "== 2. plugin.json has required 'name' =="
 python3 -c "import json; assert json.load(open('.claude-plugin/plugin.json')).get('name'), 'missing name'" 2>/dev/null \
   && ok "plugin.json name present" || err "plugin.json missing 'name'"
 
-echo "== 2b. plugin.json skills/agents component fields are well-formed =="
-# A folder reference MUST be a string ("./agents/"). An array is only for listing
-# individual files; an array containing a folder path (["./agents/"]) is REJECTED by
-# the Claude Code validator. Catch that regression here.
-python3 - <<'PY' && ok "skills/agents fields well-formed" || err "plugin.json skills/agents field is malformed (folder must be a string, not an array)"
+echo "== 2b. plugin.json component fields match the manifest schema =="
+# Convention (verified against every official plugin): the standard dirs
+# skills/, agents/, commands/, hooks/hooks.json are AUTO-DISCOVERED — so the
+# manifest needs NO component-path fields at all. If you DO add them, the schema
+# is strict: `agents` entries must be .md FILE paths (not a directory), `skills`
+# entries are directory paths starting with "./". A folder string in `agents`
+# (e.g. "./agents/") is rejected with "agents: Invalid input".
+python3 - <<'PY' && ok "component fields valid (or absent — auto-discovered)" || err "plugin.json component field violates the manifest schema"
 import json, sys
 m = json.load(open(".claude-plugin/plugin.json"))
 bad = False
-for key in ("skills", "agents", "commands"):
-    v = m.get(key)
-    if v is None:
-        continue
-    if isinstance(v, list):
-        for item in v:
-            if isinstance(item, str) and item.rstrip().endswith("/"):
-                print(f"  {key}: array contains a folder path {item!r} — use a string instead", file=sys.stderr)
-                bad = True
+def entries(v):
+    return v if isinstance(v, list) else ([v] if isinstance(v, str) else [])
+for item in entries(m.get("agents")):
+    if not item.endswith(".md"):
+        print(f"  agents: {item!r} must be a .md FILE path, not a directory "
+              f"(remove the field — agents/ is auto-discovered)", file=sys.stderr); bad = True
+for key in ("skills", "commands"):
+    for item in entries(m.get(key)):
+        if not item.startswith("./"):
+            print(f"  {key}: {item!r} must start with './'", file=sys.stderr); bad = True
 sys.exit(1 if bad else 0)
 PY
 
