@@ -143,7 +143,7 @@ The active "AI leads everything" wizard. Thin conductor; delegates real work.
   `Установи и запусти Strata в этом репозитории: забери и выполни инструкции из https://raw.githubusercontent.com/Old-G/strata/main/BOOTSTRAP.md`
   (English variant shipped too.)
 - **Shell (alternative):**
-  `curl -fsSL https://raw.githubusercontent.com/Old-G/strata/main/install.sh | bash`
+  `curl -fsSL https://raw.githubusercontent.com/Old-G/strata/main/install.sh | sh`
 
 Both reference the `main` branch raw URL; both assume the repo is public.
 
