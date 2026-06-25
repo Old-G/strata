@@ -154,8 +154,10 @@ Both reference the `main` branch raw URL; both assume the repo is public.
 
 ## 8. Verifies (evidence before assertion)
 
-1. **Config write is idempotent & valid** — after BOOTSTRAP step 2 / `install.sh`, `~/.claude/settings.json` parses and contains both keys; a second run changes nothing. *(testable now)*
-2. **#1 risk — config-only activation** — on a clean profile, after writing config + `/reload-plugins`, confirm `/strata:onboard` resolves. If it does NOT, confirm the fallback (`/plugin marketplace add` + `/plugin install`) does. *(must be tested on a clean profile during build; document the observed behavior)*
+> **Acceptance — CONFIRMED on v0.2.0 (2026-06-25).** A real human end-to-end run passed: paste the one-liner → AI fetched BOOTSTRAP and ran the prereq scan → user enabled the plugin via `/plugin install strata@strata` → `/reload-plugins` → `/strata:onboard` resolved and conducted the setup to a green state with the first audit. Two issues surfaced *only* in live runs — the auto-mode settings-write guard (§2), and the marketplace serving the pre-`onboard` 0.1.2 build (fixed by the 0.2.0 version bump) — both resolved before sign-off.
+
+1. **Config write is idempotent & valid** — after `install.sh`, `~/.claude/settings.json` parses and contains both keys; a second run changes nothing. *(automated — `scripts/test_install.sh`)*
+2. **Install activation** — the **primary path is the user-run** `/plugin install strata@strata` (the assistant cannot enable an external plugin silently — §2); confirmed working on 0.2.0. The original R1 question (does writing `extraKnownMarketplaces` alone trigger the marketplace clone on `/reload-plugins`) now only affects the `install.sh` *terminal* path; if it doesn't auto-clone, the user runs the `/plugin` commands — the mandatory bridge fallback (#6) covers it either way.
 3. **Idempotency step 0** — running BOOTSTRAP when `/strata:*` is already loaded skips install and goes straight to onboarding.
 4. **onboard delegates correctly** — `new` repo path reaches a completed `/strata:init` (green smoke test); `existing` repo path reaches a completed `/strata:adopt` (tests still pass, adoption report written) — verified by each underlying skill's own verifies.
 5. **First audit runs** — `onboard` ends by producing `docs/superpowers/specs/<date>-strata-audit.md` and presenting it.
