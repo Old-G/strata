@@ -50,6 +50,47 @@ that detects drift, and a **feature flow** that runs ideation → review → TDD
 
 ---
 
+## ⚡ Instant setup (AI-led)
+
+**The fastest way in — one line, and the AI does the rest.** You don't need to learn any commands or
+read any docs first. Paste a single line into a fresh Claude Code session (or run one command in your
+terminal); the AI installs Strata and then **runs the entire setup as a conversation** — it works out
+whether your repo is new or existing, checks which tools you have, scaffolds or adopts the structure,
+and hands you a first drift report. You just answer a few questions as they come.
+
+**Option 1 — paste into a Claude Code chat (recommended):**
+
+> Install and run Strata in this repo: fetch and follow https://raw.githubusercontent.com/Old-G/strata/main/BOOTSTRAP.md
+
+**Option 2 — run in your terminal:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Old-G/strata/main/install.sh | sh
+```
+
+### What happens next
+
+1. **The AI installs Strata.** It registers the marketplace and enables the plugin by merging two
+   keys into your `~/.claude/settings.json` — idempotent and non-destructive, so your other settings
+   are left untouched.
+2. **It hands you the one manual step.** Newly installed plugin commands only become available after
+   a reload — a Claude Code limitation the AI can't do for you. So it prints exactly what to do:
+   *run `/reload-plugins` (or restart Claude Code), then send `/strata:onboard`.*
+3. **`/strata:onboard` takes over and leads the setup.** It detects whether the repo is **new**
+   (→ runs `/strata:init`) or **existing** (→ runs `/strata:adopt`), reports which optional tools you
+   have (Superpowers, claude-mem, RTK), proposes a plan, runs it to a green state, then produces your
+   **first `/strata:audit`** — asking one question at a time the whole way.
+4. **You're set up.** It then points you at `/strata:refactor` (to fix what the audit found) and
+   `/strata:feature` (to build your first feature through the full flow).
+
+That's the whole entry: **one line → one reload → answer a few questions → a structured, audited repo.**
+If `/strata:onboard` isn't found after the reload, run `/plugin marketplace add Old-G/strata` and
+`/plugin install strata@strata` first — the AI tells you this too.
+
+Already know the commands, or prefer to install by hand? See [Manual install](#installation).
+
+---
+
 ## The four layers
 
 Strata's whole job is to keep the right tool in the right lane:
@@ -65,31 +106,6 @@ Strata's whole job is to keep the right tool in the right lane:
 humans read and the agent queries first. **claude-mem** is the *automatic, machine-local, episodic*
 working memory ("what did we do last week"). They are complementary — never store the same fact in
 both.
-
----
-
-## ⚡ Instant setup (AI-led)
-
-Don't want to learn the commands? Drop **one line** into a fresh Claude Code session in your repo
-and let the AI install Strata and walk you through the whole setup — it detects new-vs-existing,
-checks prerequisites, runs `init` or `adopt`, and produces your first audit, asking questions as it
-goes.
-
-**In a Claude Code chat (recommended):**
-
-> Install and run Strata in this repo: fetch and follow https://raw.githubusercontent.com/Old-G/strata/main/BOOTSTRAP.md
-
-**Or in your terminal:**
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/Old-G/strata/main/install.sh | sh
-```
-
-Either way you do exactly **one** manual action: when prompted, run `/reload-plugins` (or restart
-Claude Code), then send `/strata:onboard`. That single restart is a Claude Code limitation — newly
-installed plugin commands only activate after a reload. From there the AI leads the rest.
-
-Prefer to do everything by hand? See [Manual install](#installation) below.
 
 ---
 
