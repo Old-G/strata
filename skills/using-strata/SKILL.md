@@ -30,6 +30,7 @@ solve Y last week", that's claude-mem.
 
 | You want to... | Invoke | What it does |
 |---|---|---|
+| Get set up end-to-end (let the AI lead it) | `/strata:onboard` | Detects new/existing, checks prereqs, then delegates to `init`/`adopt` and runs the first `audit` |
 | Start a brand-new project | `/strata:init` | Scaffolds the full layout from templates (skip-list aware) |
 | Bring Strata to an existing repo | `/strata:adopt` | Incremental, reversible: infers stack, writes CLAUDE.md + PROJECT_PATTERN, stands up wiki, installs hooks, emits an adoption report |
 | Check the repo against its own rules | `/strata:audit` | Read-only ranked drift report: structure vs canon, wiki-lint, doc freshness, dead code |
