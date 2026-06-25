@@ -127,13 +127,13 @@ The active "AI leads everything" wizard. Thin conductor; delegates real work.
 
 ## 6. The bridge (exact text the AI / script emits)
 
-> ✅ Strata записана в конфиг. Осталось 2 шага:
-> 1. Выполни `/reload-plugins` (или перезапусти Claude Code).
-> 2. Вставь: `/strata:onboard`
+> ✅ Strata is in your config. Two steps left:
+> 1. Run `/reload-plugins` (or restart Claude Code).
+> 2. Send: `/strata:onboard`
 >
-> Если `/strata:onboard` не найден — сначала выполни `/plugin marketplace add Old-G/strata` и `/plugin install strata@strata`, затем `/strata:onboard`.
+> If `/strata:onboard` isn't found, first run `/plugin marketplace add Old-G/strata` and `/plugin install strata@strata`, then `/strata:onboard`.
 
-(An English variant ships alongside for non-Russian users. The fallback line is mandatory — it covers the config-only-auto-clone risk from §2.)
+(English is primary — the repo and README are English-facing. A Russian variant ships alongside, and the AI should match whatever language the user writes in. The fallback line is mandatory — it covers the config-only-auto-clone risk from §2.)
 
 ---
 

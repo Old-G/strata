@@ -86,13 +86,14 @@ Edit the JSON to the real values you found in Steps 1–2. **verify:** `.strata/
 
 You cannot reload plugins yourself — it is a user action. Print EXACTLY this block, then stop:
 
-> ✅ Strata записана в конфиг. Осталось 2 шага:
-> 1. Выполни `/reload-plugins` (или перезапусти Claude Code).
-> 2. Вставь: `/strata:onboard`
+> ✅ Strata is in your config. Two steps left:
+> 1. Run `/reload-plugins` (or restart Claude Code).
+> 2. Send: `/strata:onboard`
 >
-> Если `/strata:onboard` не найден — сначала `/plugin marketplace add Old-G/strata` и
-> `/plugin install strata@strata`, затем `/strata:onboard`.
+> If `/strata:onboard` isn't found, first run `/plugin marketplace add Old-G/strata` and
+> `/plugin install strata@strata`, then `/strata:onboard`.
 
-(English: ✅ Strata is in your config. 1) Run `/reload-plugins` (or restart Claude Code). 2) Send
-`/strata:onboard`. If `/strata:onboard` isn't found, run `/plugin marketplace add Old-G/strata`
-and `/plugin install strata@strata` first, then `/strata:onboard`.)
+(Match the user's language if they wrote in another tongue. Russian variant: ✅ Strata записана в
+конфиг. 1) Выполни `/reload-plugins` (или перезапусти Claude Code). 2) Вставь `/strata:onboard`.
+Если не найден — сначала `/plugin marketplace add Old-G/strata` и `/plugin install strata@strata`,
+затем `/strata:onboard`.)
