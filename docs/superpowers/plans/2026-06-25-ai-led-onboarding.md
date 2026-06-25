@@ -100,6 +100,16 @@ rc=$?
 after="$(cat "$S")"
 { [ "$rc" -ne 0 ] && [ "$before" = "$after" ]; } && ok "aborts on corrupt JSON, file untouched" || err "did not protect corrupt file"
 
+echo "== T5: no-op re-run creates no new backup =="
+D="$TMP/backups"
+mkdir -p "$D"
+S="$D/settings.json"
+STRATA_SETTINGS="$S" sh "$INSTALL" >/dev/null 2>&1
+n1="$(find "$D" -name '*.strata-bak.*' | wc -l | tr -d ' ')"
+STRATA_SETTINGS="$S" sh "$INSTALL" >/dev/null 2>&1
+n2="$(find "$D" -name '*.strata-bak.*' | wc -l | tr -d ' ')"
+[ "$n1" = "$n2" ] && ok "no-op re-run took no backup ($n1 == $n2)" || err "backup proliferated on no-op ($n1 -> $n2)"
+
 echo
 if [ "$fail" -eq 0 ]; then echo "✅ install.sh tests PASSED"; else echo "❌ install.sh tests FAILED"; fi
 exit "$fail"
@@ -118,8 +128,10 @@ Create `install.sh`:
 #!/usr/bin/env sh
 # Strata installer — registers the Strata marketplace and enables the plugin by
 # merging two keys into your Claude Code settings.json. Idempotent and
-# non-destructive: existing keys are preserved, a timestamped backup is taken,
-# and the write is aborted if the existing file is not valid JSON.
+# non-destructive: existing keys are preserved, the write is aborted if the
+# existing file is not valid JSON, and when the merge actually changes something
+# a timestamped backup is taken first. An already-registered re-run is a true
+# no-op: it neither backs up nor rewrites the file.
 #
 #   curl -fsSL https://raw.githubusercontent.com/Old-G/strata/main/install.sh | sh
 #
@@ -135,13 +147,14 @@ command -v python3 >/dev/null 2>&1 || {
 }
 
 SETTINGS="$SETTINGS" MARKETPLACE_URL="$MARKETPLACE_URL" python3 - <<'PY'
-import json, os, sys, time, shutil
+import copy, json, os, sys, time, shutil
 
 path = os.environ["SETTINGS"]
 url  = os.environ["MARKETPLACE_URL"]
 os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
 
 data = {}
+existed = False
 if os.path.exists(path):
     raw = open(path, encoding="utf-8").read()
     if raw.strip():
@@ -150,18 +163,29 @@ if os.path.exists(path):
         except json.JSONDecodeError as e:
             print(f"✗ {path} is not valid JSON ({e}); refusing to touch it.", file=sys.stderr)
             sys.exit(1)
-        backup = f"{path}.strata-bak.{int(time.time())}"
-        shutil.copy2(path, backup)
-        print(f"  backup: {backup}")
+        existed = True
 
 if not isinstance(data, dict):
     print(f"✗ {path} top-level JSON is not an object; refusing to touch it.", file=sys.stderr)
     sys.exit(1)
 
+before = copy.deepcopy(data)
 data.setdefault("extraKnownMarketplaces", {})["strata"] = {
     "source": {"source": "git", "url": url}
 }
 data.setdefault("enabledPlugins", {})["strata@strata"] = True
+
+# True no-op: both keys already present with identical values. Don't take a
+# backup and don't rewrite the file — re-runs on installed machines stay quiet
+# instead of littering ~/.claude/ with .strata-bak.<ts> files.
+if existed and data == before:
+    print(f"✓ Strata already registered in {path} — nothing to do.")
+    sys.exit(0)
+
+if existed:
+    backup = f"{path}.strata-bak.{int(time.time())}"
+    shutil.copy2(path, backup)
+    print(f"  backup: {backup}")
 
 tmp = f"{path}.strata-tmp"
 with open(tmp, "w", encoding="utf-8") as f:
@@ -185,7 +209,7 @@ EOF
 - [ ] **Step 4: Run the test to verify it passes**
 
 Run: `bash scripts/test_install.sh`
-Expected: PASS — `✅ install.sh tests PASSED`, exit 0. (`set -e` in install.sh guarantees T4: python exits 1 on corrupt JSON before any write, so the success banner never prints and the file is untouched.)
+Expected: PASS — `✅ install.sh tests PASSED`, exit 0. (`set -e` in install.sh guarantees T4: python exits 1 on corrupt JSON before any write, so the success banner never prints and the file is untouched. T5: an already-registered re-run compares the merged data to the parsed original and, when equal, prints "already registered — nothing to do" and exits 0 without taking a backup or rewriting the file.)
 
 - [ ] **Step 5: Commit**
 
