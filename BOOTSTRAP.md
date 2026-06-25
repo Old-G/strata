@@ -27,45 +27,36 @@ Detect and report which optional companions are present. Do **not** install them
 Report a short present/missing table with one line on what each unlocks. Missing tools only
 degrade gracefully — proceed regardless.
 
-## Step 2 — Install Strata into the user's config
+## Step 2 — Enable the Strata plugin (this is a user action, by design)
 
-Goal: register the Strata marketplace and enable the plugin **globally** so `/strata:*` work in
-every project. Non-destructive, idempotent merge of two keys into `~/.claude/settings.json`.
+`/strata:*` becomes available by enabling the plugin **globally** in `~/.claude/settings.json`. But
+**you (the AI) cannot do this silently**: you can't type slash commands, and Claude Code's permission
+guard treats *the assistant* writing `~/.claude/settings.json` to enable an external plugin as a
+self-modification (in auto-mode it is auto-denied). That guard is correct — **never route around it**
+(no Edit-tool workaround). Enabling a plugin is the human's call. So hand them the command.
 
-Show the user the change, get approval, then merge (create the file if absent; never clobber
-existing keys):
-- `extraKnownMarketplaces.strata = { "source": { "source": "git", "url": "https://github.com/Old-G/strata.git" } }`
-- `enabledPlugins["strata@strata"] = true`
+**Primary path — have the user run the native command(s).** Use your Step 1 scan to see whether the
+marketplace is already registered (is `extraKnownMarketplaces.strata` in their
+`~/.claude/settings.json`?):
+- **not registered yet** → tell them to run `/plugin marketplace add Old-G/strata`, then
+  `/plugin install strata@strata`.
+- **already registered** → tell them to run just `/plugin install strata@strata` (say the marketplace
+  is already there, so only the enable step is left).
 
-Safe merge (same intent as `install.sh`; the canonical, no-op-safe version lives there):
+**No-slash-commands alternative:** the user runs the bundled installer in their **own terminal**
+(outside Claude Code, so the in-session guard doesn't apply); it writes the same config safely and
+idempotently:
 
 ```bash
-STRATA_SETTINGS="$HOME/.claude/settings.json" python3 - <<'PY'
-import copy, json, os, time, shutil, sys
-path = os.environ["STRATA_SETTINGS"]
-os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-data, existed = {}, False
-if os.path.exists(path) and open(path, encoding="utf-8").read().strip():
-    try:
-        data = json.load(open(path, encoding="utf-8"))
-    except json.JSONDecodeError as e:
-        sys.exit(f"settings.json is not valid JSON ({e}); fix it first, aborting.")
-    existed = True
-if not isinstance(data, dict):
-    sys.exit("settings.json top-level is not an object; aborting.")
-before = copy.deepcopy(data)
-data.setdefault("extraKnownMarketplaces", {})["strata"] = {"source": {"source": "git", "url": "https://github.com/Old-G/strata.git"}}
-data.setdefault("enabledPlugins", {})["strata@strata"] = True
-if existed and data == before:
-    print("OK: strata already registered in", path, "— no change"); sys.exit(0)
-if existed:
-    shutil.copy2(path, f"{path}.strata-bak.{int(time.time())}")
-json.dump(data, open(path, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
-print("OK: strata registered in", path)
-PY
+curl -fsSL https://raw.githubusercontent.com/Old-G/strata/main/install.sh | sh
 ```
 
-**verify:** re-read `~/.claude/settings.json`; confirm it parses and both keys are present.
+You *may* run that installer yourself only if the user explicitly authorizes it (approves the Bash
+prompt, or the session isn't in auto-mode). If the guard denies the write, **stop and fall back to
+the Primary path** — do not try to bypass it.
+
+**verify:** the user confirms the plugin installed (or you read `~/.claude/settings.json` and see
+`enabledPlugins["strata@strata"] = true`). It only takes effect after the reload in Step 4.
 
 ## Step 3 — Drop a resume breadcrumb
 
