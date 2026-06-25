@@ -2,7 +2,7 @@
 
 Claude Code plugin that packages a reusable way to run AI-assisted projects: AI-navigable wiki,
 architecture canon, spec→plan→TDD feature flow, a parallel review council, and drift detection with
-staged refactor. **State:** v0.1.0 — initial build. This repo dogfoods its own patterns.
+staged refactor. **State:** v0.2.0 — AI-led onboarding shipped. This repo dogfoods its own patterns.
 
 ## Phase / status
 
