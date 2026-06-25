@@ -11,7 +11,7 @@ staged refactor. **State:** v0.2.0 — AI-led onboarding shipped. This repo dogf
 | Plugin installs (`plugin.json` + `marketplace.json` valid) | 🔄 building |
 | Entry skill `using-strata` routes to all commands | ✅ |
 | Skills: init / adopt / audit / refactor / feature / office-hours / autoplan / wiki-ingest / onboard | 🔄 building |
-| One-line AI-led onboarding (BOOTSTRAP.md + install.sh + /strata:onboard) | ✅ (R1 clean-profile check pending) |
+| One-line AI-led onboarding (BOOTSTRAP.md + install.sh + /strata:onboard) | ✅ verified end-to-end on v0.2.0 |
 | Council subagents (ceo / eng / design / cso) | 🔄 building |
 | Templates: core + python-fastapi stack pack | ✅ seeded from a production project, genericized |
 | Verified by adopting a real external project | ⬜ pending (user will test elsewhere) |
