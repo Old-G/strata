@@ -112,8 +112,8 @@ The active "AI leads everything" wizard. Thin conductor; delegates real work.
 ### 5.3 `install.sh` (repo root; curl-able) — shell alternative
 
 - Idempotent JSON merge (python3) of the two keys into `~/.claude/settings.json`.
-- Safety: timestamped backup of `settings.json` before writing; validate JSON after; abort cleanly on parse error and restore backup.
-- Idempotent: re-running makes no further change.
+- Safety: parse the existing file *before* touching anything — if it is not valid JSON (or its top level is not an object), abort with a non-zero exit and leave the file byte-for-byte untouched (the error path never writes, so there is nothing to restore). On the change path, take a timestamped backup, then write atomically (temp file + replace).
+- Idempotent: when both keys are already present with the same values, the installer makes no change at all — no backup, no rewrite.
 - Prints the same bridge block (§6), adapted: "Open `claude` in your project and send `/strata:onboard` (run `/reload-plugins` first if a session is already open)."
 - POSIX `sh`-compatible invocation; relies on `python3` (document the dependency; it is present on macOS and standard Linux).
 
@@ -157,7 +157,7 @@ Both reference the `main` branch raw URL; both assume the repo is public.
 4. **onboard delegates correctly** — `new` repo path reaches a completed `/strata:init` (green smoke test); `existing` repo path reaches a completed `/strata:adopt` (tests still pass, adoption report written) — verified by each underlying skill's own verifies.
 5. **First audit runs** — `onboard` ends by producing `docs/superpowers/specs/<date>-strata-audit.md` and presenting it.
 6. **Bridge always escapable** — the fallback `/plugin` commands appear in every bridge emission.
-7. **install.sh safety** — corrupt/locked `settings.json` is restored from backup, not left broken.
+7. **install.sh safety** — a corrupt/unreadable `settings.json` makes the installer abort *before* writing, leaving the file byte-for-byte unchanged (verified by `scripts/test_install.sh` T4: exit non-zero + file identical). A valid file is only ever modified via backup + atomic temp-file replace.
 
 ---
 
