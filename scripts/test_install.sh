@@ -54,6 +54,16 @@ rc=$?
 after="$(cat "$S")"
 { [ "$rc" -ne 0 ] && [ "$before" = "$after" ]; } && ok "aborts on corrupt JSON, file untouched" || err "did not protect corrupt file"
 
+echo "== T5: no-op re-run creates no new backup =="
+D="$TMP/backups"
+mkdir -p "$D"
+S="$D/settings.json"
+STRATA_SETTINGS="$S" sh "$INSTALL" >/dev/null 2>&1
+n1="$(find "$D" -name '*.strata-bak.*' | wc -l | tr -d ' ')"
+STRATA_SETTINGS="$S" sh "$INSTALL" >/dev/null 2>&1
+n2="$(find "$D" -name '*.strata-bak.*' | wc -l | tr -d ' ')"
+[ "$n1" = "$n2" ] && ok "no-op re-run took no backup ($n1 == $n2)" || err "backup proliferated on no-op ($n1 -> $n2)"
+
 echo
 if [ "$fail" -eq 0 ]; then echo "✅ install.sh tests PASSED"; else echo "❌ install.sh tests FAILED"; fi
 exit "$fail"
