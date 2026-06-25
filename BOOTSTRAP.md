@@ -37,7 +37,7 @@ existing keys):
 - `extraKnownMarketplaces.strata = { "source": { "source": "git", "url": "https://github.com/Old-G/strata.git" } }`
 - `enabledPlugins["strata@strata"] = true`
 
-Safe merge (same logic as `install.sh`):
+Safe merge (same intent as `install.sh`; the canonical, no-op-safe version lives there):
 
 ```bash
 STRATA_SETTINGS="$HOME/.claude/settings.json" python3 - <<'PY'
