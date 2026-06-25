@@ -281,18 +281,25 @@ Safe merge (same logic as `install.sh`):
 
 ```bash
 STRATA_SETTINGS="$HOME/.claude/settings.json" python3 - <<'PY'
-import json, os, time, shutil, sys
+import copy, json, os, time, shutil, sys
 path = os.environ["STRATA_SETTINGS"]
 os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-data = {}
+data, existed = {}, False
 if os.path.exists(path) and open(path, encoding="utf-8").read().strip():
     try:
         data = json.load(open(path, encoding="utf-8"))
     except json.JSONDecodeError as e:
         sys.exit(f"settings.json is not valid JSON ({e}); fix it first, aborting.")
-    shutil.copy2(path, f"{path}.strata-bak.{int(time.time())}")
+    existed = True
+if not isinstance(data, dict):
+    sys.exit("settings.json top-level is not an object; aborting.")
+before = copy.deepcopy(data)
 data.setdefault("extraKnownMarketplaces", {})["strata"] = {"source": {"source": "git", "url": "https://github.com/Old-G/strata.git"}}
 data.setdefault("enabledPlugins", {})["strata@strata"] = True
+if existed and data == before:
+    print("OK: strata already registered in", path, "— no change"); sys.exit(0)
+if existed:
+    shutil.copy2(path, f"{path}.strata-bak.{int(time.time())}")
 json.dump(data, open(path, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
 print("OK: strata registered in", path)
 PY
