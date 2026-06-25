@@ -61,6 +61,11 @@ for f in $(find templates -name '*.sh'); do
   bash -n "$f" 2>/dev/null && ok "$f" || err "$f has a shell syntax error"
 done
 
+echo "== 5b. root install.sh parses =="
+if [ -f install.sh ]; then
+  sh -n install.sh 2>/dev/null && ok "install.sh" || err "install.sh has a shell syntax error"
+fi
+
 echo "== 6. python templates parse =="
 for f in $(find templates -name '*.py'); do
   python3 -c "import ast; ast.parse(open('$f').read())" 2>/dev/null && ok "$f" || err "$f has a syntax error"

@@ -20,6 +20,8 @@ jobs:
           python-version: "3.13"
       - name: Validate plugin structure
         run: bash scripts/validate.sh
+      - name: Test installer (idempotent settings merge)
+        run: bash scripts/test_install.sh
       - name: Lint shell scripts (shellcheck)
         run: |
           sudo apt-get update -qq && sudo apt-get install -y shellcheck
