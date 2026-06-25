@@ -17,6 +17,7 @@ token-proxying, or testing — it owns one thing well: the **structure / knowled
 ## Table of contents
 
 - [Why Strata](#why-strata)
+- [Instant setup (AI-led)](#-instant-setup-ai-led)
 - [The four layers](#the-four-layers)
 - [Installation](#installation)
 - [Prerequisites](#prerequisites)
@@ -64,6 +65,32 @@ Strata's whole job is to keep the right tool in the right lane:
 humans read and the agent queries first. **claude-mem** is the *automatic, machine-local, episodic*
 working memory ("what did we do last week"). They are complementary — never store the same fact in
 both.
+
+---
+
+## ⚡ Instant setup (AI-led)
+
+Don't want to learn the commands? Drop **one line** into a fresh Claude Code session in your repo
+and let the AI install Strata and walk you through the whole setup — it detects new-vs-existing,
+checks prerequisites, runs `init` or `adopt`, and produces your first audit, asking questions as it
+goes.
+
+**In a Claude Code chat (recommended):**
+
+> Install and run Strata in this repo: fetch and follow
+> https://raw.githubusercontent.com/Old-G/strata/main/BOOTSTRAP.md
+
+**Or in your terminal:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Old-G/strata/main/install.sh | sh
+```
+
+Either way you do exactly **one** manual action: when prompted, run `/reload-plugins` (or restart
+Claude Code), then send `/strata:onboard`. That single restart is a Claude Code limitation — newly
+installed plugin commands only activate after a reload. From there the AI leads the rest.
+
+Prefer to do everything by hand? See [Manual install](#installation) below.
 
 ---
 
