@@ -54,7 +54,7 @@ that detects drift, and a **feature flow** that runs ideation → review → TDD
 
 **The fastest way in — one line, and the AI does the rest.** You don't need to learn any commands or
 read any docs first. Paste a single line into a fresh Claude Code session (or run one command in your
-terminal); the AI installs Strata and then **runs the entire setup as a conversation** — it works out
+terminal); the AI gets Strata installed and then **runs the entire setup as a conversation** — it works out
 whether your repo is new or existing, checks which tools you have, scaffolds or adopts the structure,
 and hands you a first drift report. You just answer a few questions as they come.
 
@@ -70,12 +70,13 @@ curl -fsSL https://raw.githubusercontent.com/Old-G/strata/main/install.sh | sh
 
 ### What happens next
 
-1. **The AI installs Strata.** It registers the marketplace and enables the plugin by merging two
-   keys into your `~/.claude/settings.json` — idempotent and non-destructive, so your other settings
-   are left untouched.
-2. **It hands you the one manual step.** Newly installed plugin commands only become available after
-   a reload — a Claude Code limitation the AI can't do for you. So it prints exactly what to do:
-   *run `/reload-plugins` (or restart Claude Code), then send `/strata:onboard`.*
+1. **The AI checks your setup and hands you the install command.** Enabling a plugin is your call in
+   Claude Code — it guards that on purpose — so the AI doesn't do it silently; it tells you exactly
+   what to run: `/plugin install strata@strata` (plus `/plugin marketplace add Old-G/strata` first,
+   only if the marketplace isn't registered yet). Prefer the terminal? The `curl … | sh` above writes
+   the same config without any slash commands.
+2. **You reload, then launch the conductor.** Run `/reload-plugins` (or restart Claude Code) — new
+   plugin commands only activate after a reload — then send `/strata:onboard`.
 3. **`/strata:onboard` takes over and leads the setup.** It detects whether the repo is **new**
    (→ runs `/strata:init`) or **existing** (→ runs `/strata:adopt`), reports which optional tools you
    have (Superpowers, claude-mem, RTK), proposes a plan, runs it to a green state, then produces your

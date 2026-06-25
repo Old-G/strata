@@ -39,6 +39,8 @@ Verified against Claude Code plugin mechanics (claude-code-guide research + loca
 
 **#1 implementation risk (must be verified during build):** whether writing `extraKnownMarketplaces` alone triggers an automatic git-clone of the marketplace on `/reload-plugins`, or whether the clone only happens via the interactive `/plugin marketplace add`. The bridge instruction therefore **always** includes the canonical `/plugin marketplace add` + `/plugin install` commands as a fallback, so the human never gets stuck even if config-only auto-clone does not fire.
 
+**Confirmed in a real-world run (2026-06-25):** in **auto** permission mode, Claude Code's classifier **auto-denies the assistant writing `~/.claude/settings.json`** to enable an external plugin — observed reason: `[Self-Modification] Modifies ~/.claude/settings.json to register an external marketplace and enable a plugin`. This is **correct, intended** behaviour: enabling an external plugin is the human's decision. The implication for this design: the assistant **cannot enable the plugin silently in-session** — it can neither type `/plugin …` (slash commands are user-only) nor reliably write the global settings. **Enabling the plugin is intrinsically a user action.** So `BOOTSTRAP.md` leads Step 2 with the user-run `/plugin install strata@strata` (and `/plugin marketplace add` if the marketplace isn't registered yet); the terminal `install.sh` path stays available because it runs *outside* Claude Code's in-session guard. The assistant must **never** route around the guard (no Edit-tool workaround); a denied write falls back to the user-run command.
+
 ---
 
 ## 3. Decisions (locked)
@@ -61,7 +63,8 @@ SESSION 1 — one line in chat  (or: run install.sh in terminal)
    ├─ chat path: AI WebFetches BOOTSTRAP.md and EXECUTES it:
    │     step 0  idempotency: are /strata:* already available? → skip to onboard
    │     step 1  prereq scan (report-only): Superpowers, claude-mem, RTK
-   │     step 2  write install config into ~/.claude/settings.json (idempotent merge) + VERIFY
+   │     step 2  hand the user the enable command (/plugin install strata@strata) — the AI can't
+   │             enable an external plugin silently (guard); user-run, or install.sh in a terminal
    │     step 3  drop breadcrumb .strata/onboard.json (project type, prereqs, ts)
    │     step 4  print the BRIDGE block (exact human steps + continuation prompt + fallback)
    │
@@ -89,7 +92,7 @@ An instruction document **addressed to the AI**, written so the AI *executes* it
 - **Header**: "You are bootstrapping Strata. Execute these steps in order; do not skip verifies."
 - **Step 0 — idempotency.** If `/strata:*` skills are already available (plugin already loaded), skip install and go straight to invoking `strata:onboard`. Handles re-runs and already-installed machines.
 - **Step 1 — prereq scan (report-only).** Detect Superpowers / claude-mem (recommended) and RTK (optional). Report present/missing; never hard-fail. (Reference: `reference/tool-integration.md`.)
-- **Step 2 — write install config (idempotent merge).** Merge the two keys into `~/.claude/settings.json`. Must: create the file if absent; never clobber existing keys; produce valid JSON. **Verify:** read the file back, assert both keys present and JSON parses.
+- **Step 2 — enable the plugin (a user action, by design).** The AI **cannot** enable an external plugin silently — it can't type slash commands, and the permission guard auto-denies the assistant writing `~/.claude/settings.json` (see §2). So the AI hands the user the native command: `/plugin install strata@strata` (preceded by `/plugin marketplace add Old-G/strata` only if the marketplace isn't registered yet — the AI knows from its Step 1 scan). No-slash-commands alternative: the user runs `install.sh` in their **own terminal** (outside the in-session guard). The AI may run the merge itself only with explicit authorization, and **never** routes around a denied write. **Verify:** the user confirms install (effective after the Step 4 reload).
 - **Step 3 — breadcrumb.** Write `.strata/onboard.json` in the project: `{ installedAt, projectType: "new"|"existing", prereqs: {...}, configLocation: "global" }`. Ensure `.strata/` is gitignored (append to `.gitignore`, merge-safe). This lets session 2 resume with context instead of cold-starting.
 - **Step 4 — bridge.** Print the exact continuation block (see §6).
 
