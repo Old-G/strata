@@ -77,8 +77,7 @@ goes.
 
 **In a Claude Code chat (recommended):**
 
-> Install and run Strata in this repo: fetch and follow
-> https://raw.githubusercontent.com/Old-G/strata/main/BOOTSTRAP.md
+> Install and run Strata in this repo: fetch and follow https://raw.githubusercontent.com/Old-G/strata/main/BOOTSTRAP.md
 
 **Or in your terminal:**
 
