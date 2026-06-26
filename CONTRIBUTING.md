@@ -45,12 +45,29 @@ scripts/validate.sh   structure validator (also runs in CI)
 2. If it needs heavy detail, put it in `skills/<name>/sections/<topic>.md` and reference it.
 3. Wire it into `skills/using-strata/SKILL.md` (the router) if users should discover it there.
 4. Run `bash scripts/validate.sh`.
+5. **Bump the version** (see [Releasing](#releasing--bump-the-version)) — otherwise the marketplace keeps serving the old build without your skill.
 
 ## Adding a stack pack
 
 Copy `templates/stacks/python-fastapi/` to `templates/stacks/<stack>/`, replace the architecture
 reference with one for that stack, and keep the two entry points (`init` copies the canon; `audit`
 reads its anti-patterns). See that pack's `README.md`.
+
+## Releasing — bump the version
+
+The marketplace serves the plugin by its **`version`** field. If you change a shipped
+skill/agent/template and DON'T bump the version, `/plugin install strata@strata` keeps serving the
+previously-cached build and consumers never get your change — even though it's on `main`. (We hit
+exactly this: `onboard` was on `main` but the marketplace still advertised `0.1.2`, so installs had
+no `/strata:onboard`.)
+
+So, as part of any user-facing change:
+
+1. Bump `version` in **both** `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` (keep
+   them identical; SemVer — feature → minor, fix → patch).
+2. Move the `CHANGELOG.md` `[Unreleased]` notes into a dated `[x.y.z]` section.
+3. After merge, existing installs refresh with `/plugin marketplace update strata` → reinstall →
+   `/reload-plugins`.
 
 ## Before opening a PR
 

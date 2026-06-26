@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "strata",
   "displayName": "Strata",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Make any repo self-describing and self-correcting: an AI-navigable wiki, an architecture canon, a spec->plan->TDD feature flow, a parallel review council, and drift detection with staged refactor. Bootstrap new projects or adopt existing ones.",
   "author": {
     "name": "Gleb Zavalov"
