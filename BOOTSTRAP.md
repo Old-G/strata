@@ -16,16 +16,25 @@ Check whether Strata is already available — are `/strata:*` skills/commands pr
 - **If yes:** skip installation. Invoke `strata:onboard` and stop reading this file.
 - **If no:** continue.
 
-## Step 1 — Prerequisite scan (report only, never block)
+## Step 1 — Prerequisite scan (report + recommend; never block)
 
-Detect and report which optional companions are present. Do **not** install them.
-- **Superpowers** (recommended — Strata's PROCESS layer wraps it): are skills like
-  `superpowers:brainstorming` / `superpowers:test-driven-development` available?
-- **claude-mem** (recommended — episodic memory): are `claude-mem` MCP tools available?
-- **RTK** (optional — command-output compaction): `command -v rtk`.
+Detect which companions Strata composes, report present/missing **with the payoff**, and flag what to
+install. You don't enable them yourself (that's a user action) — fold the plugin ones into Step 2.
 
-Report a short present/missing table with one line on what each unlocks. Missing tools only
-degrade gracefully — proceed regardless.
+- **Superpowers** — *strongly recommended*. Are `superpowers:*` skills available (e.g.
+  `superpowers:test-driven-development`)? It's the engine of `/strata:feature` (plan → TDD →
+  code-review → finish); without it those phases run ad-hoc. If missing → install alongside Strata in
+  Step 2 with `/plugin install superpowers@claude-plugins-official`.
+- **claude-mem** — *optional, high upside*. Are `claude-mem` MCP tools available? Cross-session memory
+  + smart-Read lets the agent navigate code **by structure instead of slurping whole files** → much
+  less re-reading and faster orientation each session. Install: `/plugin marketplace add thedotmack/claude-mem`
+  then `/plugin install claude-mem@thedotmack`.
+- **RTK** — *optional*. `command -v rtk`. Compacts command output before it hits context — typically
+  **60–90% fewer tokens on dev operations**. Not a plugin (Rust binary + Bash hook); see
+  `reference/tool-integration.md`.
+
+Report a short present/missing table with each payoff. Missing tools only degrade gracefully —
+proceed regardless, but tell the user concretely what they're leaving on the table.
 
 ## Step 2 — Enable the Strata plugin (this is a user action, by design)
 
@@ -42,6 +51,11 @@ marketplace is already registered (is `extraKnownMarketplaces.strata` in their
   `/plugin install strata@strata`.
 - **already registered** → tell them to run just `/plugin install strata@strata` (say the marketplace
   is already there, so only the enable step is left).
+
+If your Step 1 scan found **Superpowers missing**, have them install it in the **same batch** (it's
+the engine of `/strata:feature`): `/plugin install superpowers@claude-plugins-official` (if that's
+not found, first `/plugin marketplace add anthropics/claude-plugins-official`). claude-mem and RTK
+stay optional — mention them and their payoff (Step 1), but don't gate onboarding on them.
 
 **No-slash-commands alternative:** the user runs the bundled installer in their **own terminal**
 (outside Claude Code, so the in-session guard doesn't apply); it writes the same config safely and
