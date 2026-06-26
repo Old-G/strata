@@ -6,6 +6,19 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-06-26
+
+### Changed
+- **Onboarding now checks prerequisites and hands you the exact install command.** `BOOTSTRAP.md`
+  Step 1 and `/strata:onboard` Step 3 no longer merely *report* missing companions — for each one
+  they show how to install it and what it buys:
+  - **Superpowers** (strongly recommended) → `/plugin install superpowers@claude-plugins-official`,
+    offered in the same batch as enabling Strata. It's the engine of `/strata:feature`.
+  - **claude-mem** (optional) → install command + the payoff: cross-session memory + smart-Read to
+    navigate code by structure instead of re-reading whole files each session.
+  - **RTK** (optional) → its setup + the payoff: typically **60–90% fewer tokens** on dev operations.
+  Strata's native spine still works without any of them — the check is non-blocking.
+
 ## [0.2.0] — 2026-06-25
 
 ### Added
