@@ -6,6 +6,19 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.2.2] — 2026-06-26
+
+### Changed
+- **`/strata:feature` now degrades gracefully without Superpowers.** The phases that wrap Superpowers
+  (plan, TDD, code-review, finish) carry an explicit fallback: run the phase to the same standard
+  yourself — flagging that the rigor is weaker — and recommend installing Superpowers, instead of
+  hard-delegating to a skill that may be absent. Strata's native phases (office-hours, council,
+  wiki+audit) were already standalone.
+
+### Docs
+- `CONTRIBUTING.md`: added a **"Releasing — bump the version"** section (and a step in "Adding a
+  skill") so shipped skill/agent/template changes actually reach marketplace consumers.
+
 ## [0.2.1] — 2026-06-26
 
 ### Changed

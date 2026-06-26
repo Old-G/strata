@@ -9,6 +9,17 @@ This is Strata's PROCESS spine. It WRAPS the Superpowers skills and adds the two
 
 Orchestrate the phases below in order. Each phase delegates to a named skill and has a `verify` that MUST pass before advancing. If a verify cannot pass, STOP and report why — never claim a phase done on faith.
 
+## Prerequisite: Superpowers (and what to do without it)
+
+Phases 2, 4, 5, 6 delegate to **Superpowers** skills. If they're installed, use them — they carry the discipline. If `superpowers:*` is **not available**, do NOT abort: run the phase yourself to the same standard, tell the human the rigor is weaker, and recommend installing it (`/plugin install superpowers@claude-plugins-official`). Strata's own phases — 1 (office-hours), 3 (council), 7 (wiki+audit) — never depend on Superpowers.
+
+| Phase | With Superpowers | Without — fallback (do this yourself) |
+|---|---|---|
+| 2 Plan | `superpowers:writing-plans` | Write the dated plan in the same shape at `docs/superpowers/plans/<date>-<slug>-plan.md`; every step names a concrete `verify`. |
+| 4 Build | `superpowers:test-driven-development` | Stay test-first per step: write the failing test → make it pass → refactor; honor each step's verify, don't batch. |
+| 5 Code review | `superpowers:requesting-code-review` | Run the **review council** (Strata's own subagents) against the diff, or a structured self-review; resolve every finding with evidence. |
+| 6 Finish | `superpowers:finishing-a-development-branch` | Confirm tests green, then merge / open PR / keep / discard per the human's choice; clean up the branch. |
+
 ## Phase 1 — Think (delegate: /strata:office-hours)
 
 If no design doc exists yet, invoke **`/strata:office-hours`**. It runs the YC-partner interrogation interactively and produces `docs/superpowers/specs/<date>-<slug>-design.md` with a chosen approach.
