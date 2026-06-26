@@ -23,11 +23,23 @@ Inspect the working directory:
 Confirm in one question ("This looks like an existing project — adopt Strata into it? [yes / it's
 actually new]").
 
-## Step 3 — Prerequisite report
+## Step 3 — Prerequisite check (report + give the exact install command)
 
-Re-check (the session changed since bootstrap): Superpowers, claude-mem (recommended), RTK
-(optional). Report present/missing and, for anything missing, the one concrete thing it costs
-(e.g. "no Superpowers → /strata:feature's brainstorm/TDD steps degrade"). Do not block.
+Re-check the companions Strata composes (the session changed since bootstrap). For each: detect,
+report present/missing, and **if missing, give the exact install command and what it buys**. Strata's
+native spine (office-hours, council, init/adopt/audit, wiki) works without any of them — so never
+block. Enabling a plugin is the user's action (same guard as Strata) — hand them the command, don't
+run it silently.
+
+| Companion | Detect | If missing → install | Payoff |
+|---|---|---|---|
+| **Superpowers** — strongly recommended | are `superpowers:*` skills available? | `/plugin install superpowers@claude-plugins-official` (if not found, first `/plugin marketplace add anthropics/claude-plugins-official`) | The engine of `/strata:feature`: disciplined plan → TDD → code-review → finish. Without it those phases run ad-hoc, with weaker rigor. |
+| **claude-mem** — optional, high upside | are `claude-mem` MCP tools available? | `/plugin marketplace add thedotmack/claude-mem` then `/plugin install claude-mem@thedotmack` | Cross-session episodic memory ("did we solve this before?") + smart-Read: navigate code **by structure** instead of slurping whole files into context — far less re-reading each session, faster orientation in the project. |
+| **RTK** — optional | `command -v rtk` | not a plugin — install per `${CLAUDE_PLUGIN_ROOT}/reference/tool-integration.md` (a Rust binary + a Bash hook) | Compacts noisy command output (builds, tests, git) before it reaches context — typically **60–90% fewer tokens on dev operations**, at zero added cost. |
+
+Report a present/missing line per companion. For each missing one, show its command + payoff and ask
+whether to set it up now or proceed. Recommend installing Superpowers before `/strata:feature`;
+claude-mem and RTK are pure upside (tokens + navigation) and can be added anytime.
 
 ## Step 4 — Plan, then approval
 
