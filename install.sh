@@ -70,10 +70,14 @@ PY
 
 cat <<'EOF'
 
-✅ Strata is in your config. Two steps left:
-  1. Run  /reload-plugins   (or restart Claude Code).
-  2. Send  /strata:onboard
+✅ Strata is in your config (marketplace + enabledPlugins["strata@strata"]=true).
 
-If /strata:onboard isn't found, run  /plugin marketplace add Old-G/strata
+Reload so the commands appear, then send  /strata:onboard :
+  • Terminal Claude Code:  run  /reload-plugins  (or restart the session)
+  • Cursor / VS Code / other IDE extensions:  FULLY restart the app
+    (quit and reopen, or "Developer: Reload Window") — /reload-plugins
+    alone often does NOT pick up a newly enabled plugin in an IDE extension.
+
+If /strata:onboard still isn't found, run  /plugin marketplace add Old-G/strata
 and  /plugin install strata@strata  first, then  /strata:onboard.
 EOF
