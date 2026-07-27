@@ -27,19 +27,19 @@ Classify the request with `${CLAUDE_PLUGIN_ROOT}/skills/feature/sections/triage.
 | Phase | trivial | standard | risky |
 |---|---|---|---|
 | Think | restate the ask in one line | light grill via `/strata:office-hours` (intent + success criterion) | `/strata:office-hours` — grill to convergence, design doc |
-| Plan | none | `lean-plan`, short | `lean-plan`, complete-but-lean |
+| Plan | none | `/strata:lean-plan`, short | `/strata:lean-plan`, complete-but-lean |
 | Council | none | none by default | 1–2 risk-matched lenses (below) |
 | Build | implement, then evidence | implement, evidence on the core | implement, evidence per meaningful step |
-| Finish | `light-finish` | `light-finish` | `light-finish` + an explicit gate |
+| Finish | `/strata:light-finish` | `/strata:light-finish` | `/strata:light-finish` + an explicit gate |
 | Drift-close | floor #3 | `/strata:wiki-ingest` + scoped mini-`/strata:audit` | `/strata:wiki-ingest` + mini-audit |
 
 ## The council — risk-triggered, lens-selected
 
-Only on `risky`, and only the lenses the risk actually calls for: security or PII → `strata-cso-review` · frontend or UX → `strata-design-review` · architecture or complexity → `strata-eng-review` · scope or "is this the right problem" → `strata-ceo-review`. Use the full panel only when several of those risks genuinely coincide; `/strata:autoplan` can drive it. Its job is an **independent adversarial read of a risky surface** — not routine double-checking of ordinary work. Surface reviewer disagreements to the user rather than averaging them away.
+Only on `risky`, and only the lenses the risk actually calls for: security or PII → `strata-cso-review` · frontend or UX → `strata-design-review` · architecture or complexity → `strata-eng-review` · scope or "is this the right problem" → `strata-ceo-review`. Use the full panel only when several of those risks genuinely coincide; `/strata:autoplan` can drive it. Its job is an **independent adversarial read of a risky surface** — not a routine second pass over ordinary work. Surface reviewer disagreements to the user rather than averaging them away.
 
 ## Delegation
 
-Think → `/strata:office-hours` · Plan → `lean-plan` · Council → `/strata:autoplan` or the `strata-*-review` agents in parallel · Finish → `light-finish` · Knowledge → `/strata:wiki-ingest`, `/strata:audit`.
+Think → `/strata:office-hours` · Plan → `/strata:lean-plan` · Council → `/strata:autoplan` or the `strata-*-review` agents in parallel · Finish → `/strata:light-finish` · Knowledge → `/strata:wiki-ingest`, `/strata:audit`.
 
 **Superpowers is optional.** If `superpowers:*` skills are installed you may use them as accelerators on `risky` work. Absent — the native path above is complete; nothing degrades.
 
