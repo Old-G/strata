@@ -1,81 +1,48 @@
 ---
 name: feature
-description: Use when someone wants to build a feature end-to-end with the full Strata process, says "build feature X", "let's ship X properly", "run the full flow", or has an idea/design doc and wants it taken all the way to a merged, documented change. Orchestrates Think → Plan → Council → TDD → Review → Finish → wiki+audit.
+description: Use when someone wants to build a feature or change end-to-end and wants the process to fit the task — says "build X", "ship X properly", "run the flow", or has a design doc to carry to a merged change. Classifies the task (trivial/standard/risky) and runs only the ceremony that fits, behind a floor of evidence, risk escalation, drift-close and git safety.
 ---
 
-# Feature — end-to-end feature flow orchestrator
+# Feature — adaptive-ceremony feature flow
 
-This is Strata's PROCESS spine. It WRAPS the Superpowers skills and adds the two things bare Superpowers lacks: a **structured ideation front-end** (office-hours) and a **review council** that pressure-tests the plan from multiple perspectives before any code is written. Steps 3 (council) is where Strata earns its keep — do not skip it.
+Strata's PROCESS spine: trivial work goes fast, risky work gets real guardrails, and the framework decides — not the human. Built for frontier models, so it deliberately carries **less** scaffolding than classic pipelines: state intent, then let the model work.
 
-Orchestrate the phases below in order. Each phase delegates to a named skill and has a `verify` that MUST pass before advancing. If a verify cannot pass, STOP and report why — never claim a phase done on faith.
+## Phase 0 — Triage (always, cheap)
 
-## Prerequisite: Superpowers (and what to do without it)
+Classify the request with `${CLAUDE_PLUGIN_ROOT}/skills/feature/sections/triage.md`. Emit **tier + one-line why + what you'll skip + the effort level**, then proceed — no confirmation gate. The user may say "go higher / lower" at any time; re-scale immediately. Bias **up** on doubt.
 
-Phases 2, 4, 5, 6 delegate to **Superpowers** skills. If they're installed, use them — they carry the discipline. If `superpowers:*` is **not available**, do NOT abort: run the phase yourself to the same standard, tell the human the rigor is weaker, and recommend installing it (`/plugin install superpowers@claude-plugins-official`). Strata's own phases — 1 (office-hours), 3 (council), 7 (wiki+audit) — never depend on Superpowers.
+## The floor — always, every tier
 
-| Phase | With Superpowers | Without — fallback (do this yourself) |
-|---|---|---|
-| 2 Plan | `superpowers:writing-plans` | Write the dated plan in the same shape at `docs/superpowers/plans/<date>-<slug>-plan.md`; every step names a concrete `verify`. |
-| 4 Build | `superpowers:test-driven-development` | Stay test-first per step: write the failing test → make it pass → refactor; honor each step's verify, don't batch. |
-| 5 Code review | `superpowers:requesting-code-review` | Run the **review council** (Strata's own subagents) against the diff, or a structured self-review; resolve every finding with evidence. |
-| 6 Finish | `superpowers:finishing-a-development-branch` | Confirm tests green, then merge / open PR / keep / discard per the human's choice; clean up the branch. |
+1. **Evidence** — show that the change works: run the real test or command and report its output. Ask for proof, not reassurance.
+2. **Risk escalation** — a risk surface (see the rubric) makes the task `risky`, however small it looks.
+3. **Drift-close** — if docs or a documented fact changed, run `/strata:wiki-ingest` on them; otherwise nothing to do.
+4. **Git safety** — work on a branch, keep commits reversible, never write silently to the default branch.
 
-## Phase 1 — Think (delegate: /strata:office-hours)
+## Effort per tier
 
-If no design doc exists yet, invoke **`/strata:office-hours`**. It runs the YC-partner interrogation interactively and produces `docs/superpowers/specs/<date>-<slug>-design.md` with a chosen approach.
+`trivial` → low · `standard` → medium · `risky` → high (xhigh for demanding agentic or multi-file work). Effort is the main cost lever; prefer thinking on at low effort over turning thinking off.
 
-If the human already has a design doc, read it and confirm it has a Recommended Approach and Success Criteria. If it's thin, route back through office-hours.
+## Tier → phases
 
-**verify:** A design doc exists at `docs/superpowers/specs/` AND the human has confirmed the Recommended Approach. Do not proceed on a `Status: DRAFT` the human hasn't endorsed.
+| Phase | trivial | standard | risky |
+|---|---|---|---|
+| Think | restate the ask in one line | light grill via `/strata:office-hours` (intent + success criterion) | `/strata:office-hours` — grill to convergence, design doc |
+| Plan | none | `lean-plan`, short | `lean-plan`, complete-but-lean |
+| Council | none | none by default | 1–2 risk-matched lenses (below) |
+| Build | implement, then evidence | implement, evidence on the core | implement, evidence per meaningful step |
+| Finish | `light-finish` | `light-finish` | `light-finish` + an explicit gate |
+| Drift-close | floor #3 | `/strata:wiki-ingest` + scoped mini-`/strata:audit` | `/strata:wiki-ingest` + mini-audit |
 
-## Phase 2 — Plan (delegate: superpowers:writing-plans)
+## The council — risk-triggered, lens-selected
 
-Invoke **`superpowers:writing-plans`** with the design doc as input. Produce a dated plan at `docs/superpowers/plans/<YYYY-MM-DD>-<slug>-plan.md`. Each step MUST carry a concrete `verify` (a command or observable), per goal-driven execution.
+Only on `risky`, and only the lenses the risk actually calls for: security or PII → `strata-cso-review` · frontend or UX → `strata-design-review` · architecture or complexity → `strata-eng-review` · scope or "is this the right problem" → `strata-ceo-review`. Use the full panel only when several of those risks genuinely coincide; `/strata:autoplan` can drive it. Its job is an **independent adversarial read of a risky surface** — not routine double-checking of ordinary work. Surface reviewer disagreements to the user rather than averaging them away.
 
-**verify:** The plan file exists and every step names a verify.
+## Delegation
 
-## Phase 3 — Review the plan: THE COUNCIL (Strata's value-add)
+Think → `/strata:office-hours` · Plan → `lean-plan` · Council → `/strata:autoplan` or the `strata-*-review` agents in parallel · Finish → `light-finish` · Knowledge → `/strata:wiki-ingest`, `/strata:audit`.
 
-Pressure-test the plan with the review council **before** writing code. Two equivalent paths:
+**Superpowers is optional.** If `superpowers:*` skills are installed you may use them as accelerators on `risky` work. Absent — the native path above is complete; nothing degrades.
 
-- **Simplest:** invoke **`/strata:autoplan`** with the plan path — it runs the council, classifies decisions, applies safe edits, and gates the rest to the human. Prefer this.
-- **Manual:** spawn the reviewer subagents IN PARALLEL via the Agent tool (one message, multiple `Agent` calls), following `superpowers:dispatching-parallel-agents`:
-  - `strata-ceo-review` — demand, wedge, business sense (always)
-  - `strata-eng-review` — feasibility, complexity, failure modes (always)
-  - `strata-cso-review` — security, data, access, risk (always)
-  - `strata-design-review` — UX/IA — **only if the stack has a frontend** (detect: web UI, components, public-facing surface)
+## Never
 
-Collect the verdicts. **Surface DISAGREEMENTS to the human — do not smooth them over or average them away.** Where reviewers conflict with each other or with the human's stated intent, present the conflict and let the human decide. Then revise the plan and record the changes in an audit-trail section.
-
-**verify:** Council verdicts are collected from every required reviewer; disagreements were shown to the human; the plan reflects the resolutions.
-
-## Phase 4 — Build (delegate: superpowers:test-driven-development)
-
-For each plan step, invoke **`superpowers:test-driven-development`**: write the failing test, make it pass, refactor. Honor the plan's per-step verify. Do not batch steps past their verifies.
-
-**verify:** Tests are green and each step's stated verify passed.
-
-## Phase 5 — Review the code (delegate: superpowers:requesting-code-review)
-
-Invoke **`superpowers:requesting-code-review`** on the completed work. Address findings (use `superpowers:receiving-code-review` rigor — verify suggestions, don't blindly apply).
-
-**verify:** Code review returns clean, or all findings are resolved with evidence.
-
-## Phase 6 — Finish (delegate: superpowers:finishing-a-development-branch)
-
-Invoke **`superpowers:finishing-a-development-branch`** to merge / PR / clean up per the human's choice.
-
-**verify:** The branch is integrated (merged or PR opened) per the human's selection.
-
-## Phase 7 — Post-merge: close the loop (Strata's drift guard)
-
-The whole point of Strata is that a new feature can't silently rot the docs. After integration:
-
-1. Invoke **`/strata:wiki-ingest`** for any docs/specs/ADRs the feature changed or added, so the knowledge layer reflects reality.
-2. Run a **mini `/strata:audit`** scoped to the feature's area — confirm code, wiki, and CLAUDE.md still agree.
-
-**verify:** wiki-ingest ran on the changed docs AND the mini-audit reports no fresh drift in the feature's area. If audit finds drift, fix it now — the loop isn't closed until it's clean.
-
-## Summary
-
-Think → Plan → **Council** → TDD → Code review → Finish → **wiki+audit**. Bare Superpowers gives you Plan→TDD→Review→Finish. Strata adds the front (office-hours) and the guards (council in Phase 3, drift-close in Phase 7). Keep both.
+Skip the floor. Treat a risk-surface task as trivial. Run the council on trivial or standard work by default. Claim something works without showing its evidence.
