@@ -28,6 +28,8 @@ Ask these **ONE AT A TIME** using `AskUserQuestion`. NEVER batch them. After eac
 
 **Give your own recommended answer with every question.** State what you'd choose and why, so the user can confirm or redirect rather than invent from scratch — the decision stays theirs, so wait for their answer. Work out anything you can determine yourself (read the code, the wiki, the docs) instead of asking.
 
+**Exception — never recommend an answer for questions (a) and (e).** Those ask what evidence and observations the *human* actually has; supplying a plausible answer there would invent the very demand proof you're testing for. Ask them cold and wait.
+
 Ask them in this order:
 
 **(a) Demand Reality.** "What's the strongest *evidence* — not intuition — that someone actually wants this? Who asked, when, in what words?"
@@ -50,7 +52,7 @@ Probe whether this is a fad, a feature, or a durable need.
 
 **verify:** All six have answers you'd be willing to defend to a skeptic. Weak answers get a follow-up, not a pass.
 
-**Depth scales with the task.** For a risky or ambiguous idea, keep grilling branch by branch — one dependency at a time — until the possibility space collapses to a single, clearly-specified idea; the six questions are the floor, not the ceiling. For a bounded `standard` task, a short recommend-and-confirm pass on intent plus the success criterion is enough. Build nothing until the user confirms you understand each other.
+**Depth scales with the task.** For a risky or ambiguous idea, keep grilling branch by branch — one dependency at a time — until the possibility space collapses to a single, clearly-specified idea; the six questions are the floor, not the ceiling. For a bounded, well-understood task, a short recommend-and-confirm pass on intent plus the success criterion is enough. Build nothing until the user confirms you understand each other.
 
 ## Phase 3 — State the premises
 
