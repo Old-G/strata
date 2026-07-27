@@ -6,6 +6,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-07-21
+
+### Added
+- **Context discipline in `/strata:feature`.** Long work is split into short passes (one unit, one
+  commit), each run by a **fresh agent** rather than pushed through one long conversation, and work
+  that crosses a session/agent/pass carries a compact **handoff** (goal · done + commit refs · next ·
+  constraints and decisions · how to verify) instead of relying on re-reading the transcript.
+  Answer quality decays as context fills; this addresses it directly. Handoff idea adapted from
+  [mattpocock/skills](https://github.com/mattpocock/skills).
+
 ## [0.3.0] — 2026-07-21
 
 ### Changed

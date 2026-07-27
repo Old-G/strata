@@ -37,6 +37,14 @@ Classify the request with `${CLAUDE_PLUGIN_ROOT}/skills/feature/sections/triage.
 
 Only on `risky`, and only the lenses the risk actually calls for: security or PII → `strata-cso-review` · frontend or UX → `strata-design-review` · architecture or complexity → `strata-eng-review` · scope or "is this the right problem" → `strata-ceo-review`. Use the full panel only when several of those risks genuinely coincide; `/strata:autoplan` can drive it. Its job is an **independent adversarial read of a risky surface** — not a routine second pass over ordinary work. Surface reviewer disagreements to the user rather than averaging them away.
 
+## Context discipline
+
+Answer quality decays as a session fills up, so long work is split rather than pushed through one conversation:
+
+- **Split long work into short passes.** One meaningful unit per pass, one commit per unit.
+- **Run each unit in a fresh agent.** Give it exactly the context it needs; don't let it inherit the whole conversation. A tired context reviews its own work with a tired eye.
+- **Hand off, don't hope.** When work crosses a session, an agent, or a pass, write a compact handoff: the goal, what's done (with commit refs), what's next, the constraints and decisions already made, and how to verify. Keep it short enough to paste. It replaces re-reading the transcript.
+
 ## Delegation
 
 Think → `/strata:office-hours` · Plan → `/strata:lean-plan` · Council → `/strata:autoplan` or the `strata-*-review` agents in parallel · Finish → `/strata:light-finish` · Knowledge → `/strata:wiki-ingest`, `/strata:audit`.

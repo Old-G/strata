@@ -85,5 +85,6 @@ The review-council personas and sprint phases are adapted from
 pull-forward knowledge base. The process layer is native and can optionally compose
 [Superpowers](https://github.com/obra/superpowers).
 The lean process skills (lean-plan, light-finish) and the grill-style questioning in office-hours
-adapt *ideas* from Superpowers, gstack, and grill-me — no vendored code.
+adapt *ideas* from Superpowers, gstack, and grill-me — no vendored code. The handoff /
+context-discipline guidance adapts an idea from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT).
 Keep these credits intact.
