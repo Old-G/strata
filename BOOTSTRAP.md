@@ -21,10 +21,7 @@ Check whether Strata is already available — are `/strata:*` skills/commands pr
 Detect which companions Strata composes, report present/missing **with the payoff**, and flag what to
 install. You don't enable them yourself (that's a user action) — fold the plugin ones into Step 2.
 
-- **Superpowers** — *strongly recommended*. Are `superpowers:*` skills available (e.g.
-  `superpowers:test-driven-development`)? It's the engine of `/strata:feature` (plan → TDD →
-  code-review → finish); without it those phases run ad-hoc. If missing → install alongside Strata in
-  Step 2 with `/plugin install superpowers@claude-plugins-official`.
+- **Superpowers** — *optional power-up*. Are `superpowers:*` skills available? Strata's feature flow is native and complete without it; installed, it can add heavier discipline on `risky` work for teams that want it. Not required — don't push installing it.
 - **claude-mem** — *optional, high upside*. Are `claude-mem` MCP tools available? Cross-session memory
   + smart-Read lets the agent navigate code **by structure instead of slurping whole files** → much
   less re-reading and faster orientation each session. Install: `/plugin marketplace add thedotmack/claude-mem`
@@ -52,10 +49,8 @@ marketplace is already registered (is `extraKnownMarketplaces.strata` in their
 - **already registered** → tell them to run just `/plugin install strata@strata` (say the marketplace
   is already there, so only the enable step is left).
 
-If your Step 1 scan found **Superpowers missing**, have them install it in the **same batch** (it's
-the engine of `/strata:feature`): `/plugin install superpowers@claude-plugins-official` (if that's
-not found, first `/plugin marketplace add anthropics/claude-plugins-official`). claude-mem and RTK
-stay optional — mention them and their payoff (Step 1), but don't gate onboarding on them.
+claude-mem and RTK stay optional — mention them and their payoff (Step 1), but don't gate onboarding
+on them.
 
 **No-slash-commands alternative:** the user runs the bundled installer in their **own terminal**
 (outside Claude Code, so the in-session guard doesn't apply); it writes the same config safely and

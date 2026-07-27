@@ -17,7 +17,7 @@ it composes best-of-breed tools and owns one thing: the **structure / knowledge 
 |---|---|---|
 | **STRUCTURE** | "What a correct repo looks like" — folders, layers, naming, anti-patterns | `templates/core/PROJECT_PATTERN.md` + `templates/stacks/<stack>/SCALABLE_ARCHITECTURE_REFERENCE.md` |
 | **KNOWLEDGE** | "What IS true about this project" (durable, git-versioned, curated) | `wiki/` (managed by `wiki-ingest`) — distinct from claude-mem (automatic, machine-local, episodic) |
-| **PROCESS** | "How work enters the repo and how we verify it's done" | `feature` + the review `council` (wraps Superpowers + gstack-derived personas) |
+| **PROCESS** | "How work enters the repo and how we verify it's done" | `feature` — native adaptive flow: ceremony scaled to the task (trivial/standard/risky), with a risk-matched `council`; Superpowers optional |
 | **TOKEN ECONOMY** | "Spend fewer tokens per session" | RTK (command output), claude-mem (smart-Read), Caveman (prose, optional) — declared, not bundled |
 
 **Knowledge layer, critical distinction:** `wiki/` is the *reviewed, project-scoped, in-git* truth
@@ -34,24 +34,33 @@ solve Y last week", that's claude-mem.
 | Start a brand-new project | `/strata:init` | Scaffolds the full layout from templates (skip-list aware) |
 | Bring Strata to an existing repo | `/strata:adopt` | Incremental, reversible: infers stack, writes CLAUDE.md + PROJECT_PATTERN, stands up wiki, installs hooks, emits an adoption report |
 | Check the repo against its own rules | `/strata:audit` | Read-only ranked drift report: structure vs canon, wiki-lint, doc freshness, dead code |
-| Fix the debt the audit found, safely | `/strata:refactor` | Per finding -> dated spec+plan -> Superpowers TDD, one verifiable step at a time |
+| Fix the debt the audit found, safely | `/strata:refactor` | Per finding -> dated spec+plan -> test-first, one verifiable step at a time |
 | Explore / pressure-test a new feature idea | `/strata:office-hours` | YC-partner interrogation (6 forcing questions) -> design-doc; then the council |
-| Run the full feature flow | `/strata:feature` | office-hours -> writing-plans -> council review -> TDD -> review -> finish |
+| Run the full feature flow | `/strata:feature` | Adaptive-ceremony feature flow — classifies the task (trivial/standard/risky) and runs only the ceremony that fits, behind a safety floor |
+| Write a plan without the ceremony | `/strata:lean-plan` | Complete-but-lean plan: intent, constraints, success criterion; points at real references instead of pasting code |
+| Close out a finished branch | `/strata:light-finish` | Wrap up a branch: confirm green, then merge / PR / keep / discard, and clean up |
 | Auto-run the review council | `/strata:autoplan` | Runs the 4 reviewer subagents, auto-decides mechanical calls, surfaces only taste/disagreement |
 | Update / query the knowledge wiki | `/strata:wiki-ingest` | The karpathy ingest / query / lint protocol over docs->raw->wiki |
 
 ## The review council (PROCESS layer)
 
-Defined as **parallel subagents** in `agents/` (they may disagree; a synthesis step surfaces conflicts
-to the human rather than smoothing them over):
+The council is **risk-triggered and lens-selected** — it is not a standing panel on every plan. It
+runs only on work triaged as **risky**, and then only the **1-2 reviewers whose lens matches the
+actual risk**. The full panel runs only when several risks coincide. Its job is an independent
+adversarial read of a risky surface, not a second pass over ordinary work.
 
-- `strata-ceo-review` — scope, the 10x version, "right problem?", failure modes
-- `strata-eng-review` — architecture, data flow, edge cases, **complexity smell** (8+ files / 2+ new classes -> STOP), tests
-- `strata-design-review` — UX (only when the stack has a frontend)
-- `strata-cso-review` — OWASP Top-10 + STRIDE
+| Risk in the work | Lens to run | Checks |
+|---|---|---|
+| Security, auth, secrets, PII | `strata-cso-review` | OWASP Top-10 + STRIDE |
+| Frontend / user-facing UX | `strata-design-review` | UX (only when the stack has a frontend) |
+| Architecture, data flow, complexity | `strata-eng-review` | Edge cases, **complexity smell** (8+ files / 2+ new classes -> STOP), tests |
+| Scope, "is this the right problem?" | `strata-ceo-review` | Scope, the 10x version, failure modes |
+
+Defined as **parallel subagents** in `agents/`: whichever lenses are selected run in parallel via the
+Agent tool. They may disagree — with each other and with the human — and a synthesis step surfaces
+conflicts rather than smoothing them over.
 
 `/strata:office-hours` runs **interactively in the main session** (a dialogue can't be parallelized).
-The reviewers run in parallel via the Agent tool.
 
 ## Operating rules in a Strata project
 

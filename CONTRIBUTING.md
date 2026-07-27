@@ -82,5 +82,8 @@ doesn't introduce drift. Keep commits focused; reference the finding or issue th
 
 The review-council personas and sprint phases are adapted from
 [gstack](https://github.com/garrytan/gstack) (MIT). The wiki pattern follows Andrej Karpathy's
-pull-forward knowledge base. The process layer wraps [Superpowers](https://github.com/obra/superpowers).
+pull-forward knowledge base. The process layer is native and can optionally compose
+[Superpowers](https://github.com/obra/superpowers).
+The lean process skills (lean-plan, light-finish) and the grill-style questioning in office-hours
+adapt *ideas* from Superpowers, gstack, and grill-me — no vendored code.
 Keep these credits intact.
