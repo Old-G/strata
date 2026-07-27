@@ -6,6 +6,25 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-07-21
+
+### Changed
+- **`/strata:feature` is now adaptive-ceremony.** A cheap Phase-0 triage classifies each task
+  (trivial / standard / risky) and runs only the ceremony that fits, behind a floor of evidence,
+  risk auto-escalation, drift-close and git safety. Adds a per-tier **effort** policy (low/medium/high)
+  as the main token lever.
+- **The council is risk-triggered and lens-selected.** Instead of a fixed four-agent panel on every
+  plan, 1–2 reviewers are chosen to match the actual risk, and only on `risky` work — an independent
+  adversarial read of a risky surface, not a second pass over ordinary work.
+- **Removed verification scaffolding.** Per Anthropic's Opus 5 guidance (frontier models verify their
+  own work; explicit verification instructions cause over-verification), the flow asks for *evidence*
+  — run the test, show the output — instead of instructing re-checks.
+- **Strata owns a lean process spine:** new `lean-plan` (complete-but-lean, reference-first) and
+  `light-finish` (lean branch integration). **Superpowers is now an optional power-up, not a
+  prerequisite** — the native flow is complete without it.
+- **`office-hours` grills better:** every question comes with a recommended answer (except the two
+  that ask for the user's own evidence), and depth scales with the task.
+
 ## [0.2.2] — 2026-06-26
 
 ### Changed

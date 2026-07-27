@@ -8,7 +8,7 @@ gains an AI-navigable **wiki**, an architecture **canon**, a **spec → plan →
 parallel review **council**, and **drift detection** with staged refactor. Every project becomes
 structured, token-efficient, and easy for an AI agent to navigate across fresh sessions.
 
-Strata is **thin glue**. It composes best-of-breed tools (Superpowers, claude-mem, RTK) and adapts
+Strata is **thin glue**. It composes best-of-breed tools (claude-mem, RTK, optionally Superpowers) and adapts
 ideas from [gstack](https://github.com/garrytan/gstack). It does **not** reimplement memory,
 token-proxying, or testing — it owns one thing well: the **structure / knowledge / process** spine.
 
@@ -102,7 +102,7 @@ Strata's whole job is to keep the right tool in the right lane:
 |---|---|---|
 | **Structure** | What a correct repo looks like — folders, layers, naming, anti-patterns | `PROJECT_PATTERN.md` + a per-stack `SCALABLE_ARCHITECTURE_REFERENCE.md` (the architecture canon) |
 | **Knowledge** | What *is* true about the project — curated, git-versioned, queried first | `wiki/` (managed by `/strata:wiki-ingest`) — complementary to claude-mem's episodic memory |
-| **Process** | How work enters the repo and how it's verified | `/strata:feature` → office-hours → plan → **council** → TDD |
+| **Process** | How work enters the repo and how it's verified | `/strata:feature` — ceremony scaled to the task (trivial / standard / risky) |
 | **Token economy** | Fewer tokens per session | RTK (command output), claude-mem (smart-Read), Caveman (prose, optional) |
 
 **Knowledge, the key distinction:** `wiki/` is the *reviewed, project-scoped, in-git* truth that
@@ -153,7 +153,7 @@ so Strata declares and checks them rather than bundling them.
 
 | Tool | Role in Strata | Required? |
 |---|---|---|
-| [Superpowers](https://github.com/obra/superpowers) | The brainstorming / TDD / code-review skills that `/strata:feature` wraps | Recommended (the PROCESS layer leans on it) |
+| [Superpowers](https://github.com/obra/superpowers) | Optional heavier discipline on risky work — Strata's flow is native and complete without it | Optional |
 | [claude-mem](https://github.com/thedotmack/claude-mem) | Cross-session episodic memory + smart-Read truncation | Recommended |
 | RTK | Bash hook that compacts command output (60–90% fewer tokens on dev ops) | Optional |
 | Caveman | Compresses prose output (~4–10% overall session savings) | Optional, low priority |
@@ -203,7 +203,9 @@ All skills are invoked as `/strata:<name>` and are also auto-suggested by Claude
 | `/strata:audit` | **Read-only** ranked drift report: structure vs canon · wiki-lint · doc freshness · dead code | `docs/superpowers/specs/<date>-strata-audit.md` |
 | `/strata:refactor` | Close audit findings safely — per finding → dated spec+plan → TDD | Green, behavior-preserving changes |
 | `/strata:office-hours` | YC-partner interrogation of a feature idea (6 forcing questions) | A design doc |
-| `/strata:feature` | Full feature flow: office-hours → plan → council → TDD → review → finish | A shipped, reviewed feature |
+| `/strata:feature` | Adaptive feature flow: triage → (grill) → lean plan → risk-matched council → build with evidence → finish → wiki+audit | A shipped feature, with ceremony matched to its risk |
+| `/strata:lean-plan` | Write a complete-but-lean plan: intent, constraints, success criterion; references real code instead of pasting it | An inline plan, or `docs/superpowers/plans/<date>-<slug>-plan.md` when risky |
+| `/strata:light-finish` | Wrap up a branch: confirm green, then merge / PR / keep / discard, and clean up | An integrated (or cleanly parked) branch |
 | `/strata:autoplan` | Run the review council automatically; surface only taste calls & disagreements | A build-ready plan |
 | `/strata:wiki-ingest` | The karpathy `ingest` / `query` / `lint` protocol over docs → raw → wiki | Updated `wiki/` |
 

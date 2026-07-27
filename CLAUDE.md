@@ -12,6 +12,7 @@ staged refactor. **State:** v0.2.0 — AI-led onboarding shipped. This repo dogf
 | Entry skill `using-strata` routes to all commands | ✅ |
 | Skills: init / adopt / audit / refactor / feature / office-hours / autoplan / wiki-ingest / onboard | 🔄 building |
 | One-line AI-led onboarding (BOOTSTRAP.md + install.sh + /strata:onboard) | ✅ verified end-to-end on v0.2.0 |
+| Adaptive ceremony in /strata:feature (triage + tiers + effort + lens-selected council) | 🔄 building |
 | Council subagents (ceo / eng / design / cso) | 🔄 building |
 | Templates: core + python-fastapi stack pack | ✅ seeded from a production project, genericized |
 | Verified by adopting a real external project | ⬜ pending (user will test elsewhere) |
