@@ -33,13 +33,13 @@ run it silently.
 
 | Companion | Detect | If missing → install | Payoff |
 |---|---|---|---|
-| **Superpowers** — strongly recommended | are `superpowers:*` skills available? | `/plugin install superpowers@claude-plugins-official` (if not found, first `/plugin marketplace add anthropics/claude-plugins-official`) | The engine of `/strata:feature`: disciplined plan → TDD → code-review → finish. Without it those phases run ad-hoc, with weaker rigor. |
+| **Superpowers** — optional power-up | are `superpowers:*` skills available? | `/plugin install superpowers@claude-plugins-official` (only if you want the heavier discipline) | Strata's flow is native and complete without it; installed, it can add extra plan/review rigor on `risky` work. Not required. |
 | **claude-mem** — optional, high upside | are `claude-mem` MCP tools available? | `/plugin marketplace add thedotmack/claude-mem` then `/plugin install claude-mem@thedotmack` | Cross-session episodic memory ("did we solve this before?") + smart-Read: navigate code **by structure** instead of slurping whole files into context — far less re-reading each session, faster orientation in the project. |
 | **RTK** — optional | `command -v rtk` | not a plugin — install per `${CLAUDE_PLUGIN_ROOT}/reference/tool-integration.md` (a Rust binary + a Bash hook) | Compacts noisy command output (builds, tests, git) before it reaches context — typically **60–90% fewer tokens on dev operations**, at zero added cost. |
 
 Report a present/missing line per companion. For each missing one, show its command + payoff and ask
-whether to set it up now or proceed. Recommend installing Superpowers before `/strata:feature`;
-claude-mem and RTK are pure upside (tokens + navigation) and can be added anytime.
+whether to set it up now or proceed. Superpowers is optional — the native flow needs nothing
+installed; claude-mem and RTK are pure upside (tokens + navigation) and can be added anytime.
 
 ## Step 4 — Plan, then approval
 
