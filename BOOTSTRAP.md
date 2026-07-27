@@ -64,6 +64,11 @@ You *may* run that installer yourself only if the user explicitly authorizes it 
 prompt, or the session isn't in auto-mode). If the guard denies the write, **stop and fall back to
 the Primary path** — do not try to bypass it.
 
+**In Cursor / VS Code / other IDE extensions, prefer this terminal installer.** There the in-chat
+`/plugin install` + `/reload-plugins` route is unreliable — the extension often does not hot-pick a
+newly enabled plugin. Writing the config with `install.sh` and then **fully restarting the IDE** (see
+Step 4) is the reliable path.
+
 **verify:** the user confirms the plugin installed (or you read `~/.claude/settings.json` and see
 `enabledPlugins["strata@strata"] = true`). It only takes effect after the reload in Step 4.
 
@@ -87,13 +92,17 @@ Edit the JSON to the real values you found in Steps 1–2. **verify:** `.strata/
 You cannot reload plugins yourself — it is a user action. Print EXACTLY this block, then stop:
 
 > ✅ Strata is in your config. Two steps left:
-> 1. Run `/reload-plugins` (or restart Claude Code).
+> 1. Reload so the commands load: in **terminal Claude Code** run `/reload-plugins` (or restart the
+>    session); in **Cursor / VS Code / an IDE extension** fully restart the app (quit + reopen, or
+>    "Developer: Reload Window") — `/reload-plugins` alone often isn't enough there.
 > 2. Send: `/strata:onboard`
 >
 > If `/strata:onboard` isn't found, first run `/plugin marketplace add Old-G/strata` and
 > `/plugin install strata@strata`, then `/strata:onboard`.
 
 (Match the user's language if they wrote in another tongue. Russian variant: ✅ Strata записана в
-конфиг. 1) Выполни `/reload-plugins` (или перезапусти Claude Code). 2) Вставь `/strata:onboard`.
-Если не найден — сначала `/plugin marketplace add Old-G/strata` и `/plugin install strata@strata`,
-затем `/strata:onboard`.)
+конфиг. 1) Перезагрузи, чтобы команды появились: в **терминальном Claude Code** — `/reload-plugins`
+(или перезапусти сессию); в **Cursor / VS Code / расширении IDE** — полностью перезапусти приложение
+(закрыть и открыть, или «Developer: Reload Window»), одного `/reload-plugins` там обычно мало.
+2) Вставь `/strata:onboard`. Если не найден — сначала `/plugin marketplace add Old-G/strata` и
+`/plugin install strata@strata`, затем `/strata:onboard`.)
