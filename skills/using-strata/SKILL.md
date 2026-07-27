@@ -36,7 +36,9 @@ solve Y last week", that's claude-mem.
 | Check the repo against its own rules | `/strata:audit` | Read-only ranked drift report: structure vs canon, wiki-lint, doc freshness, dead code |
 | Fix the debt the audit found, safely | `/strata:refactor` | Per finding -> dated spec+plan -> Superpowers TDD, one verifiable step at a time |
 | Explore / pressure-test a new feature idea | `/strata:office-hours` | YC-partner interrogation (6 forcing questions) -> design-doc; then the council |
-| Run the full feature flow | `/strata:feature` | office-hours -> writing-plans -> council review -> TDD -> review -> finish |
+| Run the full feature flow | `/strata:feature` | Adaptive-ceremony feature flow — classifies the task (trivial/standard/risky) and runs only the ceremony that fits, behind a safety floor |
+| Write a plan without the ceremony | `/strata:lean-plan` | Complete-but-lean plan: intent, constraints, success criterion; points at real references instead of pasting code |
+| Close out a finished branch | `/strata:light-finish` | Wrap up a branch: confirm green, then merge / PR / keep / discard, and clean up |
 | Auto-run the review council | `/strata:autoplan` | Runs the 4 reviewer subagents, auto-decides mechanical calls, surfaces only taste/disagreement |
 | Update / query the knowledge wiki | `/strata:wiki-ingest` | The karpathy ingest / query / lint protocol over docs->raw->wiki |
 
