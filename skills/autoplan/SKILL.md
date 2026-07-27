@@ -15,18 +15,24 @@ Input is a path to a plan or design doc. If none is given, use the most recent f
 
 **verify:** You have the doc's path and content, and a yes/no on frontend.
 
+## Pick the lenses the risk calls for
+
+Do not run a fixed panel by default. Choose the reviewers whose lens matches the plan's actual risk: security, secrets, or PII → `strata-cso-review` · frontend or UX surface → `strata-design-review` · architecture, complexity, or reversibility → `strata-eng-review` · scope or "is this the right problem" → `strata-ceo-review`. One or two is the norm; use the full panel only when several of those risks genuinely coincide. Skip the council entirely for trivial or routine changes — it exists for an independent adversarial read of a risky surface, not for a second pass over ordinary work.
+
+When you brief a reviewer, ask it to **report everything it finds and let the synthesis step filter**. Telling a reviewer to "only report high-severity issues" or "be conservative" makes it report less.
+
 ## Step 2 — Spawn the council IN PARALLEL
 
-Following `superpowers:dispatching-parallel-agents`, spawn the reviewer subagents in a SINGLE message with multiple `Agent` calls (no shared state, fully parallel):
+Following `superpowers:dispatching-parallel-agents`, spawn the selected reviewer subagents in a SINGLE message with multiple `Agent` calls (no shared state, fully parallel):
 
-- `strata-ceo-review` — demand reality, wedge, business value (always)
-- `strata-eng-review` — feasibility, complexity, failure modes, missing steps (always)
-- `strata-cso-review` — security, data handling, access, blast radius (always)
+- `strata-ceo-review` — demand reality, wedge, business value
+- `strata-eng-review` — feasibility, complexity, failure modes, missing steps
+- `strata-cso-review` — security, data handling, access, blast radius
 - `strata-design-review` — UX/IA, accessibility — **only if frontend**
 
 Give each the doc path and ask for: a verdict, a list of concrete proposed changes, and any point where they disagree with the human's stated intent. Wait for all to return.
 
-**verify:** Every required reviewer returned a verdict + change list.
+**verify:** Every selected reviewer returned a verdict + change list.
 
 ## Step 3 — Classify every surfaced decision
 
