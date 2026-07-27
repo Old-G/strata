@@ -34,7 +34,7 @@ solve Y last week", that's claude-mem.
 | Start a brand-new project | `/strata:init` | Scaffolds the full layout from templates (skip-list aware) |
 | Bring Strata to an existing repo | `/strata:adopt` | Incremental, reversible: infers stack, writes CLAUDE.md + PROJECT_PATTERN, stands up wiki, installs hooks, emits an adoption report |
 | Check the repo against its own rules | `/strata:audit` | Read-only ranked drift report: structure vs canon, wiki-lint, doc freshness, dead code |
-| Fix the debt the audit found, safely | `/strata:refactor` | Per finding -> dated spec+plan -> Superpowers TDD, one verifiable step at a time |
+| Fix the debt the audit found, safely | `/strata:refactor` | Per finding -> dated spec+plan -> test-first, one verifiable step at a time |
 | Explore / pressure-test a new feature idea | `/strata:office-hours` | YC-partner interrogation (6 forcing questions) -> design-doc; then the council |
 | Run the full feature flow | `/strata:feature` | Adaptive-ceremony feature flow — classifies the task (trivial/standard/risky) and runs only the ceremony that fits, behind a safety floor |
 | Write a plan without the ceremony | `/strata:lean-plan` | Complete-but-lean plan: intent, constraints, success criterion; points at real references instead of pasting code |
