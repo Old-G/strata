@@ -75,8 +75,10 @@ curl -fsSL https://raw.githubusercontent.com/Old-G/strata/main/install.sh | sh
    what to run: `/plugin install strata@strata` (plus `/plugin marketplace add Old-G/strata` first,
    only if the marketplace isn't registered yet). Prefer the terminal? The `curl … | sh` above writes
    the same config without any slash commands.
-2. **You reload, then launch the conductor.** Run `/reload-plugins` (or restart Claude Code) — new
-   plugin commands only activate after a reload — then send `/strata:onboard`.
+2. **You reload, then launch the conductor.** In **terminal Claude Code**, run `/reload-plugins` (or
+   restart the session). In **Cursor / VS Code / other IDE extensions**, fully restart the app (quit
+   and reopen, or "Developer: Reload Window") — the extension often won't pick up a newly enabled
+   plugin from `/reload-plugins` alone. Then send `/strata:onboard`.
 3. **`/strata:onboard` takes over and leads the setup.** It detects whether the repo is **new**
    (→ runs `/strata:init`) or **existing** (→ runs `/strata:adopt`), reports which optional tools you
    have (Superpowers, claude-mem, RTK), proposes a plan, runs it to a green state, then produces your
