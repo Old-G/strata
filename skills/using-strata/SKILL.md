@@ -17,7 +17,7 @@ it composes best-of-breed tools and owns one thing: the **structure / knowledge 
 |---|---|---|
 | **STRUCTURE** | "What a correct repo looks like" — folders, layers, naming, anti-patterns | `templates/core/PROJECT_PATTERN.md` + `templates/stacks/<stack>/SCALABLE_ARCHITECTURE_REFERENCE.md` |
 | **KNOWLEDGE** | "What IS true about this project" (durable, git-versioned, curated) | `wiki/` (managed by `wiki-ingest`) — distinct from claude-mem (automatic, machine-local, episodic) |
-| **PROCESS** | "How work enters the repo and how we verify it's done" | `feature` + the review `council` (wraps Superpowers + gstack-derived personas) |
+| **PROCESS** | "How work enters the repo and how we verify it's done" | `feature` — native adaptive flow: ceremony scaled to the task (trivial/standard/risky), with a risk-matched `council`; Superpowers optional |
 | **TOKEN ECONOMY** | "Spend fewer tokens per session" | RTK (command output), claude-mem (smart-Read), Caveman (prose, optional) — declared, not bundled |
 
 **Knowledge layer, critical distinction:** `wiki/` is the *reviewed, project-scoped, in-git* truth
@@ -44,16 +44,23 @@ solve Y last week", that's claude-mem.
 
 ## The review council (PROCESS layer)
 
-Defined as **parallel subagents** in `agents/` (they may disagree; a synthesis step surfaces conflicts
-to the human rather than smoothing them over):
+The council is **risk-triggered and lens-selected** — it is not a standing panel on every plan. It
+runs only on work triaged as **risky**, and then only the **1-2 reviewers whose lens matches the
+actual risk**. The full panel runs only when several risks coincide. Its job is an independent
+adversarial read of a risky surface, not a second pass over ordinary work.
 
-- `strata-ceo-review` — scope, the 10x version, "right problem?", failure modes
-- `strata-eng-review` — architecture, data flow, edge cases, **complexity smell** (8+ files / 2+ new classes -> STOP), tests
-- `strata-design-review` — UX (only when the stack has a frontend)
-- `strata-cso-review` — OWASP Top-10 + STRIDE
+| Risk in the work | Lens to run | Checks |
+|---|---|---|
+| Security, auth, secrets, PII | `strata-cso-review` | OWASP Top-10 + STRIDE |
+| Frontend / user-facing UX | `strata-design-review` | UX (only when the stack has a frontend) |
+| Architecture, data flow, complexity | `strata-eng-review` | Edge cases, **complexity smell** (8+ files / 2+ new classes -> STOP), tests |
+| Scope, "is this the right problem?" | `strata-ceo-review` | Scope, the 10x version, failure modes |
+
+Defined as **parallel subagents** in `agents/`: whichever lenses are selected run in parallel via the
+Agent tool. They may disagree — with each other and with the human — and a synthesis step surfaces
+conflicts rather than smoothing them over.
 
 `/strata:office-hours` runs **interactively in the main session** (a dialogue can't be parallelized).
-The reviewers run in parallel via the Agent tool.
 
 ## Operating rules in a Strata project
 
