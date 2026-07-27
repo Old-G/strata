@@ -1,123 +1,142 @@
 # Design — Adaptive ceremony for `/strata:feature` (Strata v0.3)
 
-**Date:** 2026-07-21
+**Date:** 2026-07-21 (revised same day after the Claude-5 / Opus-5 guidance review)
 **Status:** DRAFT — approved in brainstorm; pending spec review → plan
-**Topic:** Make Strata's feature flow scale its process to the size and risk of the task, so trivial work is fast and cheap while risky work still gets full guardrails — automatically, without the human having to choose.
+**Topic:** Scale the feature flow to the size and risk of the task — automatically — so trivial work is fast and cheap while risky work still gets real guardrails. Built for frontier models: **less scaffolding, not more.**
 
 ---
 
 ## 1. Problem & the bet
 
-Heavy, fixed-ceremony workflows (Superpowers and peers) apply the same full pipeline — spec → plan → per-step TDD → per-step review — to every task. On frontier models this is widely seen as over-engineered and token-hungry for small work ("pay like a Ferrari, drive like a Lada"); even Superpowers' own author pivoted to a lighter v6 (~60% cheaper, review loops removed after "no measurable quality gain"). The opposite pole (raw vibe-coding, disposable-plan loops) is cheap but has no guardrails.
+Fixed-ceremony workflows (Superpowers and peers) run the same pipeline — spec → plan → per-step TDD → per-step review — on every task. On frontier models that is over-engineered and token-hungry for small work; Superpowers' own author shipped a lighter v6 (~60% cheaper) after finding review loops gave "no measurable quality gain." The opposite pole (vibe-coding, disposable-plan loops) is cheap but unguarded.
 
-**The market gap (validated by research):** nobody **auto-calibrates** ceremony to the task. Every tool makes the *human* decide when to go light vs full. And the landscape splits into "simple but no guarantees" vs "high-quality but heavy/expert-only" — with little in between.
+**The market gap (validated by research):** nobody **auto-calibrates** ceremony to the task — every tool makes the *human* choose. And the field splits into "simple but no guarantees" vs "high-quality but heavy/expert-only," with little in between.
 
-**Strata's bet:** own the empty middle — *an adaptive-ceremony framework that is simple enough for a non-expert ("vibe coder") but keeps senior-grade guardrails*, built as thin glue over native Claude Code primitives plus Strata's wiki / architecture-canon / review-council spine.
+**Strata's bet:** own the empty middle — *adaptive ceremony: simple enough for a non-expert, with senior-grade guardrails* — as thin glue over native Claude Code primitives plus Strata's wiki / canon / council spine.
 
-**Acceptance (one sentence):** a trivial change runs end-to-end without council or per-step TDD yet is still verified, safe, and reversible; a task touching a risk surface gets the full flow **even if it looks small** — and the framework, not the human, made that call.
+**Acceptance:** a trivial change runs end-to-end without council or plan ceremony, yet still produces evidence it works and stays reversible; a task touching a risk surface gets the full treatment **even if it looks small** — and the framework, not the human, made the call.
 
 ---
 
-## 2. Decisions locked (from brainstorm, 2026-07-21)
+## 2. Guiding constraint — build for frontier models
+
+This release follows Anthropic's current guidance (Claude-5 context engineering + the Opus 5 prompting guide). It is the reason v0.3 **removes** machinery rather than adding it:
+
+- **Don't over-constrain.** Anthropic removed >80% of Claude Code's system prompt "with no measurable loss." State intent; let the model judge.
+- **Don't instruct self-verification.** *"Claude Opus 5 verifies its own work without being told to. If your prompt contains explicit verification instructions … remove them: instructions like these cause over-verification … and removing them reduces wasted tokens with no loss in quality. The same applies to legacy harness scaffolding that adds separate verification steps."*
+- **Don't use subagents to double-check your own work.** Delegate only for "large tasks that are genuinely independent and parallelizable."
+- **Effort is the primary cost lever.** `low`/`medium` give strong quality at a fraction of the tokens; step up for demanding work.
+- **Complete spec up front, then leave it alone.** Opus 5 "performs best when given the complete task specification up front and left to run."
+- **Progressive disclosure, no repetition, design over examples.** Short `SKILL.md`; detail in `sections/` loaded only when relevant; each instruction in exactly one authoritative place.
+
+**The distinction that reconciles our "evidence" rule with the above:** *telling the model to double-check itself* is banned scaffolding; *requiring real evidence* (run the test, show the output) is ground truth and stays. We ask for **proof, not reminders**.
+
+---
+
+## 3. Decisions locked
 
 | Decision | Choice |
 |---|---|
-| Scope | All-in, unified around **adaptive ceremony** (also covers lean intent-spec/plan + Superpowers decoupling as consequences) |
-| Who decides the tier | **Auto-classify + transparent override** — AI classifies, shows tier + why + what it'll skip, proceeds without a gate; human can bump up/down anytime |
-| Non-negotiable floor | All four, calibrated (see §5) |
-| Architecture | **Single tiered `/strata:feature`** — a Phase 0 triage + a tier→phase table; no separate config file (YAGNI) |
 | Tiers | 3 — `trivial` / `standard` / `risky` |
-| Process-layer ownership | **L2 — Strata owns a small, first-class, lean process spine** (lean-plan · adaptive-verify · light-finish), tuned for tiers + frontier models. Superpowers is demoted from a recommended prerequisite to an **optional power-up**. Adapt the *ideas* (MIT + attribution), never fork the code. |
-| Version | 0.3.0 (minor — significant feature) |
+| Who decides | **Auto-classify + transparent override** — AI shows tier + why + what it skips, proceeds without a gate; human can bump anytime |
+| Floor | Evidence · risk auto-escalation · drift-close · git safety (§5) |
+| Effort policy | Per tier — the main token lever (§6) |
+| Council | **Risk-triggered, lens-selected** — not a fixed panel (§7) |
+| Think phase | office-hours upgraded with grill-style questioning (§8) |
+| Plan | Complete-but-lean, high-fidelity references, no invented code dumps (§9) |
+| Owned skills | `lean-plan` + `light-finish`. **Verification is NOT a skill** — folded into `feature` as a short evidence-cadence block (avoids verification scaffolding) |
+| Superpowers | Optional power-up, never required |
+| Version | 0.3.0 |
 
 ---
 
-## 3. Tiers
+## 4. Tiers & Phase 0 triage
 
-- **trivial** — small, well-understood change: ~1–2 files, no new dependencies, no risk surface, no architectural change, unambiguous ask.
-- **standard** — a normal feature/change: several files, maybe one new dependency, real logic, but bounded and no high-risk surface.
-- **risky** — large / novel / dangerous: many files or a new subsystem, a significant new external dependency, a **risk surface** (auth, secrets, PII, money, external/untrusted input, data migration, public API), an architectural shift, or ambiguous requirements.
+**Tiers.** `trivial` — ~1–2 files, no new dependency, no risk surface, no architectural change, unambiguous. `standard` — several files, maybe one dependency, real but bounded logic. `risky` — many files / new subsystem, significant new dependency, **any risk surface**, architectural shift, or an ambiguous ask.
 
-## 4. Phase 0 — Triage (new; always runs)
+**Risk surfaces (force `risky`):** auth/authz · secrets/credentials · PII · money/billing · external or untrusted input · data migration / destructive DB ops · public API contract · concurrency · anything the user calls security-sensitive.
 
-The classifier reads signals — files/diff scope, new dependencies, risk-surface keywords, rough size, and clarity of the request — and emits: **tier + one-line rationale + what it will skip.** It then proceeds (no confirmation gate). The human can say "go higher / lower" at any point and the flow re-scales.
+**Phase 0** reads cheap signals (file scope, new deps, risk keywords, size, clarity), emits **tier + one-line why + what's skipped**, and proceeds. Bias **up** on doubt. Rubric lives in `skills/feature/sections/triage.md` (progressive disclosure).
 
-- **Auto-escalation (floor #2):** any risk-surface hit forces at least `risky`, regardless of apparent size.
-- **Ambiguity → up:** if the ask isn't clear enough to name a success criterion, bump toward `standard`/`risky` (which run office-hours).
-- The rubric (signals → tier) lives in `skills/feature/sections/triage.md` so `SKILL.md` stays focused.
+## 5. The floor — always, every tier
 
-## 5. The floor (always, calibrated by tier)
+1. **Evidence** — the change is demonstrated to work by something real (the test/command run and its output), scaled by tier. Not "remember to verify" — *show the proof*.
+2. **Risk auto-escalation** — a risk surface forces `risky`, however small the change looks.
+3. **Drift-close** — if docs or a documented fact changed, `/strata:wiki-ingest` them; otherwise no-op.
+4. **Git safety** — branch, reversible commits, never a silent write to the default branch.
 
-1. **Verify per change** — always; scales: `trivial` = a quick smoke/observable, `risky` = full tests. Core "evidence before assertion."
-2. **Risk-surface auto-escalation** — always, flat; makes auto-classification safe (can't under-shoot a dangerous task).
-3. **Drift-close (wiki/docs)** — always *checked*; acts only if docs or a documented fact were touched (a no-op on pure trivial code).
-4. **Git safety** — always, flat: work on a branch, reversible commits, never a silent write to the default branch.
+## 6. Effort policy (the main token lever)
 
-Net: even `trivial` guarantees it works (verify), can't be silently dangerous (escalation), can't silently rot docs, and is reversible. That is the "senior guardrails at vibe-coder UX" promise.
+Per Anthropic, effort — not ceremony surgery — is the primary control on cost:
 
-## 6. Tier → phase mapping (the core)
+| Tier | Effort | Rationale |
+|---|---|---|
+| trivial | `low` | Strong quality at a fraction of tokens |
+| standard | `medium` | Default working level |
+| risky | `high` (→ `xhigh` for demanding agentic/coding work) | Where depth actually pays |
+
+Prefer thinking enabled at low effort over disabling thinking.
+
+## 7. Tier → phases
 
 | Phase | trivial | standard | risky |
 |---|---|---|---|
-| 1 Think (office-hours) | skip — restate the ask in one line | light: confirm intent + a success criterion (no full 6-question interrogation) | full `/strata:office-hours` → design doc (or require an existing one) |
-| 2 Plan | skip — hold the step-list inline | short plan: bullet steps, each with a `verify`; **no inlined code** | full dated plan — intent + constraints + per-step verifies, **not** code dumps |
-| 3 Council | skip | scaled: one pass — `eng` (+ `cso` if any risk touch); surface disagreements | full panel — `ceo`/`eng`/`cso` (+ `design` if the stack has a frontend) |
-| 4 Build | direct implement + smoke verify | test-first on the core logic (not every line) | full per-step TDD |
-| 5 Code review | self-review + the floor verify | **batched review of the whole diff once**, focused on risky spots | full code review; resolve findings with evidence |
-| 6 Finish | commit on a branch | branch + merge/PR per the human's choice | + an explicit integration gate |
-| 7 Drift-close | no-op unless docs touched | `wiki-ingest` changed docs + a scoped mini-audit | full `wiki-ingest` + mini-audit |
+| Think | skip — restate the ask in one line | light grill: recommend-and-confirm intent + success criterion (§8) | `/strata:office-hours` — grill branches to convergence → design doc |
+| Plan | skip | `lean-plan`, short | `lean-plan`, complete-but-lean (§9) |
+| Council | none | none by default | **1–2 risk-matched lenses** (below) |
+| Build | implement; produce evidence (floor #1) | implement; evidence on the core | implement; evidence per meaningful step |
+| Finish | `light-finish` | `light-finish` | `light-finish` + explicit gate |
+| Drift-close | floor #3 | wiki-ingest + scoped mini-audit | wiki-ingest + mini-audit |
 
-**Verification cadence (the dial):** `trivial` = one smoke at the end; `standard` = test the core + one review of the whole diff; `risky` = verify per step + full review. This is the direct answer to "tests + review after every trivial step."
+**Council — risk-triggered, lens-selected.** Do not run a fixed panel, and do not use it to double-check ordinary work. On `risky`, pick the **1–2 lenses that match the actual risk**: security/PII → `strata-cso-review` · frontend/UX → `strata-design-review` · architecture/complexity → `strata-eng-review` · scope/"right problem" → `strata-ceo-review`. Full panel only when several risks genuinely coincide. Its value is **independent adversarial perspective on a risky surface** — something same-context self-review can't supply — not routine verification. When prompting a reviewer, ask it to **report everything and filter afterwards** (telling it "only high-severity" makes it literally report less).
 
-## 7. Lean, intent-first spec & plan
+## 8. Grill-style questioning (adapted from grill-me)
 
-Even at `risky`, the plan carries **intent + constraints + per-step verifies — not inlined code and not a dictated library/framework choice.** The model chooses the implementation. This answers both "overengineering on the spec" and "the plan bloats past what the model can hold in context." office-hours runs only for `risky`/ambiguous; `trivial`/`standard` skip or lightly touch it.
+Folded into `/strata:office-hours` rather than shipped as a duplicate skill:
 
-## 8. Own the process spine; Superpowers becomes an optional power-up (L2)
+1. **Every question carries your recommended answer** — one question at a time, with a recommendation so a non-expert can confirm rather than invent. The decision stays the user's; wait for the answer.
+2. **Grill to convergence, scaled by tier** — on `risky`, walk branch by branch until the possibility space collapses to one clearly-specified idea; on `standard`, a short recommend-and-confirm pass suffices. Determine yourself whatever you can; bring only genuine decisions.
+3. **Do nothing until the user confirms**, and prefer one thin working slice first.
 
-Our adaptive-lean bet is philosophically **opposite** to Superpowers' heavy, per-step, code-in-the-plan style — so *wrapping* it on `risky` pulls us back toward the paradigm we're escaping. Strata therefore **owns its own small, first-class, lean process spine**, tuned for the tiers and for frontier models. We already own the highest-value pieces (office-hours > brainstorming; the council > code-review); this closes the loop by owning the remaining three as lean, native skills:
+## 9. Plan: complete but lean, with high-fidelity references
 
-- **`lean-plan`** — produce the tier-appropriate plan: intent + constraints + per-step `verify`, **no inlined code, no dictated libraries** (this is §7, made a first-class owned capability instead of `superpowers:writing-plans`).
-- **`adaptive-verify`** (TDD-lite) — apply the §6 verification cadence: `trivial` = one smoke; `standard` = test the core + one batched diff review; `risky` = test-first per step + full review. Owns "how testing/review is used," not the test runner.
-- **`light-finish`** — verify green → merge/PR/keep/discard per the human's choice → clean up the branch (a lean take on finishing-a-development-branch).
+Opus 5 works best "given the complete task specification up front and left to run" — so the goal is **complete, not minimal**, while staying free of noise:
 
-**Superpowers is now optional, not a prerequisite.** When installed, its skills MAY be used as accelerators on `risky` work for teams that want the heavier discipline; when absent (the common case), the native spine is the default and full path — nothing degrades. This reverses the 0.2.1 messaging that pushed installing Superpowers: v0.3 stops recommending it as needed (§9 updates onboarding/README accordingly).
+- Carry **intent + constraints + the success criterion**; do not dictate libraries or paste invented implementation code.
+- **Prefer high-fidelity references over prose** ("rich references over simple specs"): a failing test that defines the behavior, a pointer to real code to mirror, an acceptance rubric. **Point at real artifacts; don't invent fake ones.**
+- Keep it short enough to hold in context.
 
-**Guardrails on this decision (so it stays "thin glue," not a fork):**
-- We adapt the *patterns* (red-green discipline, plan rigor, review) into new lean skills; we do **not** copy or vendor Superpowers' code. Superpowers is MIT — attribute the adapted ideas, as we already do for gstack.
-- The owned surface stays **small**: exactly the three skills above. We do NOT rebuild Superpowers' breadth.
-- The hard rule "don't reimplement memory / token-proxying / testing" still holds — that's about claude-mem, RTK, and test *runners*, not about owning our own process orchestration. We keep composing claude-mem, RTK, and native Claude Code subagents/skills/plan-mode.
-- "Higher effort / better result" comes from the adaptive *design* (right verification cadence, the floor, letting frontier models self-direct), not from ownership per se. Ownership buys us the control to tune it.
+## 10. Superpowers
 
-## 9. Components / where it lives
+Native paths are the default and complete at every tier. If `superpowers:*` is installed it MAY be used as an accelerator on `risky` work; absent (the common case), nothing degrades. Not a prerequisite — onboarding stops pushing it.
 
-- **Rewrite** `skills/feature/SKILL.md` around Phase 0 triage + the tier→phase table. Keep it focused; push the classifier rubric to `skills/feature/sections/triage.md`.
-- **New owned process-spine skills (§8):** `skills/lean-plan/SKILL.md`, `skills/adaptive-verify/SKILL.md`, `skills/light-finish/SKILL.md` — small, lean, tier-aware. `feature` delegates to these instead of to `superpowers:*`. Each stays focused; heavy detail (if any) goes to a `sections/` subfile.
-- office-hours / autoplan / council remain their own skills, invoked **conditionally by tier** (not always).
-- **Demote Superpowers in onboarding:** update `BOOTSTRAP.md` Step 1 + `skills/onboard/SKILL.md` Step 3 so Superpowers moves from "strongly recommended" to "optional power-up (heavier discipline for teams that want it)"; the native spine needs nothing installed. (Reverses the 0.2.1 push.)
-- Update `skills/using-strata/SKILL.md` (routing note), `README.md` (adaptive-ceremony positioning + "own lean process engine, not a wrapper"), `CLAUDE.md` (phase table), `CHANGELOG.md` → `[0.3.0]`, and bump `plugin.json` + `marketplace.json` to `0.3.0`.
-- **Attribution:** note in `CONTRIBUTING.md`/`README` credits that the lean process skills adapt *ideas* from Superpowers (MIT) and gstack — no vendored code.
-- No new config file, no new runtime — thin glue over native primitives (validated by research: bespoke machinery loses). The owned surface is deliberately just the three lean skills.
+## 11. Components
 
-## 10. Verify (acceptance for the redesign)
+- **Rewrite** `skills/feature/SKILL.md`: Phase 0 triage → floor → effort policy → tier→phase table → delegation. Includes a short **evidence-cadence** block (replaces a separate verify skill).
+- **New:** `skills/feature/sections/triage.md` (rubric), `skills/lean-plan/SKILL.md`, `skills/light-finish/SKILL.md`.
+- **Upgrade** `skills/office-hours/SKILL.md` with §8 grill behavior.
+- **Update** `skills/autoplan/SKILL.md` + the council agents' usage: lens selection, "report everything, filter after."
+- **Demote Superpowers** in `BOOTSTRAP.md` Step 1 and `skills/onboard/SKILL.md` Step 3.
+- **Docs:** `using-strata`, `README`, `CLAUDE.md`, `CONTRIBUTING` (attribution: ideas adapted from Superpowers/gstack/grill-me, no vendored code), `CHANGELOG` → `[0.3.0]`, bump both manifests to `0.3.0`.
+- No new config, no new runtime.
 
-1. A `trivial` task completes without council/full-TDD but still runs a verify and lands on a branch (reversible).
-2. A small task that touches a risk surface (e.g. auth or secrets) **auto-escalates to `risky`** and gets the full flow.
-3. A `standard` task gets a light plan + one batched review — **not** per-step review.
-4. Token usage on a `trivial` task is dramatically lower than the full flow (measure a before/after on one representative task).
-5. Override works: the human can force a tier up or down and the flow re-scales.
-6. With Superpowers absent (the default case), all tiers complete fully on the native spine; with it installed, `risky` MAY use it as an accelerator — nothing is blocked or degraded either way.
+## 12. Verify (acceptance)
 
-## 11. Out of scope (YAGNI)
+1. `trivial` completes with no council and no plan ceremony, still produces evidence and lands on a branch.
+2. A small risk-surface task **auto-escalates** to `risky`.
+3. `standard` gets a light plan and **no council by default**.
+4. On a `risky` security task, only the matching lens(es) run — not the full panel.
+5. Override works (human moves the tier; flow re-scales).
+6. Skills contain **no** "double-check / re-verify / add a verification step" scaffolding (grep) — only evidence requirements.
+7. Trivial-task token use is dramatically below the old full flow.
 
-- A tunable tiers **config file** (rejected — single skill for v0.3).
-- Extracting a reusable `strata:triage` skill (possible later once the classifier settles; inline for now).
-- Re-tiering `init`/`adopt`/`audit`/`refactor` — this spec is `/strata:feature` only (other commands can adopt triage later).
-- Auto-installing Superpowers (now optional; onboarding just mentions it).
-- **Forking or vendoring Superpowers' code** — explicitly rejected. We adapt *ideas* into three small lean skills; we do not copy its source or rebuild its breadth. The owned process surface is exactly `lean-plan` + `adaptive-verify` + `light-finish`.
+## 13. Out of scope (YAGNI)
 
-## 12. Risks
+- A tiers config file · a reusable `strata:triage` skill · re-tiering `init`/`adopt`/`audit`/`refactor` · auto-installing Superpowers · **forking or vendoring Superpowers' code** (adapt ideas only) · a separate `grill` skill (would duplicate office-hours) · a separate verification skill (would be the scaffolding Anthropic says to remove).
 
-- **R1 — misclassification.** A `risky` task read as `trivial` skips guardrails. Mitigation: the floor (esp. auto-escalation) + transparent tier display so the human catches an obvious mis-call + easy override. Bias the classifier to round **up** on doubt.
-- **R2 — "trivial" erodes into vibe-coding.** Mitigation: the floor is non-negotiable at every tier; `trivial` still verifies + is reversible.
-- **R3 — classifier adds its own overhead/tokens.** Keep Phase 0 cheap: a short rubric, a few signals, one short output — not a mini-analysis.
+## 14. Risks
+
+- **R1 — misclassification.** Mitigation: floor + auto-escalation + visible tier + easy override; bias up on doubt.
+- **R2 — `trivial` erodes into vibe-coding.** Mitigation: the floor holds at every tier (evidence + reversible).
+- **R3 — triage costs its own tokens.** Keep Phase 0 cheap: few signals, short output.
+- **R4 — under-guarding after cutting the council back.** Mitigation: risk surfaces are broad and force `risky` + a matched adversarial lens; the cut is to *routine* review, not to risky-surface review.
