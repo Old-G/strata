@@ -1,6 +1,6 @@
 ---
 name: audit
-description: Use when the user asks to audit, health-check, or find drift/rot/stale-code in a Strata repo; when "we keep adding features but forget the pattern"; before a refactor sprint; or on a schedule. Read-only — produces a ranked findings report, fixes nothing.
+description: Use when the repo needs a health check for drift, rot or stale code — 'check the project', 'find the drift', 'health check', «что-то грязно», «проверь проект», «наведи порядок», «где дрифт», «прогони аудит». Read-only — produces a ranked findings report and fixes nothing.
 ---
 
 # Strata Audit — drift detection (READ-ONLY)
@@ -175,3 +175,8 @@ address these — read-only, nothing was changed."
 
 If any check can't run (no git history, no wiki, lint script missing), say so
 explicitly in `Coverage` — do not silently skip and do not claim full coverage.
+
+## Do NOT use when
+
+- The user wants the findings FIXED, not listed — that is `refactor`. Audit is read-only.
+- The question is "how does X work / where does Y live" — that is a wiki query, not a drift scan.

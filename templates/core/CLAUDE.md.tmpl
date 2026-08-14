@@ -56,6 +56,16 @@ ENV: all vars use the `{{SERVICE_PREFIX}}_` prefix. See [.env.example](.env.exam
 
 ## Workflow
 
+Routing — say what you want in plain language (RU or EN); no commands to memorize:
+
+```
+build / change request        → feature flow (triage first)
+question about the project    → wiki query (wiki/index.md first, never grep-first)
+"done / wrap up / merge"      → light-finish (includes drift-close)
+"messy / check it / drift"    → audit
+raw or risky idea             → office-hours grill
+```
+
 - **Plan mode → approval → execute.** No silent changes.
 - Use `/strata:feature` for new work (office-hours → plan → review council → TDD).
 - Run `/strata:audit` periodically to detect drift from this CLAUDE.md and the architecture canon.

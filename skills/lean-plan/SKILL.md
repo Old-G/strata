@@ -1,6 +1,6 @@
 ---
 name: lean-plan
-description: Use when /strata:feature needs a plan for a standard or risky task, or when the user asks for a lean implementation plan. Produces a complete-but-lean plan — intent, constraints, success criterion — that points at high-fidelity references (a failing test, real code to mirror, a rubric) instead of pasting invented implementation code.
+description: Use when a change needs a written plan before implementation — 'write a plan', 'plan this out', 'how would we approach this', «напиши план», «распиши по шагам», «набросай план». Produces a complete-but-lean plan — intent, constraints, success criterion — pointing at high-fidelity references (a failing test, real code to mirror, a rubric) instead of pasting invented code.
 ---
 
 # lean-plan — complete, but free of noise
@@ -27,3 +27,8 @@ Where a real artifact can express the requirement, point at it instead of descri
 - **risky** — a dated file at `docs/superpowers/plans/<YYYY-MM-DD>-<slug>-plan.md`, same shape, short enough to hold in context.
 
 Return the plan (or its path) to `/strata:feature`.
+
+## Do NOT use when
+
+- The task is trivial (a one-line fix, a typo) — plan inline, do not write a file.
+- The user wants the whole flow executed, not just a plan — that is `feature`.

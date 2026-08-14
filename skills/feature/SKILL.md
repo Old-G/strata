@@ -1,6 +1,6 @@
 ---
 name: feature
-description: Use when someone wants to build a feature or change end-to-end and wants the process to fit the task — says "build X", "ship X properly", "run the flow", or has a design doc to carry to a merged change. Classifies the task (trivial/standard/risky) and runs only the ceremony that fits, behind a floor of evidence, risk escalation, drift-close and git safety.
+description: Use when the user wants something BUILT or CHANGED end-to-end — 'build X', 'add X', 'ship this properly', 'run the flow', «добавь», «сделай фичу», «надо чтобы», «запили», «поменяй поведение», «реализуй». Classifies the task (trivial/standard/risky) and runs only the ceremony that fits, behind a floor of evidence, risk escalation, drift-close and git safety.
 ---
 
 # Feature — adaptive-ceremony feature flow
@@ -54,3 +54,9 @@ Think → `/strata:office-hours` · Plan → `/strata:lean-plan` · Council → 
 ## Never
 
 Skip the floor. Treat a risk-surface task as trivial. Run the council on trivial or standard work by default. Claim something works without showing its evidence.
+
+## Do NOT use when
+
+- The user is asking a question about the project rather than requesting a change — that is a wiki query.
+- The change is already implemented and just needs integrating — that is `light-finish`.
+- The idea has not been pressure-tested and the user is unsure it should exist — that is `office-hours`.

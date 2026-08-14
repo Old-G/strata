@@ -1,6 +1,6 @@
 ---
 name: wiki-ingest
-description: Use when ingesting a docs/raw file into the wiki, querying the project knowledge base ("query <question>", "what does X do?"), or linting the wiki for drift — runs the docs→raw→wiki protocol from WIKI.md.
+description: Use for anything about project KNOWLEDGE — ingesting a changed doc, answering a question about the project, or linting the wiki. 'ingest raw/X', 'how does X work', 'where does Y live', 'why did we decide Z', «проингестим X», «как у нас работает X», «где лежит Y», «почему решили Z», «прогони линт вики». Runs the docs→raw→wiki protocol from WIKI.md — answers come from wiki/ first, never a fresh grep.
 ---
 
 # Wiki Ingest / Query / Lint
@@ -114,3 +114,8 @@ pages involved so the user can act. Do not change any wiki page during a lint.
 - `sources/` pages are **summaries**, not copies; full text stays in `raw/`.
 - Never edit `raw/` by hand. Change `docs/` → mirror → ingest.
 - Don't record ephemera (in-progress task state) — that lives in the plan, not the wiki.
+
+## Do NOT use when
+
+- The user wants code changed — that is `feature`; ingest only records knowledge.
+- You are being asked to fix wiki problems found by `lint` — lint reports, the human decides; never auto-fix.

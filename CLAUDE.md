@@ -2,7 +2,7 @@
 
 Claude Code plugin that packages a reusable way to run AI-assisted projects: AI-navigable wiki,
 architecture canon, spec→plan→TDD feature flow, a parallel review council, and drift detection with
-staged refactor. **State:** v0.3.0 — adaptive ceremony (triage + tiers + lens-selected council). This repo dogfoods its own patterns.
+staged refactor. **State:** v0.4.0 — deterministic wiki freshness (hook + commit gates) and native, command-free invocation. This repo dogfoods its own patterns, including its own `wiki/` and gates.
 
 ## Phase / status
 
@@ -14,6 +14,9 @@ staged refactor. **State:** v0.3.0 — adaptive ceremony (triage + tiers + lens-
 | One-line AI-led onboarding (BOOTSTRAP.md + install.sh + /strata:onboard) | ✅ verified end-to-end |
 | Adaptive ceremony in /strata:feature (triage + tiers + effort + lens-selected council) | 🔄 building |
 | Council subagents (ceo / eng / design / cso) | 🔄 building |
+| Enforcement layer (A1 Stop gate · A2 commit gate · A3 SessionStart inject · A4 drift-close) | ✅ 28/28 behavioural tests green |
+| Native invocation — EN+RU trigger specs on all 12 skills, routing map, coordinator | ✅ enforced by validate.sh |
+| This repo runs its own wiki pipeline (`wiki/` + `raw/` + gates) | ✅ bootstrapped 2026-08-15 |
 | Templates: core + python-fastapi stack pack | ✅ seeded from a production project, genericized |
 | Verified by adopting a real external project | ⬜ pending (user will test elsewhere) |
 
@@ -29,7 +32,9 @@ Claude Code plugin · Markdown skills + subagents · bundled shell/python templa
 - `templates/core/` — portable assets: `PROJECT_PATTERN.md`, `WIKI.md`, `wiki/` skeleton, `scripts/`, CLAUDE/ADR templates.
 - `templates/stacks/<stack>/` — per-stack architecture canon (`SCALABLE_ARCHITECTURE_REFERENCE.md`) + scaffold generator.
 - `reference/` — council personas, Diataxis doc-map, tool-integration (RTK / claude-mem / Caveman).
+- `templates/core/scripts/` — installed per target project: `sync_raw_mirror.sh`, `lib/pending_ingest.sh` (the one marker rule), `hooks/` (SessionStart + Stop), `pre-commit/` guards.
 - `docs/superpowers/{specs,plans}/` — Strata's own design specs & plans (dated).
+- `raw/`, `wiki/` — this repo's own knowledge layer; `.githooks/` — its own pre-commit guards.
 
 ## Commands (dev)
 
@@ -38,14 +43,28 @@ Claude Code plugin · Markdown skills + subagents · bundled shell/python templa
 claude --plugin-dir /Users/glebzavalov/Desktop/Projects/strata
 /reload-plugins                          # after editing skills/agents
 
-# validate manifests
-python3 -c "import json,sys; json.load(open('.claude-plugin/plugin.json')); json.load(open('.claude-plugin/marketplace.json')); print('manifests OK')"
+# validate everything (manifests, skills, gates behaviour)
+bash scripts/validate.sh
+bash scripts/test_p1_gates.sh            # 28 behavioural assertions on A1/A2/A3
+
+# enable this repo's own guards once per clone
+git config core.hooksPath .githooks
 
 # reference bundled assets from inside a skill at runtime
 #   ${CLAUDE_PLUGIN_ROOT}/templates/core/...
 ```
 
 ## Workflow
+
+Routing — say what you want in plain language (RU or EN); no commands to memorize:
+
+```
+build / change request        → feature flow (triage first)
+question about the project    → wiki query (wiki/index.md first, never grep-first)
+"done / wrap up / merge"      → light-finish (includes drift-close)
+"messy / check it / drift"    → audit
+raw or risky idea             → office-hours grill
+```
 
 - Plan mode → approval → execute. No silent changes.
 - Skill files are the product: keep each `SKILL.md` focused; push long detail into a `sections/` subfile or `reference/`.
@@ -56,6 +75,8 @@ python3 -c "import json,sys; json.load(open('.claude-plugin/plugin.json')); json
 
 - **Strata is thin glue.** Do not reimplement memory (claude-mem), token-proxying (RTK), or testing. Compose them.
 - **Skills never hand-edit a target project's `raw/`** — it is a mirror of `docs/`.
-- **No global PostToolUse hooks shipped by the plugin** — the docs→raw mirror is installed *per target project* by `init`/`adopt` (into that project's `.claude/settings.json`), so the plugin stays inert in unrelated repos.
+- **The plugin ships NO global hooks.** Every hook (PostToolUse mirror, SessionStart injection, Stop gate) and every pre-commit guard is a *template* installed into the target project by `init`/`adopt`, so the plugin stays inert in unrelated repos.
+- **One marker rule, one implementation.** Anything asking "does the wiki owe an ingest?" sources `scripts/lib/pending_ingest.sh`. Gates that disagree about what pending means are worse than no gates.
+- **Gates must be escapable and self-limiting.** The Stop gate blocks at most once per session and fails open when unsure; the commit gate honours `STRATA_SKIP_WIKI=1`.
 - **Skill/command names are namespaced** `/strata:<name>` — do not prefix skill dirs with `strata-` (the namespace already adds it). Subagents in `agents/` DO keep the `strata-` prefix to avoid collisions in target projects.
 - **CLAUDE.md ≤ 200 lines** here and in every template.
