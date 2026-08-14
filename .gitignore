@@ -13,3 +13,6 @@ __pycache__/
 *.log
 
 # NOTE: templates/ and reference/ ARE committed — they are the product.
+
+# Strata enforcement-layer state (session stamps, gate markers)
+.strata/
