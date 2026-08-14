@@ -1,6 +1,6 @@
 ---
 name: office-hours
-description: Use when someone wants to start a new feature/product/idea and needs it pressure-tested before any code or plan exists, says "I have an idea", "should we build X", "office hours", or jumps straight to building without proving demand. Interactive YC-partner interrogation that produces a design doc.
+description: Use when an idea needs pressure-testing BEFORE any plan or code exists — 'I have an idea', 'should we build X', «есть идея», «стоит ли это делать», «а нужно ли это вообще», «прогони мою идею», «поспорь со мной». Interactive YC-partner interrogation that ends in a design doc.
 ---
 
 # Office Hours — the Think phase
@@ -101,3 +101,9 @@ Point at the exact design-doc path in the handoff.
 ## Builder Mode (hackathons / side-projects)
 
 If the human says this is a hackathon, demo, or personal side-project, shift the lens: demand-proof matters less, **ship-ability and delight** matter more. Keep questions (a)/(d)/(e) (is it real / smallest version / have you seen the moment), soften (b)/(c)/(f), and bias every approach toward "demo-able by end of day." Mark the design doc `Mode: Builder` so downstream phases know the bar is shipping, not market validation.
+
+## Do NOT use when
+
+- The requirements are already clear and agreed — go to `lean-plan` or `feature`.
+- A design doc or plan already exists — that is `autoplan`.
+- The user wants code now and has said so; do not force an interrogation on a decided task.

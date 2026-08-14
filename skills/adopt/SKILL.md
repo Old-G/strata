@@ -1,6 +1,6 @@
 ---
 name: adopt
-description: Use when onboarding Strata into an EXISTING repo with real code/history, when the user says "adopt Strata here / add Strata to this project / make this repo self-describing / onboard our codebase". Incrementally and reversibly sets up structure + knowledge (CLAUDE.md, wiki, docs→raw mirror) and emits an adoption report for approval — it does NOT refactor code.
+description: Use to bring Strata into an EXISTING repo that already has code and history — 'adopt Strata here', 'add Strata to this project', 'make this repo self-describing', «внедри страту сюда», «подключи страту к проекту», «сделай репо самоописываемым», «онбордни нашу кодовую базу». Incremental and reversible — CLAUDE.md, wiki, docs→raw mirror and the knowledge gates, then an adoption report for approval. It does NOT refactor code.
 ---
 
 # /strata:adopt — onboard an existing repository
@@ -39,7 +39,11 @@ Skip if Phase 1 chose the §9 skip-list (no AI reader). Otherwise:
 1. Copy `${CLAUDE_PLUGIN_ROOT}/templates/core/WIKI.md` → project `WIKI.md` (merge if present).
 2. Create `raw/` and mirror existing `docs/`: `cp -p docs/*.md raw/` (recurse subdirs). Create the `wiki/` skeleton from `${CLAUDE_PLUGIN_ROOT}/templates/core/wiki/` (copy `wiki/scripts/lint.py` + empty `sources/ entities/ decisions/`) and seed `wiki/index.md`, `wiki/overview.md`, `wiki/glossary.md`, `wiki/log.md`.
 3. Ingest the existing docs by DELEGATING to `/strata:wiki-ingest` for each `raw/*.md` (README, architecture, ADRs, runbooks). Do not hand-author entity pages here — wiki-ingest owns the cascade.
-4. Install the docs→raw hook: copy `${CLAUDE_PLUGIN_ROOT}/templates/core/scripts/sync_raw_mirror.sh` → project `scripts/sync_raw_mirror.sh` (`chmod +x`), then MERGE the `hooks` block from `${CLAUDE_PLUGIN_ROOT}/templates/core/claude-settings-hook.json` into the project's `.claude/settings.json` (append to an existing `PostToolUse` array; drop the `_strata_note` key). Confirm you did not overwrite existing hooks.
+4. Install the knowledge hooks. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/core/scripts/`, preserving the layout, and `chmod +x` each: `sync_raw_mirror.sh` → `scripts/sync_raw_mirror.sh`, `lib/pending_ingest.sh` → `scripts/lib/pending_ingest.sh` (shared marker-retirement rule, required by the others), `hooks/strata_session_start.sh` → `scripts/hooks/strata_session_start.sh` (A3 context injection + session stamp), `hooks/strata_stop_gate.sh` → `scripts/hooks/strata_stop_gate.sh` (A1 turn-end gate). Then MERGE the `hooks` block from `${CLAUDE_PLUGIN_ROOT}/templates/core/claude-settings-hook.json` into the project's `.claude/settings.json` (append to existing arrays; drop the `_strata_note` key) and add `.strata/` to `.gitignore`. Confirm you did not overwrite existing hooks.
+
+   Also install the commit gate: copy `pre-commit/check_wiki_fresh.sh` → `scripts/pre-commit/check_wiki_fresh.sh` (`chmod +x`) and wire it into the project's existing pre-commit mechanism alongside `check_secrets.sh` / `check_raw_mirror.sh`. It takes no arguments and honours `STRATA_SKIP_WIKI=1`.
+
+   Adoption order matters: step 3 bulk-ingests the existing docs *before* the gates go in, so a repo with a large doc backlog does not start its next session already blocked. (The Stop gate only ever considers markers from the current session — ADR #4 — but the commit gate does not, so land the backlog first.)
 
 ## Phase 4 — Adoption report (REQUIRED gate)
 
@@ -62,3 +66,8 @@ Also state, plainly: "adopt did not modify any application code." Then STOP and 
 
 - Present the branch + adoption report for review/merge.
 - Recommend the path forward: `/strata:audit` to surface drift findings against the now-documented canon, then `/strata:refactor` to fix conformance gaps in stages. Do NOT auto-run them.
+
+## Do NOT use when
+
+- The directory is empty or near-empty — use `init`.
+- The request is to restructure or clean up existing code — that is `refactor`. Adopt never touches application code.

@@ -1,6 +1,6 @@
 ---
 name: onboard
-description: Use right after installing Strata (the bridge prompt tells the user to run "/strata:onboard"), or when the user says "onboard this repo / continue Strata setup / set up Strata here and walk me through it / lead me through Strata". Conducts the full setup end-to-end — detects new-vs-existing, checks prerequisites, then delegates to /strata:init or /strata:adopt and runs the first /strata:audit — asking one question at a time and calling the commands itself.
+description: Use right after installing Strata, or when the user wants the whole setup conducted for them — 'onboard this repo', 'set up Strata and walk me through it', «проведи настройку», «онбордни репо», «настрой всё и объясни по шагам», «веди меня». Detects new-vs-existing, checks prerequisites, delegates to init or adopt, then runs the first audit — one question at a time.
 ---
 
 # /strata:onboard — conduct the full Strata setup
@@ -67,3 +67,8 @@ Summarize what now exists, then point the way (do NOT auto-run these):
 - `/strata:refactor` — close the audit's findings, one TDD step at a time.
 - `/strata:feature` — build the first feature through office-hours → council → TDD.
 Finally remove the breadcrumb: `rm -f .strata/onboard.json` (its job is done).
+
+## Do NOT use when
+
+- The user already knows which they need and asked for it by name — call `init` or `adopt` directly.
+- Strata is already set up here (CLAUDE.md + wiki present) — they likely want `audit`.

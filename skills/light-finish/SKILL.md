@@ -1,6 +1,6 @@
 ---
 name: light-finish
-description: Use when a /strata:feature change is implemented and needs integrating, or when the user asks to wrap up a branch. Confirms the build is green, offers merge / PR / keep / discard, does the chosen one, and cleans up.
+description: Use when implemented work needs integrating and the branch wrapped up — 'wrap this up', 'merge it', 'we are done', «заканчиваем», «закончили фичу», «мержи», «вливай», «подытожь ветку». Confirms the build is green, offers merge / PR / keep / discard, runs drift-close into the wiki, and cleans up.
 ---
 
 # light-finish — integrate the work, minimally
@@ -8,6 +8,13 @@ description: Use when a /strata:feature change is implemented and needs integrat
 1. **Green?** Run the project's test/build command. If it fails, stop and report — never integrate broken work.
 2. **Ask once:** merge to base locally · push + open a PR · keep the branch · discard.
 3. **Do it.** Git safety holds: never a silent write to the default branch; keep commits reversible; if on the default branch, branch first.
-4. **Clean up** the branch after a merge or discard.
+4. **Drift-close — not optional.** Run `/strata:wiki-ingest` on every `docs/*.md` the branch touched. If only code changed, append a one-line summary to `wiki/log.md` and update the affected `wiki/entities/` pages. This is the moment the knowledge layer is supposed to catch up; the Stop and commit gates exist because it used to get skipped here.
+   `verify`: `bash scripts/lib/pending_ingest.sh` prints nothing.
+5. **Clean up** the branch after a merge or discard.
 
 If the project's release rule requires a version bump or changelog entry (see `CONTRIBUTING.md`), do that as part of finishing; otherwise skip it.
+
+## Do NOT use when
+
+- Nothing is implemented yet, or the build is red — fix that first; never integrate broken work.
+- The user wants a new change built — that is `feature`.

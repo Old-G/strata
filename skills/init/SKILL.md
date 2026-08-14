@@ -1,6 +1,6 @@
 ---
 name: init
-description: Use when starting a brand-new project from an empty or near-empty directory, when the user says "set up a new repo / bootstrap a project / scaffold a new service with Strata". Bootstraps the full PROJECT_PATTERN structure (docs, CLAUDE.md, ADR-Lean, pre-commit, tests, CI, optional raw/wiki) with a green-on-first-commit baseline.
+description: Use when a brand-new project must be scaffolded from an empty or near-empty directory — 'set up a new repo', 'bootstrap a project', 'scaffold a new service', «новый проект с нуля», «подними репо», «заскаффолди сервис», «настрой проект». Bootstraps the full PROJECT_PATTERN structure (docs, CLAUDE.md, ADR-Lean, pre-commit, tests, CI, optional raw/wiki) with a green-on-first-commit baseline.
 ---
 
 # /strata:init — bootstrap a brand-new project
@@ -29,7 +29,7 @@ Run the PROJECT_PATTERN §10 checklist. Use `git mv`/plain writes; keep it one r
 5. `CLAUDE.md` ← render `${CLAUDE_PLUGIN_ROOT}/templates/core/CLAUDE.md.tmpl`. Phase status MUST be honest: `🔄 Phase 0: planning` with no prod checkmarks. Keep ≤200 lines.
 6. `.env.example` ← render `${CLAUDE_PLUGIN_ROOT}/templates/core/env.example.tmpl` with the `{{SERVICE_PREFIX}}_` prefix.
 7. Stack manifest with pinned tooling versions: from the stack pack if present, else `pyproject.toml`/`package.json` minimal + pinned lint/format/test tools.
-8. Pre-commit config `.pre-commit-config.yaml`: linter + formatter for the stack + a local `check-secrets` hook running `${CLAUDE_PLUGIN_ROOT}/templates/core/scripts/pre-commit/check_secrets.sh` — copy that script to the project's `scripts/pre-commit/check_secrets.sh` and `chmod +x` it (hooks run project-relative paths, not plugin paths).
+8. Pre-commit config `.pre-commit-config.yaml`: linter + formatter for the stack + local hooks running the guards from `${CLAUDE_PLUGIN_ROOT}/templates/core/scripts/pre-commit/` — copy each to the project's `scripts/pre-commit/` and `chmod +x` (hooks run project-relative paths, not plugin paths): `check_secrets.sh` (always), plus `check_raw_mirror.sh` and `check_wiki_fresh.sh` when Phase 3 stood up `raw/`+`wiki/`. `check_wiki_fresh.sh` blocks a commit while any doc is mirrored but un-ingested; it takes no arguments and honours `STRATA_SKIP_WIKI=1` for WIP commits.
 9. `tests/` with ONE passing smoke test (`test_smoke` that imports the package / hits a health route). It must actually pass.
 10. CI skeleton (`.github/workflows/ci.yml` or `.gitlab-ci.yml` per stack): install → lint → type-check → test. It MUST be green on the first commit — only wire steps that pass now.
 
@@ -44,7 +44,13 @@ Skip this entire phase for human-only repos (§9 skip-list). When enabled:
    - `wiki/overview.md` — big picture + current phase, derived from `docs/Architecture.md`.
    - `wiki/glossary.md` — seed with the project's domain terms.
    - `wiki/log.md` — a bootstrap entry: `[<ts>] init: created wiki skeleton`.
-4. Install the docs→raw hook: copy `${CLAUDE_PLUGIN_ROOT}/templates/core/scripts/sync_raw_mirror.sh` → project `scripts/sync_raw_mirror.sh` (`chmod +x`), then MERGE `${CLAUDE_PLUGIN_ROOT}/templates/core/claude-settings-hook.json`'s `hooks` block into the project's `.claude/settings.json` (create the file if absent; if a `PostToolUse` array exists, append the matcher, do not overwrite). Drop the `_strata_note` key when merging.
+4. Install the knowledge hooks. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/core/scripts/`, preserving the layout, and `chmod +x` each:
+   - `sync_raw_mirror.sh` → `scripts/sync_raw_mirror.sh` (docs→raw mirror + `pending_ingest` marker)
+   - `lib/pending_ingest.sh` → `scripts/lib/pending_ingest.sh` (shared marker-retirement rule — required by the others)
+   - `hooks/strata_session_start.sh` → `scripts/hooks/strata_session_start.sh` (A3 context injection + the session stamp the Stop gate reads)
+   - `hooks/strata_stop_gate.sh` → `scripts/hooks/strata_stop_gate.sh` (A1 — blocks turn-end ONCE while this session owes wiki work; inert without the SessionStart stamp)
+
+   Then MERGE `${CLAUDE_PLUGIN_ROOT}/templates/core/claude-settings-hook.json`'s `hooks` block into the project's `.claude/settings.json` (create the file if absent; if an array for an event already exists, append the entry — never overwrite). Drop the `_strata_note` key when merging. Add `.strata/` to `.gitignore` — it holds per-session gate state, not source.
 5. Hand the wiki population to `/strata:wiki-ingest` for `raw/Architecture.md` and `raw/ADR-Lean.md` (do not hand-write deep entity pages here).
 
 ## Phase 4 — Skip-list trimming (§9)
@@ -66,3 +72,8 @@ Run these and paste the observed output:
 - Commit with a clear message; show the tree.
 - Suggest next steps: `/strata:audit` to confirm zero drift on a fresh repo, then `/strata:feature` to build the first feature through the full flow.
 - If a stack pack was missing, remind the user that stack-specific tooling/CI is theirs to complete.
+
+## Do NOT use when
+
+- The directory already has real code or git history — that is `adopt`, which is incremental and reversible.
+- The user only wants one piece (just a wiki, just pre-commit); do that piece directly rather than scaffolding everything.

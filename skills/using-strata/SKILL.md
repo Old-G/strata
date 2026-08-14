@@ -1,6 +1,6 @@
 ---
 name: using-strata
-description: Use when starting work in a Strata-managed project, when the user mentions Strata, or when the user wants to bootstrap/adopt/audit/refactor a project's structure - establishes the four-layer model and routes to the right Strata skill.
+description: Use at the START of work in a Strata repo, or when the user mentions Strata without naming an operation — 'what is this repo', 'how do we work here', «страта», «с чего начать», «что тут вообще есть», «как у нас устроен процесс». Orients on the four-layer model and routes to the one skill that fits — it never does the work itself.
 ---
 
 # Using Strata
@@ -25,6 +25,21 @@ that humans read and the AI queries first. **claude-mem** is the *automatic, mac
 working memory ("what did we do recently"). They are complementary — never store the same fact in both.
 When answering "where does X live / what's the architecture", read `wiki/`. When recalling "how did we
 solve Y last week", that's claude-mem.
+
+## Coordinator contract
+
+This skill is a **dispatcher**. It matches broad intent, hands off, and stops — it never
+does the work itself. Two consequences:
+
+- **The user never types a command.** Skills are model-invoked: plain language, in whatever
+  language the user speaks, is the interface. The `/strata:` forms below are a manual
+  fallback, not the expected entry point. Route on what was said, not on what was typed.
+- **Route, then get out of the way.** Hand off to exactly one skill; if two look plausible,
+  pick by what the user wants to happen next, not by topic overlap. Each skill's
+  `## Do NOT use when` section is the tie-breaker.
+
+If routing is wrong, the hooks still hold the floor: `SessionStart` injects wiki state into
+every session and the `Stop` gate refuses to end a turn that left the wiki behind.
 
 ## Skills — what to invoke when
 
@@ -76,3 +91,8 @@ Reference bundled files with `${CLAUDE_PLUGIN_ROOT}`:
 - `${CLAUDE_PLUGIN_ROOT}/templates/core/` — PROJECT_PATTERN.md, WIKI.md, wiki/ skeleton, scripts, ADR/CLAUDE templates
 - `${CLAUDE_PLUGIN_ROOT}/templates/stacks/<stack>/` — the SAR (architecture canon) + scaffold generator per stack
 - `${CLAUDE_PLUGIN_ROOT}/reference/` — council personas, Diataxis doc-map, tool-integration (RTK/claude-mem/Caveman)
+
+## Do NOT use when
+
+- The user already named the operation ("audit this", "build X") — route straight to that skill instead of narrating the model.
+- You are mid-task inside another Strata skill; this one orients, it does not execute.

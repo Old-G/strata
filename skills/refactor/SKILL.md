@@ -1,6 +1,6 @@
 ---
 name: refactor
-description: Use when the user asks to fix/address/remediate audit findings, drift, an anti-pattern, or stale code in a Strata repo; after running /strata:audit; or to clean up a named code smell. Staged, test-driven, one verifiable step at a time — never big-bang.
+description: Use when a named finding, drift, anti-pattern or smell must actually be FIXED — 'fix the findings', 'clean up X', 'address the audit', «почини находки», «убери этот запах», «отрефактори X», «закрой техдолг». Staged and test-driven, one verifiable step at a time — never big-bang.
 ---
 
 # Strata Refactor — staged remediation of drift
@@ -121,3 +121,8 @@ After a finding's steps are all green:
 If any verify cannot run in this environment (no test runner, no audit
 script, can't reach a service), say so explicitly and do NOT claim the finding
 closed. Evidence before assertions — always.
+
+## Do NOT use when
+
+- The request adds new behaviour — that is `feature`, even if the code is ugly on the way.
+- No finding or smell has been named yet — run `audit` first so the work is evidence-driven.

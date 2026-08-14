@@ -1,6 +1,6 @@
 ---
 name: autoplan
-description: Use when a plan or design doc needs the Strata review council run over it automatically, someone says "autoplan", "run the council", "review this plan", "is this plan ready to build", or wants a plan pressure-tested and made build-ready with an audit trail. Spawns reviewer subagents in parallel and gates decisions to the human.
+description: Use when an existing plan or design doc must be pressure-tested by the review council — 'review this plan', 'run the council', 'is this ready to build', «прогони совет», «отревьюй план», «план готов к сборке», «пусть ревьюеры посмотрят». Spawns the risk-matched reviewer subagents in parallel and gates every decision to the human.
 ---
 
 # Autoplan — run the review council, produce a build-ready plan
@@ -74,3 +74,8 @@ Set the plan's status to **ready for build**. Hand off:
 Point at the exact plan path.
 
 **verify:** Plan status is "ready for build" and the handoff target + path are stated.
+
+## Do NOT use when
+
+- No plan or design doc exists yet — write one first (`lean-plan`) or pressure-test the idea (`office-hours`).
+- The work is trivial or low-risk; the council is risk-triggered, not a standing panel on everything.
