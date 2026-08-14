@@ -69,10 +69,23 @@ So, as part of any user-facing change:
 3. After merge, existing installs refresh with `/plugin marketplace update strata` → reinstall →
    `/reload-plugins`.
 
+## Working in this repo
+
+Strata dogfoods its own enforcement layer, so enable its guards once per clone:
+
+```bash
+git config core.hooksPath .githooks    # secrets · docs↔raw mirror · wiki freshness
+```
+
+With that set, a commit is refused while any `docs/*.md` is mirrored into `raw/` but not yet
+ingested into `wiki/`. Fix it by ingesting (and staging `wiki/`), or, for a genuine WIP commit,
+`STRATA_SKIP_WIKI=1 git commit …`. The `.claude/settings.json` in this repo wires the same
+SessionStart and Stop hooks that `init`/`adopt` install into target projects.
+
 ## Before opening a PR
 
 ```bash
-bash scripts/validate.sh     # must pass (CI runs the same)
+bash scripts/validate.sh     # must pass (CI runs the same); includes the P1 gate tests
 ```
 
 Dogfood when you can: run `/strata:audit` on a repo that has Strata adopted and confirm your change

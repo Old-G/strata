@@ -23,8 +23,10 @@ token-proxying, or testing — it owns one thing well: the **structure / knowled
 - [Prerequisites](#prerequisites)
 - [Quickstart](#quickstart)
 - [Commands](#commands)
+- [No commands needed (auto-invocation)](#no-commands-needed-auto-invocation)
 - [The review council](#the-review-council)
 - [How knowledge works](#how-knowledge-works-the-wiki)
+- [Hooks — the enforcement layer](#hooks--the-enforcement-layer)
 - [Typical lifecycle](#typical-lifecycle)
 - [Repo layout](#repo-layout)
 - [Design philosophy](#design-philosophy--what-strata-is-not)
@@ -226,6 +228,26 @@ All skills are invoked as `/strata:<name>` and are also auto-suggested by Claude
 
 ---
 
+## No commands needed (auto-invocation)
+
+The `/strata:*` forms above are a manual fallback. Skills in Claude Code are **model-invoked**:
+Claude matches what you actually said against each skill's `description`, so the normal way to
+use Strata is to say what you want, in whatever language you speak.
+
+```
+"добавь ретраи в вебхуки"        → feature flow (triaged first)
+"как у нас работает авторизация"  → wiki query (index.md first, never grep-first)
+"заканчиваем, мержи"              → light-finish (which drift-closes the wiki)
+"что-то тут грязно, проверь"      → audit
+"есть идея, стоит ли делать"      → office-hours
+```
+
+Every skill description carries concrete trigger phrases in **English and Russian**, plus a
+`## Do NOT use when` guard so neighbouring skills do not steal each other's requests. The
+routing table also lives in your project's `CLAUDE.md`, which is in context every session.
+
+Routing is still probabilistic — which is exactly why the hooks below are not.
+
 ## The review council
 
 The council is Strata's process value-add: reviewer subagents that give an **independent adversarial
@@ -271,10 +293,46 @@ wiki/   ── AI writes & queries (index, sources, entities, decisions, glossar
 
 - **The agent answers project questions from `wiki/index.md` first** — not by grepping the whole repo.
 - A `PostToolUse` hook (installed per-project by `init`/`adopt`, never shipped globally) mirrors
-  `docs/*.md → raw/` and flags a `pending_ingest` so the wiki can't silently fall behind.
+  `docs/*.md → raw/` and records a `pending_ingest` marker.
+- Those markers are **enforced**, not advisory — see the hooks below.
 - `/strata:wiki-ingest lint` reports contradictions, orphans, and drift — it **never** auto-fixes.
 
 The full protocol lives in the bundled [`templates/core/WIKI.md`](templates/core/WIKI.md).
+
+---
+
+## Hooks — the enforcement layer
+
+Skill text is probabilistic; hooks are deterministic. Anything phrased "the agent must always…"
+is a hook in Strata, not a paragraph. Three of them keep the wiki honest:
+
+| Hook | Event | What it does |
+|---|---|---|
+| `scripts/sync_raw_mirror.sh` | `PostToolUse` | Mirrors an edited `docs/*.md` into `raw/` and records a `pending_ingest` marker in `wiki/log.md`. |
+| `scripts/hooks/strata_session_start.sh` | `SessionStart` | Injects ≤50 lines of state — branch, pending ingests, the head of `wiki/index.md` — into every session, and stamps where the session began. |
+| `scripts/hooks/strata_stop_gate.sh` | `Stop` | Refuses to end the turn **once** if this session left the wiki behind. |
+| `scripts/pre-commit/check_wiki_fresh.sh` | pre-commit | Fails the commit while any doc is mirrored but un-ingested. |
+
+**Nothing is installed globally.** The plugin ships these as templates; `init`/`adopt` copy them
+into the *target* project and merge the events into that project's `.claude/settings.json`. Strata
+stays inert in repos that never adopted it.
+
+**The Stop gate cannot trap you.** In order: it exits immediately when `stop_hook_active` is set;
+it fails open when it cannot tell where the session began; and it blocks **at most once per
+session** — a gate that fires forever is worse than no gate. It only considers markers created in
+the current session; older ones are the commit gate's problem, not an interruption you did not
+earn. The clean-state path is measured under 100 ms.
+
+It also blocks a session that changed a lot of code and wrote nothing to the wiki at all — because
+code-only changes were the drift nobody caught. That block is always satisfiable with one line in
+`wiki/log.md`, including an explicit `no-wiki-impact: <reason>`.
+
+```bash
+STRATA_STOP_GATE_LINES=0     # disable the code-only trigger (default: 50 changed lines)
+STRATA_SKIP_WIKI=1 git commit -m "wip"   # escape hatch for a genuine WIP commit
+```
+
+Verify the whole layer end-to-end: `bash scripts/test_p1_gates.sh`.
 
 ---
 
@@ -319,9 +377,17 @@ strata/
 │   └── strata-{ceo,eng,design,cso}-review.md
 ├── templates/
 │   ├── core/                # PROJECT_PATTERN.md, WIKI.md, wiki/ skeleton,
-│   │                        #   CLAUDE/ADR templates, scripts, pre-commit guards
+│   │   │                    #   CLAUDE/ADR templates
+│   │   └── scripts/         # installed per-project by init/adopt:
+│   │       ├── sync_raw_mirror.sh        # PostToolUse: docs → raw + marker
+│   │       ├── lib/pending_ingest.sh     # the one marker-retirement rule
+│   │       ├── hooks/                    # SessionStart injection · Stop gate
+│   │       └── pre-commit/               # secrets · raw mirror · wiki freshness
 │   └── stacks/python-fastapi/   # SCALABLE_ARCHITECTURE_REFERENCE.md + scaffold generator
 ├── reference/               # council personas, tool-integration, Diataxis doc-map
+├── scripts/                 # validate.sh + behavioural tests (installer, P1 gates)
+├── .githooks/pre-commit     # Strata's own guards (git config core.hooksPath .githooks)
+├── raw/  wiki/              # Strata's own knowledge layer — it dogfoods the wiki
 ├── CLAUDE.md                # Strata dogfoods its own pattern
 └── README.md
 ```

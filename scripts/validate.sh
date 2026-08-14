@@ -79,6 +79,47 @@ else
   ok "no private markers in skills/agents/templates"
 fi
 
+echo "== 8. skill descriptions are bilingual trigger specs (C1) =="
+# The description is the ENTIRE routing surface at dispatch time: Claude matches
+# the user's actual words against it. So every skill must carry concrete trigger
+# phrases in BOTH languages the user types (EN + RU, inline — ADR #2), and a
+# "Do NOT use when" guard, because over-broad descriptions are the classic
+# false-trigger failure mode.
+python3 - <<'PY' && ok "all skills carry EN+RU triggers, a length-safe description, and a Do-NOT guard" || err "skill description/guard check failed (see above)"
+import glob, re, sys
+
+MAX = 1024
+bad = False
+for path in sorted(glob.glob("skills/*/SKILL.md")):
+    text = open(path, encoding="utf-8").read()
+    m = re.search(r"^description:[ \t]*(.+?)(?=^\w+:|^---)", text, re.M | re.S)
+    desc = " ".join(m.group(1).split()) if m else ""
+    if not desc:
+        print(f"  {path}: no description", file=sys.stderr); bad = True; continue
+    if len(desc) > MAX:
+        print(f"  {path}: description is {len(desc)} chars (max {MAX})", file=sys.stderr); bad = True
+    if not re.search(r"[Ѐ-ӿ]", desc):
+        print(f"  {path}: description has no Russian trigger phrase", file=sys.stderr); bad = True
+    if "## Do NOT use when" not in text:
+        print(f"  {path}: missing a '## Do NOT use when' section", file=sys.stderr); bad = True
+sys.exit(1 if bad else 0)
+PY
+
+echo "== 9. P1 enforcement gates behave (A1/A2/A3) =="
+# Behavioural, not structural: builds a throwaway repo and drives the real
+# scripts through their real interfaces. Structure checks cannot tell you a gate
+# blocks when it should, or that it stops blocking after one warning.
+if [ -f scripts/test_p1_gates.sh ]; then
+  if out="$(bash scripts/test_p1_gates.sh 2>&1)"; then
+    ok "$(printf '%s' "$out" | tail -n 1)"
+  else
+    printf '%s\n' "$out" | grep '✗' >&2
+    err "P1 gate tests failed (run: bash scripts/test_p1_gates.sh)"
+  fi
+else
+  err "scripts/test_p1_gates.sh is missing"
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then echo "✅ Strata plugin validation PASSED"; else echo "❌ validation FAILED"; fi
 exit "$fail"
