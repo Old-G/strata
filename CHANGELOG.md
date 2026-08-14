@@ -6,6 +6,62 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-08-15
+
+Wiki freshness stops being advice. P1 of the v-next brief: the enforcement layer (A1–A4) and
+native invocation (C1–C4).
+
+### Added
+- **Stop gate** (`templates/core/scripts/hooks/strata_stop_gate.sh`). A `Stop` hook that refuses
+  to end the turn once when the session left the wiki behind. Loop safety is the design: it exits
+  immediately on `stop_hook_active`, fails open when it cannot tell where the session began, and
+  blocks **at most once per session**. Only markers created in the current session count — older
+  ones belong to the commit gate (ADR #4). Clean-state path measured under 100 ms, which is why
+  the hook payload is parsed with `grep`/`sed` rather than `python3`.
+- **Second Stop trigger for code-only sessions.** A session that changed ~50+ lines outside
+  `wiki/ raw/ docs/` and wrote nothing to `wiki/log.md` is blocked once — the drift nobody used
+  to catch. Always satisfiable with a single log line, including an explicit `no-wiki-impact:`.
+  Tune or disable with `STRATA_STOP_GATE_LINES` (`0` = off).
+- **Commit gate** (`templates/core/scripts/pre-commit/check_wiki_fresh.sh`). Fails the commit
+  while any doc is mirrored but un-ingested, printing the exact ingest commands. Judges the
+  **staged** `wiki/log.md`, so ingesting without staging `wiki/` is caught too. Escape hatch:
+  `STRATA_SKIP_WIKI=1`.
+- **SessionStart injection** (`templates/core/scripts/hooks/strata_session_start.sh`). Puts ≤50
+  lines of real state into every session — branch, pending ingests, the head of `wiki/index.md`,
+  the wiki-first rule — and stamps where the session began (the Stop gate depends on it).
+- **`scripts/lib/pending_ingest.sh`** — one implementation of the marker-retirement rule, shared
+  by all three gates and the mirror hook, so they cannot disagree about what "pending" means.
+- **`## Do NOT use when` guards** on all 12 skills, to stop neighbouring skills stealing each
+  other's requests.
+- **`scripts/test_p1_gates.sh`** — 28 behavioural assertions driving the real scripts through
+  their real interfaces (loop safety, session scoping, thresholds, latency, and a real
+  blocked-then-allowed `git commit`). Wired into `scripts/validate.sh`.
+- **`.githooks/pre-commit`** — Strata now runs its own guards (`git config core.hooksPath .githooks`).
+- **Strata's own `wiki/` and `raw/`.** The repo shipped the knowledge pipeline as a template
+  without ever running it on itself; it now dogfoods it.
+
+### Changed
+- **Every skill `description` is now a bilingual trigger spec** — concrete EN and RU phrases
+  inline, matched against the words a user actually types. Strata is meant to be driven in plain
+  language; `/strata:*` is the manual fallback (ADR #2).
+- **`using-strata` is a coordinator**, with an explicit contract: match broad intent, hand off to
+  exactly one skill, never do the work itself.
+- **`light-finish` gained a drift-close step** between "Do it" and "Clean up" — ingest the docs the
+  branch touched, or record why the code change had no knowledge impact. Not optional.
+- **`CLAUDE.md.tmpl` carries a routing map** (5 lines, one source of truth; the SessionStart hook
+  deliberately does not duplicate it).
+- **`init` / `adopt` install the enforcement layer** alongside the mirror hook, and `adopt` now
+  bulk-ingests the existing doc backlog *before* the gates go in, so adoption never starts blocked.
+- `validate.sh` gained two sections: bilingual-description enforcement and the behavioural gate run.
+
+### Fixed
+- **The mirror hook went blind after the first ingest.** `sync_raw_mirror.sh` skipped writing a
+  marker whenever that exact string had *ever* appeared in `wiki/log.md`, so editing a doc a second
+  time produced no signal at all — permanently, for every doc ever ingested. It now reopens the
+  marker using the shared retirement rule. Found by dogfooding the pipeline on this repo.
+- `check_raw_mirror.sh` printed a remediation path (`scripts/wiki/sync_raw_mirror.sh`) that does
+  not exist.
+
 ## [0.3.1] — 2026-07-21
 
 ### Added
