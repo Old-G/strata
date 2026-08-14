@@ -1,5 +1,5 @@
 {
-  "_strata_note": "MERGE this `hooks` block into the project's .claude/settings.json — do NOT overwrite the whole file. If a `hooks.PostToolUse` array already exists, append this matcher entry to it. The hook mirrors any edited docs/*.md into raw/*.md (the read-only AI mirror) and appends a pending_ingest marker to wiki/log.md. The command path is project-relative, so it runs from the repo root; ensure scripts/sync_raw_mirror.sh exists and is executable (chmod +x).",
+  "_strata_note": "MERGE this `hooks` block into the project's .claude/settings.json — do NOT overwrite the whole file. If an array for one of these events already exists, APPEND the entry to it. Drop this `_strata_note` key when merging. All command paths are project-relative, so they run from the repo root; ensure scripts/sync_raw_mirror.sh, scripts/hooks/strata_session_start.sh, scripts/hooks/strata_stop_gate.sh and scripts/lib/pending_ingest.sh exist and are executable (chmod +x). PostToolUse mirrors any edited docs/*.md into raw/ and records a pending_ingest marker; SessionStart injects wiki state into context AND records the session stamp the Stop gate needs; Stop refuses to end the turn once while this session still owes wiki work. Installing SessionStart WITHOUT Stop is fine; installing Stop without SessionStart makes the Stop gate inert by design (it fails open when it cannot tell where the session began).",
   "hooks": {
     "PostToolUse": [
       {
@@ -8,6 +8,26 @@
           {
             "type": "command",
             "command": "bash scripts/sync_raw_mirror.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/strata_session_start.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/strata_stop_gate.sh"
           }
         ]
       }

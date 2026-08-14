@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Strata dogfoods its own pre-commit guards. Tracked in git (unlike .git/hooks/),
+# activated per clone with:
+#
+#   git config core.hooksPath .githooks
+#
+# No pre-commit framework — that would be a dependency, and Strata ships none.
+
+set -uo pipefail
+
+cd "$(git rev-parse --show-toplevel)" || exit 0
+
+staged=()
+while IFS= read -r f; do [ -n "$f" ] && staged+=("$f"); done < <(
+  git diff --cached --name-only --diff-filter=ACM
+)
+
+fail=0
+
+if [ -f scripts/pre-commit/check_secrets.sh ] && [ ${#staged[@]} -gt 0 ]; then
+  bash scripts/pre-commit/check_secrets.sh "${staged[@]}" || fail=1
+fi
+
+if [ -f scripts/pre-commit/check_raw_mirror.sh ] && [ ${#staged[@]} -gt 0 ]; then
+  bash scripts/pre-commit/check_raw_mirror.sh "${staged[@]}" || fail=1
+fi
+
+# Wiki freshness gate (A2) — judges the staged wiki/log.md, so it needs no args.
+if [ -f scripts/pre-commit/check_wiki_fresh.sh ]; then
+  bash scripts/pre-commit/check_wiki_fresh.sh || fail=1
+fi
+
+exit "$fail"
