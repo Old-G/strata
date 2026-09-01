@@ -2,8 +2,8 @@
 title: SessionStart injection (A3)
 type: entity
 created: 2026-08-15
-updated: 2026-08-15
-links: [enforcement-layer, native-invocation, pending-ingest-marker]
+updated: 2026-09-01
+links: [enforcement-layer, native-invocation, pending-ingest-marker, branch-state, upgrade-path]
 ---
 
 # SessionStart injection (A3)
@@ -41,10 +41,19 @@ Boundary rule carried over from the brief's research digest: Claude Code's own p
 Memory (`MEMORY.md`) is the model's private scratch preferences; `wiki/` is reviewed project
 truth. Never duplicate a fact across the two.
 
+**Two additions, shipped in v0.5.0:** if the current branch has a [[branch-state]] file, prints
+its summary (goal, status, decision/open-question/`wiki_debt` counts) — the "here's what we
+already knew" half of the episodic layer, complementing the Stop gate's "don't let it go stale"
+half. Separately, if `.strata/version` disagrees with the plugin actually running
+(`$CLAUDE_PLUGIN_ROOT`'s own `plugin.json`), prints one line pointing at [[upgrade-path]]. Both
+additions stay inside the existing budget (`MAX_INDEX_ROWS` trimmed 20→15 to make room).
+
 ## Related
 
-[[enforcement-layer]] · [[native-invocation]] · [[pending-ingest-marker]] · [[stop-gate]]
+[[enforcement-layer]] · [[native-invocation]] · [[pending-ingest-marker]] · [[stop-gate]] ·
+[[branch-state]] · [[upgrade-path]]
 
 ## Sources
 
-[[vnext-brief]] §2 (A3), §4 · [ADR #1](../decisions/adr-1-deterministic-enforcement.md)
+[[vnext-brief]] §2 (A3), §4 · [ADR #1](../decisions/adr-1-deterministic-enforcement.md) ·
+[[episodic-state-layer]]

@@ -6,6 +6,40 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-09-01
+
+The knowledge layer gets a second half. `wiki/log.md` was always a trajectory (what happened,
+in order); nothing answered "what do we currently know about this branch" — and separately, a
+repo adopted before v0.4.0 had no way back to the enforcement layer at all. Both trace to the
+same research session (SKILL.state, arXiv:2608.26263; Prime Agent, arXiv:2608.23552) — see
+`docs/superpowers/specs/2026-09-01-episodic-state-layer.md`.
+
+### Added
+- **Episodic state layer** (`scripts/lib/state_tools.py`). A small, schema-validated, git-tracked
+  `.strata/state/<branch-slug>.json` per branch: goal, decisions (`what`/`why`/`evidence`/`trust:
+  session|reviewed`), open questions, gotchas, and `wiki_debt` — knowledge owed to the wiki that
+  isn't a `docs/*.md` edit yet. `trust` defaults to `"session"`; nothing auto-promotes an
+  unreviewed decision into `wiki/` (P-1 quarantine minimum). Committed on purpose — it survives a
+  machine change or a `/clear`, unlike the gitignored session stamps it sits next to.
+- **Stop-gate trigger (c).** Extends the existing A1 Stop gate: blocks once (same loop-safety cap
+  as triggers a/b) when the current branch's state file has a non-empty `wiki_debt`, or exists but
+  fails schema validation. A missing state file is not a trigger — the layer stays adoptable
+  incrementally.
+- **SessionStart state summary + version nudge.** Prints the current branch's state summary (goal,
+  status, decision/open-question/debt counts) when a state file exists, and one line suggesting
+  `/strata:upgrade` when `.strata/version` disagrees with the running plugin's version. Stays
+  inside the existing ≤50-line budget.
+- **`/strata:upgrade`** (`skills/upgrade/`, `scripts/strata_upgrade_check.sh`). Re-syncs a repo's
+  installed `scripts/**` and `.claude/settings.json` hook block with the plugin currently running.
+  Fixes the confirmed case: a repo adopted before v0.4.0 with `wiki/` fully populated and zero
+  hooks installed — `init`/`adopt` only ever copy templates once, and there was no path back.
+  Idempotent; never touches `wiki/`, `CLAUDE.md`, or application code.
+- `light-finish` now folds a branch's state file into its `wiki/log.md` drift-close entry and
+  deletes it on close; `audit` now flags orphaned state files (branch gone) and counts unreviewed
+  (`trust: session`) decisions.
+- `bash scripts/test_p2_state.sh` — behavioural tests for the validator, trigger (c), the
+  SessionStart additions, and the upgrade-check diff reporter.
+
 ## [0.4.0] — 2026-08-15
 
 Wiki freshness stops being advice. P1 of the v-next brief: the enforcement layer (A1–A4) and

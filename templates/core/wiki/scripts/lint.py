@@ -216,17 +216,37 @@ def check_orphans(files: dict[str, list[Path]], rpt: LintReport) -> None:
                 rpt.warn(str(p), f"orphan: not referenced by any other wiki page nor index.md")
 
 
-_INDEX_BACKTICK_RE = re.compile(r"`((?:entities|decisions|sources|sessions)/[^`]+\.md)`")
+# [^`<>] (not [^`]) so a documentation placeholder like `entities/<slug>.md` or
+# `decisions/adr-<n>-<slug>.md` never counts as a real reference — angle
+# brackets don't appear in an actual filename.
+_INDEX_BACKTICK_RE = re.compile(r"`((?:entities|decisions|sources|sessions)/[^`<>]+\.md)`")
 # Entries explicitly marked with ⏳ are planned stubs — the wiki declares
 # them as "to be created on next ingest". We don't flag those as broken,
 # but we DO surface them as planned (info) so they show up in the report.
 _INDEX_PLANNED_LINE_RE = re.compile(
-    r"`((?:entities|decisions|sources|sessions)/[^`]+\.md)`\s*⏳"
+    r"`((?:entities|decisions|sources|sessions)/[^`<>]+\.md)`\s*⏳"
 )
 
 
-def _read_index_state(index_text: str) -> tuple[set[str], set[str], set[str]]:
-    """Return (all_mentioned, planned_paths, planned_slugs)."""
+def _read_index_state(
+    index_text: str, files: dict[str, list[Path]]
+) -> tuple[set[str], set[str], set[str]]:
+    """Return (all_mentioned, planned_paths, planned_slugs).
+
+    index.md's own documented convention is `[[slug]]` for entities/decisions/
+    sources (see its "Convention:" line) — markdown `[text](path)` links and
+    backtick paths are the exception (glossary/log/ADR rows), not the rule.
+    Missing that syntax here meant nearly every page in the wiki was reported
+    "not listed in wiki/index.md" despite being listed via `[[slug]]` — the
+    exact syntax `check_wikilinks`/`check_orphans` already treat as canonical.
+    One membership rule, reused everywhere a page's presence in the index
+    matters — the same discipline `pending_ingest.sh` applies to markers.
+    """
+    slug_to_rel: dict[str, str] = {}
+    for d, paths in files.items():
+        for p in paths:
+            slug_to_rel.setdefault(slug_of(p), f"{d}/{p.name}")
+
     mentioned: set[str] = set()
     for m in MD_LINK_RE.finditer(index_text):
         href = m.group(1)
@@ -240,6 +260,10 @@ def _read_index_state(index_text: str) -> tuple[set[str], set[str], set[str]]:
             pass
     for m in _INDEX_BACKTICK_RE.finditer(index_text):
         mentioned.add(m.group(1))
+    for m in WIKILINK_RE.finditer(_strip_code_blocks(index_text)):
+        rel = slug_to_rel.get(m.group(1))
+        if rel:
+            mentioned.add(rel)
 
     planned_paths = {m.group(1) for m in _INDEX_PLANNED_LINE_RE.finditer(index_text)}
     planned_slugs = {Path(p).stem for p in planned_paths}
@@ -511,7 +535,7 @@ def main(argv: list[str]) -> int:
 
     index_path = WIKI / "index.md"
     index_text = index_path.read_text(encoding="utf-8") if index_path.exists() else ""
-    mentioned, planned_paths, planned_slugs = _read_index_state(index_text)
+    mentioned, planned_paths, planned_slugs = _read_index_state(index_text, files)
 
     check_wikilinks(files, slugs, planned_slugs, rpt)
     check_frontmatter(files, rpt)

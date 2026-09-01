@@ -2,8 +2,8 @@
 title: Session reflector (ACE playbook)
 type: entity
 created: 2026-08-15
-updated: 2026-08-15
-links: [gardener, hq-mode]
+updated: 2026-09-01
+links: [gardener, hq-mode, branch-state]
 ---
 
 # Session reflector (ACE playbook)
@@ -42,9 +42,14 @@ too lossy.
 Open: trigger on every session end (noisy) or only sessions that closed a feature or hit a
 failure (signal) — OQ#8; and whether `hq-sync` lifts cross-project bullets upward — OQ#9.
 
+**Not the same object as [[branch-state]]** (P2, shipped v0.5.0): branch state is this-branch,
+in-progress, per-file facts written directly during the work. This reflector, once built,
+distils cross-session *lessons* into `wiki/playbook.md` as delta bullets — a later, separate
+pipeline that could read closed branch-state files as raw material, not a replacement for them.
+
 ## Related
 
-[[gardener]] · [[hq-mode]] · [[executable-wiki]]
+[[gardener]] · [[hq-mode]] · [[executable-wiki]] · [[branch-state]]
 
 ## Sources
 

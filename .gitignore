@@ -14,5 +14,8 @@ __pycache__/
 
 # NOTE: templates/ and reference/ ARE committed — they are the product.
 
-# Strata enforcement-layer state (session stamps, gate markers)
-.strata/
+# Strata enforcement-layer state: session stamps + version stamp are ephemeral
+# local bookkeeping (ignored); .strata/state/ is the episodic branch-state layer
+# (P2) and is tracked on purpose — it must survive a machine change or a /clear.
+.strata/*
+!.strata/state/

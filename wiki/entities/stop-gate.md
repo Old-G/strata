@@ -2,8 +2,8 @@
 title: Stop gate (A1)
 type: entity
 created: 2026-08-15
-updated: 2026-08-15
-links: [enforcement-layer, pending-ingest-marker, commit-gate]
+updated: 2026-09-01
+links: [enforcement-layer, pending-ingest-marker, commit-gate, branch-state]
 ---
 
 # Stop gate (A1)
@@ -44,12 +44,19 @@ explicit `no-wiki-impact:`). Tune with `STRATA_STOP_GATE_LINES`; `0` disables it
 The hook payload is parsed with `grep`/`sed`, not `python3` — interpreter startup measured ~36 ms,
 unaffordable against the sub-100 ms budget. Verified clean-state path: 69 ms.
 
+**Trigger (c), shipped in v0.5.0:** if [[branch-state]]'s `.strata/state/<branch>.json` exists for
+the current branch, blocks once when its `wiki_debt` array is non-empty, or when the file exists
+but fails schema validation (`scripts/lib/state_tools.py validate`). A *missing* state file is not
+a trigger — same incremental-adoption stance as triggers (a)/(b). `python3` only runs when a state
+file actually exists, so the clean/no-layer path pays nothing extra.
+
 ## Related
 
 [[enforcement-layer]] · [[pending-ingest-marker]] · [[commit-gate]] ·
-[[session-start-injection]]
+[[session-start-injection]] · [[branch-state]]
 
 ## Sources
 
 [[vnext-brief]] §2 (A1) · [ADR #1](../decisions/adr-1-deterministic-enforcement.md) ·
-[ADR #4](../decisions/adr-4-stop-gate-session-scope.md)
+[ADR #4](../decisions/adr-4-stop-gate-session-scope.md) ·
+[ADR #5](../decisions/adr-5-episodic-state-branch-scoped.md) · [[episodic-state-layer]]

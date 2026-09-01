@@ -73,3 +73,64 @@ full protocol.
 ## 2026-08-14T22:17:50Z gotcha
 
 - `git restore --staged --worktree <path>` DELETES an untracked-but-staged file — there is no HEAD version to restore from. Hit while cleaning up a negative-control test; wiki/log.md was recovered from the dangling blob left by `git add`. Use `git reset -- <path>` (unstage only) or edit the file directly.
+
+## 2026-09-01T14:29:02Z auto-mirror
+
+- pending_ingest: docs/superpowers/specs/2026-09-01-episodic-state-layer.md (mirrored docs/ -> raw/, ingest still owed)
+
+## 2026-09-01T14:48:23Z lint
+
+- errors: 3, warnings: 24
+
+  - ❌ wiki/index.md: references missing file: decisions/adr-<n>-<slug>.md
+  - ❌ wiki/index.md: references missing file: entities/<slug>.md
+  - ❌ wiki/index.md: references missing file: entities/analysis-<slug>.md
+  - ⚠️  wiki/entities/ablate.md: not listed in wiki/index.md (rel: entities/ablate.md)
+  - ⚠️  wiki/entities/agent-teams.md: not listed in wiki/index.md (rel: entities/agent-teams.md)
+  - ⚠️  wiki/entities/branch-state.md: not listed in wiki/index.md (rel: entities/branch-state.md)
+  - ⚠️  wiki/entities/career-ledger.md: not listed in wiki/index.md (rel: entities/career-ledger.md)
+  - ⚠️  wiki/entities/commit-gate.md: not listed in wiki/index.md (rel: entities/commit-gate.md)
+  - ⚠️  wiki/entities/enforcement-layer.md: not listed in wiki/index.md (rel: entities/enforcement-layer.md)
+  - ⚠️  wiki/entities/executable-wiki.md: not listed in wiki/index.md (rel: entities/executable-wiki.md)
+  - ⚠️  wiki/entities/gardener.md: not listed in wiki/index.md (rel: entities/gardener.md)
+  - ⚠️  wiki/entities/hq-mode.md: not listed in wiki/index.md (rel: entities/hq-mode.md)
+  - ⚠️  wiki/entities/native-invocation.md: not listed in wiki/index.md (rel: entities/native-invocation.md)
+  - ⚠️  wiki/entities/pending-ingest-marker.md: not listed in wiki/index.md (rel: entities/pending-ingest-marker.md)
+  - ⚠️  wiki/entities/raw-mirror-hook.md: not listed in wiki/index.md (rel: entities/raw-mirror-hook.md)
+  - ⚠️  wiki/entities/session-reflector.md: not listed in wiki/index.md (rel: entities/session-reflector.md)
+  - ⚠️  wiki/entities/session-start-injection.md: not listed in wiki/index.md (rel: entities/session-start-injection.md)
+  - ⚠️  wiki/entities/stop-gate.md: not listed in wiki/index.md (rel: entities/stop-gate.md)
+  - ⚠️  wiki/entities/upgrade-path.md: not listed in wiki/index.md (rel: entities/upgrade-path.md)
+  - ⚠️  wiki/entities/wiki-emit.md: not listed in wiki/index.md (rel: entities/wiki-emit.md)
+  - ⚠️  wiki/sources/adaptive-ceremony-design.md: not listed in wiki/index.md (rel: sources/adaptive-ceremony-design.md)
+  - ⚠️  wiki/sources/adaptive-ceremony-plan.md: not listed in wiki/index.md (rel: sources/adaptive-ceremony-plan.md)
+  - ⚠️  wiki/sources/ai-led-onboarding-design.md: not listed in wiki/index.md (rel: sources/ai-led-onboarding-design.md)
+  - ⚠️  wiki/sources/ai-led-onboarding-plan.md: not listed in wiki/index.md (rel: sources/ai-led-onboarding-plan.md)
+  - ⚠️  wiki/sources/episodic-state-layer.md: not listed in wiki/index.md (rel: sources/episodic-state-layer.md)
+  - ⚠️  wiki/sources/p1-enforce-route-plan.md: not listed in wiki/index.md (rel: sources/p1-enforce-route-plan.md)
+  - ⚠️  wiki/sources/vnext-brief.md: not listed in wiki/index.md (rel: sources/vnext-brief.md)
+
+## 2026-09-01T14:49:51Z ingest — P2 shipped (v0.5.0)
+
+[2026-09-01T14:49:51Z] ingest raw/superpowers/specs/2026-09-01-episodic-state-layer.md → created: sources/episodic-state-layer.md; entities/{branch-state, upgrade-path}.md; decisions/adr-5-episodic-state-branch-scoped.md; updated: index.md, overview.md, entities/{stop-gate, session-start-injection, enforcement-layer, session-reflector}.md — retires the marker for docs/superpowers/specs/2026-09-01-episodic-state-layer.md
+- Shipped: `scripts/lib/state_tools.py` (schema+validator+CLI) · Stop-gate trigger (c) · SessionStart branch-state summary + version nudge · `/strata:upgrade` (`skills/upgrade/`, `scripts/strata_upgrade_check.sh`) · `light-finish`/`audit` updated · `.gitignore` carve-out (`.strata/*` + `!.strata/state/`) · `bash scripts/test_p2_state.sh` (25/25 green) · version 0.4.0 → 0.5.0.
+- Gotcha confirmed during this work: a blanket `.strata/` gitignore line blocks git from descending into the directory at all, so a later `!.strata/state/` negation would silently have no effect — must use `.strata/*` + `!.strata/state/` instead. Verified with `git check-ignore` on both sub-paths.
+- Pre-existing defect found, NOT fixed (out of this scope): `wiki/scripts/lint.py`'s "linked from index.md" check flags every single entity/source page as unlisted, even ones plainly listed in `index.md` — reproduced against the pristine pre-P2 tree via `git archive HEAD`, so it predates this work. Worth its own audit finding.
+
+## 2026-09-01T15:02:22Z fix — wiki/scripts/lint.py index-membership check
+
+Corrects the previous entry's "NOT fixed (out of this scope)" note — user asked to fix before merge.
+- Root cause: `_read_index_state()` only recognized markdown `[text](path)` links and backtick
+  paths as "listed in index.md", never the `[[slug]]` wikilink syntax index.md's own convention
+  note declares as canonical and `check_wikilinks`/`check_orphans` already treat as such —
+  two inconsistent membership rules in the same file. Fixed by parsing `[[slug]]` in
+  `_read_index_state` too, resolved against the real `entities/decisions/sources/sessions` file
+  set (same `known_slugs`-style lookup already used elsewhere in the script).
+- Second bug, same function: `_INDEX_BACKTICK_RE` matched documentation placeholders like
+  a backtick-wrapped `entities/<slug>.md` (angle brackets, not real filenames) as if they were
+  real references, producing 3 "references missing file" errors. Fixed by excluding `<`/`>`
+  from the backtick-path character class.
+- verify: `python3 wiki/scripts/lint.py --no-log` now reports 0 errors, 0 warnings (was 3
+  errors + 21 warnings, reproduced identically against the pristine pre-P2 tree via
+  `git archive HEAD`, so the bug predated P2 entirely). Mirrored to
+  `templates/core/wiki/scripts/lint.py` (was byte-identical to the root copy; kept that way).
