@@ -1,6 +1,6 @@
 ---
 name: using-strata
-description: Use at the START of work in a Strata repo, or when the user mentions Strata without naming an operation — 'what is this repo', 'how do we work here', «страта», «с чего начать», «что тут вообще есть», «как у нас устроен процесс». Orients on the four-layer model and routes to the one skill that fits — it never does the work itself.
+description: Use at the START of work in a Strata repo, or when the user mentions Strata without naming an operation — 'what is this repo', 'how do we work here', «страта», «с чего начать», «что тут вообще есть», «как у нас устроен процесс». Orients on the four-layer model and routes to the one skill that fits — it never does the work itself. Also answers which build is loaded — 'which Strata version is running', 'did the plugin update', «какая версия страты», «страта обновилась?» — this build is v0.5.0.
 ---
 
 # Using Strata
@@ -10,6 +10,18 @@ Strata makes any repo **self-describing** (the AI always knows where everything 
 
 It is a thin orchestration layer. It does **not** reimplement memory, token-proxying, or testing —
 it composes best-of-breed tools and owns one thing: the **structure / knowledge / process** spine.
+
+## Which build is this
+
+**Strata plugin v0.5.0.** This is the version of the *plugin* loaded into the current session —
+readable from this line alone, with no shell command, and true even in a repo that never adopted
+Strata. Say it plainly when asked whether the plugin updated.
+
+A repo's *installed* hooks are stamped separately in `.strata/version`, and the two are allowed to
+differ: the plugin updates the moment a new session starts, the repo's `scripts/**` only when
+someone runs `/strata:upgrade`. When they disagree the SessionStart hook prints one line saying so.
+Silence from that hook is **not** proof they agree — it is equally what you get in a repo with no
+`.strata/version` at all, so read the stamp above rather than inferring from quiet.
 
 ## The four-layer model (each tool stays in its lane)
 

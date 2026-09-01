@@ -162,3 +162,31 @@ exception, not drift behind. skills/upgrade/SKILL.md Step 3 now requires reading
 template-only new lines -> copy; local-only lines present -> stop and surface to the human.
 No code change (upgrade is instructions-driven, not a script for this part) — documented in
 the skill itself and wiki/entities/upgrade-path.md.
+
+## 2026-09-01T17:09:26Z lint
+
+- errors: 0, warnings: 0
+
+## 2026-09-01T17:25:00Z feat — version stamp readable from inside a session
+
+- Question that started it: "how do I check the plugin updated and that THIS chat is using it?"
+  Nothing answered it from inside a session. `.strata/version` is the *repo* stamp (copied
+  `scripts/**`), and [[session-start-injection]]'s nudge speaks only on mismatch — its silence
+  means "agree" OR "no `.strata/version`" OR "no `CLAUDE_PLUGIN_ROOT`", three states one quiet.
+  The version was only recoverable by comparing cached release dirs on disk (0.5.0 pinned by
+  `skills/upgrade/` existing there and not in 0.3.1/0.4.0) — a method that dies on the first
+  release shipping no new skill.
+- Shipped: version stamp in `skills/using-strata/SKILL.md` description (the one plugin-side
+  surface reaching context with no invocation, no shell, and no adopted repo — plus EN+RU
+  triggers so the question routes here) and in its body · `scripts/validate.sh` §2c: `plugin.json`
+  is the single source, checked against `marketplace.json`, both `using-strata` stamps and
+  `CLAUDE.md`; compares EVERY `vX.Y.Z` token per file and fails on missing, not only stale.
+- New page: [[version-stamp]] (+ index row). CHANGELOG `[Unreleased]`.
+- Verify: RED first (guard named exactly the 2 absent stamps, stayed silent on the 2 that already
+  agreed) → GREEN → 5 mutations / 5 killed, each with its evidence grepped before the run and each
+  restore diffed against the pre-mutation backup → `bash scripts/validate.sh` PASSED (29 P1 + 25 P2)
+  · `bash scripts/test_install.sh` PASSED · `wiki/scripts/lint.py` 0 errors, 0 warnings.
+
+## 2026-09-01T17:09:53Z lint
+
+- errors: 0, warnings: 0

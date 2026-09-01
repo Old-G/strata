@@ -6,6 +6,20 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added
+
+- **Version stamp readable from inside a session.** `skills/using-strata/SKILL.md` now carries the
+  running plugin's version in its description (so it lands in every session's skill listing without
+  a shell, an invocation, or an adopted repo) and in its body. Answers "did the plugin update, and
+  is this chat using it" — a question `.strata/version` could not answer, because that stamp is the
+  *repo's* copied `scripts/**`, and the SessionStart nudge speaks only on mismatch (its silence
+  equally means "agree", "no `.strata/version`", or "no `CLAUDE_PLUGIN_ROOT`").
+- **`validate.sh` §2c — one version, stamped everywhere it is claimed.** `plugin.json` is the single
+  source; `marketplace.json`, the `using-strata` description, the `using-strata` body, and
+  `CLAUDE.md`'s status line are checked against it. Compares every `vX.Y.Z` token in those files
+  (a half-updated file fails) and fails on a *missing* stamp, not only a stale one. 5 mutations,
+  5 killed.
+
 ## [0.5.0] — 2026-09-01
 
 The knowledge layer gets a second half. `wiki/log.md` was always a trajectory (what happened,
