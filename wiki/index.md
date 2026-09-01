@@ -69,6 +69,7 @@ solutions / Related / Sources.
 | [[wiki-emit]] | Compile `wiki/` → `llms.txt` / `llms-full.txt` / `AGENTS.md` for non-Claude agents. |
 | [[branch-state]] | P2 — `.strata/state/<branch>.json`: git-tracked episodic state (goal, decisions, wiki_debt) the append-only log couldn't hold. |
 | [[upgrade-path]] | P2 — `/strata:upgrade` re-syncs `scripts/**` into repos adopted before the current plugin version. |
+| [[version-stamp]] | Which plugin build a session loaded — stamped in `using-strata`'s description, held true by `validate.sh` §2c. |
 
 ---
 

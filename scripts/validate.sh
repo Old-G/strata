@@ -41,6 +41,55 @@ for key in ("skills", "commands"):
 sys.exit(1 if bad else 0)
 PY
 
+echo "== 2c. one version, stamped everywhere it is claimed =="
+# A version nobody can read is not a version. The entry skill carries the stamp
+# so ANY session can answer "which Strata is running" from the skill listing
+# alone -- no shell, no invocation, and it works in a repo that never adopted
+# Strata (where `.strata/version` does not exist). That is only true while the
+# stamps agree, so plugin.json is the single source and every other claim about
+# the version is checked against it, in BOTH directions: a stamp may not go
+# stale, and it may not go missing.
+python3 - <<'PY' && ok "version stamps agree (plugin.json = marketplace.json = using-strata = CLAUDE.md)" || err "version stamp check failed (see above)"
+import json, re, sys
+
+bad = False
+def fail(msg):
+    global bad
+    print(f"  {msg}", file=sys.stderr); bad = True
+
+version = json.load(open(".claude-plugin/plugin.json"))["version"]
+
+mk = json.load(open(".claude-plugin/marketplace.json"))["plugins"][0].get("version")
+if mk != version:
+    fail(f".claude-plugin/marketplace.json: v{mk} != plugin.json v{version}")
+
+SKILL = "skills/using-strata/SKILL.md"
+text = open(SKILL, encoding="utf-8").read()
+parts = text.split("---", 2)
+front, body = (parts[1], parts[2]) if len(parts) == 3 else ("", text)
+
+def stamps(s):
+    return re.findall(r"v(\d+\.\d+\.\d+)", s)
+
+for where, chunk in (("description", front), ("body", body)):
+    found = stamps(chunk)
+    if not found:
+        fail(f"{SKILL}: no version stamp in the {where} -- a session cannot tell v{version} from any other build")
+    for got in found:
+        if got != version:
+            fail(f"{SKILL} ({where}): stamped v{got}, plugin.json says v{version}")
+
+claude_md = open("CLAUDE.md", encoding="utf-8").read()
+found = stamps(claude_md)
+if not found:
+    fail(f"CLAUDE.md: no version stamp -- the repo's own status line no longer says which build it describes")
+for got in found:
+    if got != version:
+        fail(f"CLAUDE.md: stamped v{got}, plugin.json says v{version}")
+
+sys.exit(1 if bad else 0)
+PY
+
 echo "== 3. every skill has name + description frontmatter =="
 for f in skills/*/SKILL.md; do
   [ -f "$f" ] || continue
