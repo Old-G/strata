@@ -39,6 +39,12 @@ against `$CLAUDE_PLUGIN_ROOT`'s own `plugin.json` on every session and prints on
 Idempotent by construction: a clean re-run reports all `OK` and touches nothing. Never touches
 `wiki/`, `CLAUDE.md`, or application code — purely the mechanical layer.
 
+**STALE ≠ safe to overwrite.** Found running this for real on an external project: its
+`check_secrets.sh` was reported STALE, but the diff was the template PLUS ~80 lines of a real
+PII guard and a documented AWS-placeholder exception — local additions, not drift behind. The
+skill now requires reading the diff and only overwriting when it's the template's own evolution;
+a file with genuine local additions gets surfaced to the human, never silently replaced.
+
 ## Related
 
 [[enforcement-layer]] · [[session-start-injection]] · [[branch-state]]
