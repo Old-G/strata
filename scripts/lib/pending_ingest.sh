@@ -61,6 +61,12 @@ strata_pending_ingest() {
     }
 
     # Retirement: any mention of `ingest raw/<path>`, anywhere in the line.
+    # An ingest clause may list several raw/ paths at once — "ingest raw/A,
+    # raw/B -> created: ..." — so after the first hit, keep consuming
+    # comma-separated raw/ continuations too, or only the first path of a
+    # multi-file ingest ever retires (every later path silently reports as
+    # permanent backlog forever). Found via a real 338KB log: 325 markers
+    # looked outstanding; the true count was near zero.
     {
       tail = $0
       while (match(tail, /ingest[[:space:]]+raw\/[^[:space:];,)]+/)) {
@@ -68,6 +74,12 @@ strata_pending_ingest() {
         sub(/^ingest[[:space:]]+/, "", hit)
         ingested[hit] = NR                     # keep the LAST ingest per path
         tail = substr(tail, RSTART + RLENGTH)
+        while (match(tail, /^[[:space:]]*,[[:space:]]*raw\/[^[:space:];,)]+/)) {
+          hit2 = substr(tail, RSTART, RLENGTH)
+          sub(/^[[:space:]]*,[[:space:]]*/, "", hit2)
+          ingested[hit2] = NR
+          tail = substr(tail, RSTART + RLENGTH)
+        }
       }
     }
 

@@ -134,3 +134,21 @@ Corrects the previous entry's "NOT fixed (out of this scope)" note — user aske
   errors + 21 warnings, reproduced identically against the pristine pre-P2 tree via
   `git archive HEAD`, so the bug predated P2 entirely). Mirrored to
   `templates/core/wiki/scripts/lint.py` (was byte-identical to the root copy; kept that way).
+
+## 2026-09-01T15:13:55Z fix — CI failure + real-world multi-path marker bug
+
+GitHub Actions caught what local runs missed. Two fixes:
+- scripts/lib/pending_ingest.sh: the retirement regex only matched the FIRST raw/ path
+  after the word "ingest" — an ingest line listing several paths at once
+  ("ingest raw/A, raw/B -> created: ...") only ever retired the first. Found by testing
+  /strata:upgrade against a real external project's 338KB wiki/log.md: 325 markers looked
+  outstanding under the fixed-once bug from v0.4.0; the true number was near zero once this
+  second retirement bug was also fixed. Regression test added to test_p1_gates.sh (29/29 now).
+- scripts/test_p2_state.sh hardcoded the git branch name as "main" without pinning it —
+  passed locally (this machine's `init.defaultBranch` happens to be main) and failed on
+  GitHub's runner (defaults to master), because the Stop gate resolves the REAL current
+  branch at runtime and a name mismatch is a silent miss, not an error. Fixed with an
+  explicit `git checkout -b main` right after `git init` in the fixture, verified by
+  reproducing the failure locally with `git config --global init.defaultBranch master`.
+- verify: `bash scripts/validate.sh` green (29 P1 + 25 P2 assertions); CI run
+  https://github.com/Old-G/strata/actions confirms green after push.

@@ -63,6 +63,12 @@ check "re-edit after ingest reopens it" "$(bash scripts/lib/pending_ingest.sh | 
 printf 'prose mentioning pending_ingest: docs/b.md mid-sentence\n' >> wiki/log.md
 check "prose mentioning the token is ignored" "$(bash scripts/lib/pending_ingest.sh | wc -l | tr -d ' ')" "1"
 
+: > wiki/log.md
+printf -- '- pending_ingest: docs/c.md (mirrored)\n- pending_ingest: docs/d.md (mirrored)\n' > wiki/log.md
+echo '[ts] ingest raw/c.md, raw/d.md -> created: sources/c.md, sources/d.md; updated: index.md.' >> wiki/log.md
+check "a multi-path ingest line retires every listed path, not just the first" \
+  "$(bash scripts/lib/pending_ingest.sh | wc -l | tr -d ' ')" "0"
+
 echo "== A3 SessionStart injection =="
 : > wiki/log.md
 printf -- '- pending_ingest: docs/a.md (mirrored)\n' > wiki/log.md

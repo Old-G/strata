@@ -40,6 +40,20 @@ same research session (SKILL.state, arXiv:2608.26263; Prime Agent, arXiv:2608.23
 - `bash scripts/test_p2_state.sh` — behavioural tests for the validator, trigger (c), the
   SessionStart additions, and the upgrade-check diff reporter.
 
+### Fixed
+- `wiki/scripts/lint.py`'s index-membership check never recognized the `[[slug]]` wikilink
+  syntax `index.md` itself declares canonical — flagged nearly every entity/source page as
+  "not listed", and 3 documentation placeholders (`` `entities/<slug>.md` ``) as broken
+  references. Predated this release; 0 errors/0 warnings after the fix (was 3 + 21).
+- `scripts/lib/pending_ingest.sh`'s retirement regex only matched the first `raw/` path after
+  the word "ingest" — an ingest line listing several paths at once
+  (`ingest raw/A, raw/B → created: …`) only ever retired the first, leaving every later path a
+  permanent phantom marker. Found testing `/strata:upgrade` against a real 338KB `wiki/log.md`:
+  325 markers looked outstanding; the true backlog was near zero once fixed.
+- `scripts/test_p2_state.sh` hardcoded the git branch name without pinning it, passing locally
+  and failing on CI (different `init.defaultBranch` default). Pinned with an explicit
+  `git checkout -b main` in the fixture.
+
 ## [0.4.0] — 2026-08-15
 
 Wiki freshness stops being advice. P1 of the v-next brief: the enforcement layer (A1–A4) and
