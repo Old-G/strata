@@ -27,6 +27,13 @@ cd "$WORK" || exit 1
 git init -q .
 git config user.email test@strata.local
 git config user.name "Strata Test"
+# Pin the branch name — do NOT rely on the runner's `init.defaultBranch`
+# default (main locally, master on GitHub's ubuntu runners). The fixture
+# below hardcodes "main" as the branch under test, and the Stop gate reads
+# the REAL current branch via `git rev-parse --abbrev-ref HEAD`; a mismatch
+# there is silent (state lookup for a branch that doesn't exist just misses),
+# so it must be pinned, not assumed. Caught via a real CI failure.
+git checkout -q -b main
 mkdir -p docs raw wiki src scripts/lib scripts/hooks scripts/pre-commit
 cp "$TPL/lib/pending_ingest.sh"          scripts/lib/
 cp "$TPL/lib/state_tools.py"             scripts/lib/

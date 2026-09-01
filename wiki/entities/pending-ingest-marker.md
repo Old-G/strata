@@ -2,7 +2,7 @@
 title: pending_ingest marker
 type: entity
 created: 2026-08-15
-updated: 2026-08-15
+updated: 2026-09-01
 links: [raw-mirror-hook, stop-gate, commit-gate]
 ---
 
@@ -39,6 +39,17 @@ Clearing convention: an `ingest raw/<file>.md → created/updated: …` line for
 appended after the marker, retires it. Pairing is by line order, so an edit → ingest → edit-again
 cycle correctly reopens the marker. The rule lives in exactly one place —
 `scripts/lib/pending_ingest.sh` — sourced by all three gates and by the mirror hook.
+
+**v0.5.0 fix:** the retirement regex only ever matched the FIRST `raw/` path after the word
+"ingest" — a single ingest line listing several paths at once (`ingest raw/A, raw/B → created:
+…`, a batching style some projects' `wiki-ingest` convention evolved independently) only retired
+the first, leaving every later path a permanent phantom marker. Found while testing
+[[upgrade-path]] against a real project's 338KB `wiki/log.md`: 325 markers looked outstanding
+under the count-once bug already fixed in v0.4.0 — the true backlog was near zero once this
+sibling retirement bug was fixed too. Same class of failure as the earlier one, different edge
+case; both now covered by `scripts/test_p1_gates.sh`.
+
+
 
 ## Related
 
