@@ -27,9 +27,14 @@ second pass: [[branch-state]] (the episodic layer the enforcement layer was miss
 captured in conversation that never became a `docs/*.md` edit) and [[upgrade-path]] (fixes repos
 adopted before the enforcement layer existed, which had no way to receive it later).
 
-**v-next in planning**, driven by [[vnext-brief]]. [[hq-mode]] is next; the rest of P3 holds
-[[ablate]], [[session-reflector]], [[gardener]], [[executable-wiki]], [[career-ledger]],
-[[agent-teams]], and [[wiki-emit]].
+**Next: P3 — the right side of the loop** ([[sdlc-right-side]], spec + plan approved
+2026-09-01, target v0.7.0): routing evals for the probabilistic half, a `PreToolUse` guard for
+`raw/` and for test files mid-fix, and a diff-vs-plan review at branch close. Triggered by
+Anthropic's AI-Native SDLC playbook, which turned out to be ADR #1 in other words.
+
+**Still in planning**, driven by [[vnext-brief]]: [[hq-mode]], then [[ablate]],
+[[session-reflector]], [[gardener]] (now carrying the playbook's `bands.yaml` σ-tier pattern as
+its reference design), [[executable-wiki]], [[career-ledger]], [[agent-teams]], [[wiki-emit]].
 
 The knowledge layer of this repo was bootstrapped on 2026-08-15 — Strata had shipped the wiki
 pipeline as a template without running it on itself.

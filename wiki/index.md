@@ -40,6 +40,7 @@ One page per file in `raw/`, holding a 3–7 paragraph summary (never a copy).
 | [[ai-led-onboarding-design]] | v0.2 design: one line to install and conduct setup, and the reload seam that cannot be automated away. |
 | [[ai-led-onboarding-plan]] | The six tasks that shipped v0.2.0, and the release rule they taught (bump both manifests or the marketplace serves the old build). |
 | [[episodic-state-layer]] | P2 (2026-09-01): the episodic branch-state layer + the `/strata:upgrade` re-sync path, and the four decisions that shaped them. |
+| [[sdlc-right-side]] | P3 spec + plan (2026-09-01): the AI-Native SDLC playbook read against v0.6.1 — routing evals, PreToolUse guards, diff-vs-plan review; decisions D1–D4 settled. |
 
 _All files in `raw/` are ingested as of 2026-09-01._
 

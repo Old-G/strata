@@ -243,3 +243,19 @@ the skill itself and wiki/entities/upgrade-path.md.
 ## 2026-09-01T19:29:52Z lint
 
 - errors: 0, warnings: 0
+
+## 2026-09-01T20:33:31Z auto-mirror
+
+- pending_ingest: docs/superpowers/specs/2026-09-01-sdlc-right-side.md (mirrored docs/ -> raw/, ingest still owed)
+
+## 2026-09-01T20:34:32Z auto-mirror
+
+- pending_ingest: docs/superpowers/plans/2026-09-01-sdlc-right-side-plan.md (mirrored docs/ -> raw/, ingest still owed)
+
+## 2026-09-01T20:35:33Z ingest — P3 spec + plan (right side of the loop)
+
+[2026-09-01T20:35:33Z] ingest raw/superpowers/specs/2026-09-01-sdlc-right-side.md → created: sources/sdlc-right-side.md; updated: index.md, overview.md — retires the marker for docs/superpowers/specs/2026-09-01-sdlc-right-side.md
+[2026-09-01T20:35:33Z] ingest raw/superpowers/plans/2026-09-01-sdlc-right-side-plan.md → covered by sources/sdlc-right-side.md (spec and plan share one source page, as p1-enforce-route-plan did) — retires the marker for docs/superpowers/plans/2026-09-01-sdlc-right-side-plan.md
+- Source: Anthropic's "AI-Native SDLC playbook" (2026-08-21). Verdict recorded: independent confirmation of ADR #1; gaps are all right of Build — routing evals (claude plugin eval is already in the CLI), PreToolUse guards (none shipped today), diff-vs-plan review at light-finish.
+- Decisions D1–D4 are settled in the spec so the implementing session does not re-litigate; the playbook's org structure (roles, intent.md stage) is explicitly rejected — mechanisms only.
+- Next: a fresh session executes the plan on a branch; version target 0.7.0.
