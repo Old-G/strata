@@ -163,6 +163,34 @@ check "reports the exit code as drifted"    "$(bash "$TPL/strata_upgrade_check.s
 check "names the stale file"                "$(printf '%s' "$out" | grep -c '^STALE    hooks/a.sh$')" "1"
 check "names the missing file"              "$(printf '%s' "$out" | grep -c '^MISSING  lib/b.sh$')" "1"
 
+# A file can differ in TWO opposite directions, and one word for both is a trap:
+# the template may have moved ahead (re-sync is the fix), or the INSTALLED file
+# may have — a project bolting real guards onto a shipped script. Copying over
+# the second case DELETES those guards. Measured on a real repo: HorOS's
+# check_secrets.sh is the template plus 59 lines (a guest-phone PII guard, an
+# AWS-placeholder exception), reported as STALE every run, so the check's exit
+# code was permanently 1 and therefore worthless as a gate.
+mkdir -p tpl_fixture/pre-commit installed_fixture/pre-commit
+printf 'echo base\n' > tpl_fixture/pre-commit/c.sh
+printf 'echo base\necho local guard\n' > installed_fixture/pre-commit/c.sh
+out="$(bash "$TPL/strata_upgrade_check.sh" tpl_fixture installed_fixture)"
+check "installed-ahead is AHEAD, not STALE" "$(printf '%s' "$out" | grep -c '^AHEAD    pre-commit/c.sh$')" "1"
+
+# Positive control on the direction: the SAME file, with the template also
+# carrying a line the installed one lacks, must stay STALE — otherwise AHEAD
+# would swallow genuine template evolution and the repo would never re-sync.
+printf 'echo base\necho template evolved\n' > tpl_fixture/pre-commit/c.sh
+out="$(bash "$TPL/strata_upgrade_check.sh" tpl_fixture installed_fixture)"
+check "both-diverged stays STALE"           "$(printf '%s' "$out" | grep -c '^STALE    pre-commit/c.sh$')" "1"
+
+# AHEAD alone is not drift: nothing to copy, so the gate must go green. This is
+# the whole point — a check that can never exit 0 gets ignored.
+rm -rf tpl_fixture installed_fixture
+mkdir -p tpl_fixture/pre-commit installed_fixture/pre-commit
+printf 'echo base\n' > tpl_fixture/pre-commit/c.sh
+printf 'echo base\necho local guard\n' > installed_fixture/pre-commit/c.sh
+check "AHEAD alone exits clean"             "$(bash "$TPL/strata_upgrade_check.sh" tpl_fixture installed_fixture >/dev/null 2>&1; echo $?)" "0"
+
 echo "== .gitignore carve-out =="
 touch .strata/sessions/probe.start 2>/dev/null || mkdir -p .strata/sessions && touch .strata/sessions/probe.start
 mkdir -p .strata/state && touch .strata/state/probe.json

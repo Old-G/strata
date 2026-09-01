@@ -6,6 +6,22 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.6.1] — 2026-09-01
+
+### Fixed
+
+- **`strata_upgrade_check.sh` can now be satisfied.** A repo that deliberately extends a shipped
+  script was reported `STALE` on every run, so the check exited 1 forever — a guard nobody can
+  satisfy is a guard nobody reads. Measured on a real repo: `check_secrets.sh` there is the
+  template plus 59 lines (a guest-phone PII guard, an AWS-placeholder exception). A fourth verdict
+  `AHEAD` decides the *direction* of the difference in the script instead of asking a human to
+  diff every file: no template line absent from the installed file ⇒ the installed file is the
+  template plus local lines, nothing to copy, reported but not a failure. Genuine template
+  evolution always leaves a line the installed file lacks, so a real `STALE` cannot be misread;
+  a reordered file reported `STALE` is the safe way to be wrong. `/strata:upgrade` updated to
+  match. 4 mutations, 4 killed — including one proving the `pipefail` workaround is load-bearing
+  (`diff` exits 1 on any difference and would poison a `diff | grep` pipeline's status).
+
 ## [0.6.0] — 2026-09-01
 
 A build nobody can name is a build nobody can verify. `.strata/version` answers for the *repo's*

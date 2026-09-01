@@ -24,17 +24,21 @@ bash "${CLAUDE_PLUGIN_ROOT}/templates/core/scripts/strata_upgrade_check.sh" \
   "${CLAUDE_PLUGIN_ROOT}/templates/core/scripts"
 ```
 
-It prints one `OK|STALE|MISSING <path>` line per template file and exits 0 when everything
-matches. If this project has no `scripts/` at all, that itself is the finding — Strata's
+It prints one `OK|AHEAD|STALE|MISSING <path>` line per template file and exits 0 when there is
+nothing to copy. `AHEAD` means the installed file is the template **plus** local lines — the repo
+is not behind, and copying would delete those lines; it is reported but does not fail the check.
+If this project has no `scripts/` at all, that itself is the finding — Strata's
 enforcement layer was never installed here (offer `/strata:adopt` or `/strata:init` instead;
 this skill only *re-syncs*, it doesn't do first-time install).
 
 **Verify:** you can state, in one sentence, whether the repo is clean or which files are
-MISSING/STALE — before touching anything.
+MISSING/STALE/AHEAD — before touching anything.
 
 ## Step 2 — If clean, say so and stop
 
-Exit 0 with no MISSING/STALE lines means the scripts are current. Report that plainly — don't
+Exit 0 means there is nothing to copy. That includes a repo whose only divergence is `AHEAD`:
+say which files those are and that they were deliberately left alone, then stop. Report that
+plainly — don't
 manufacture work — then still do Step 4 (stamp `.strata/version`): scripts can be byte-identical
 while the version stamp itself is stale or missing, and that stamp is the only thing that lets
 SessionStart notice drift on its own next time.
@@ -47,15 +51,21 @@ SessionStart notice drift on its own next time.
 2. For every MISSING file: copy it from `${CLAUDE_PLUGIN_ROOT}/templates/core/scripts/<path>` to
    `scripts/<path>` (preserving the subpath) and `chmod +x` it.
 
-   For every STALE file: **read the diff before copying.** A STALE verdict means "differs from
-   the template" — it does NOT mean "safe to overwrite". `check_secrets.sh` in particular tends
-   to accumulate real, project-specific guards (a PII pattern from an actual incident, a
-   documented false-positive exception) that a blind overwrite would silently delete — caught
-   exactly this way on a real repo: `diff` showed the installed file was the template PLUS ~80
-   lines of legitimate local additions, not behind it. If the diff is the template's own
-   evolution (new lines only the template has), copy it. If the diff includes lines the *local*
-   file has that the template doesn't, STOP — show the human both sides and let them decide
-   (keep local, take template, or hand-merge); never resolve that silently in either direction.
+   For every STALE file: **read the diff before copying.** STALE means the template carries at
+   least one line the installed file lacks — that is real drift — but the installed file may
+   *also* carry local lines of its own, and a blind copy deletes them. `check_secrets.sh` in
+   particular tends to accumulate real, project-specific guards (a PII pattern from an actual
+   incident, a documented false-positive exception). If the diff is only the template's own
+   evolution, copy it. If BOTH sides have exclusive lines, STOP — show the human both sides and
+   let them decide (keep local, take template, or hand-merge); never resolve that silently in
+   either direction.
+
+   For every `AHEAD` file: **do not copy it, and do not treat it as a finding.** The check already
+   established that the plugin has nothing this repo is missing — the installed file is the
+   template plus local lines. Name the files and move on. Measured on a real repo: HorOS's
+   `check_secrets.sh` is the template plus 59 lines (a guest-phone PII guard, an AWS-placeholder
+   exception). Before `AHEAD` existed those 59 lines made the check exit 1 on every single run,
+   so the repo could never reach a clean state and the exit code stopped meaning anything.
 
    Do not touch files the check reported `OK`, and do not touch any script under `scripts/` that
    has no counterpart in the templates tree at all — that's the project's own, not Strata's.

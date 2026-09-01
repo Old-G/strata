@@ -18,9 +18,13 @@
 #
 # Output (stdout), one line per file relative to scripts/:
 #   MISSING  <path>     installed repo has no such file at all
-#   STALE    <path>     both exist, content differs
+#   STALE    <path>     both exist, the TEMPLATE has lines the installed file lacks
+#   AHEAD    <path>     both exist, the INSTALLED file is the template PLUS local
+#                       lines — re-syncing would DELETE project-specific guards
 #   OK       <path>     both exist, byte-identical
-# Exit 0 when nothing is MISSING or STALE (clean — nothing to do).
+# Exit 0 when nothing is MISSING or STALE (clean — nothing to COPY; AHEAD is
+#   reported but is not drift, so a repo that deliberately extends a shipped
+#   script can still reach a green check instead of failing forever).
 # Exit 1 when at least one file needs attention.
 # Exit 2 on usage error (bad args, templates dir not found).
 
@@ -47,8 +51,29 @@ while IFS= read -r -d '' tpl_file; do
     echo "MISSING  $rel"
     status=1
   elif ! cmp -s "$tpl_file" "$installed_file"; then
-    echo "STALE    $rel"
-    status=1
+    # "Differs" hides two OPPOSITE situations, and reporting one word for both
+    # is what made this check useless on a real repo. Either the template moved
+    # ahead (re-sync is the fix), or the INSTALLED file did — a project bolting
+    # genuine guards onto a shipped script, which a copy would silently DELETE.
+    #
+    # Direction is decidable: if no template line is absent from the installed
+    # file, the installed file is the template PLUS local additions. A template
+    # that truly evolved always leaves at least one line the installed file
+    # lacks, so a real STALE can never be misread as AHEAD; the reverse (a
+    # reordered file reported STALE) is the safe way to be wrong.
+    #
+    # NOTE: `diff | grep` cannot be used directly here — `set -o pipefail` is on,
+    # and diff exits 1 whenever files differ, which would poison the pipeline
+    # status regardless of what grep found.
+    file_diff="$(diff "$tpl_file" "$installed_file" || true)"
+    if printf '%s\n' "$file_diff" | grep -q '^<'; then
+      echo "STALE    $rel"
+      status=1
+    else
+      # Nothing to copy: the plugin has nothing this repo is missing. Printed,
+      # not silenced — the human still needs to see that the file diverged.
+      echo "AHEAD    $rel"
+    fi
   else
     echo "OK       $rel"
   fi

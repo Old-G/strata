@@ -2,7 +2,7 @@
 
 Claude Code plugin that packages a reusable way to run AI-assisted projects: AI-navigable wiki,
 architecture canon, spec→plan→TDD feature flow, a parallel review council, and drift detection with
-staged refactor. **State:** v0.6.0 — deterministic wiki freshness (hook + commit gates), native
+staged refactor. **State:** v0.6.1 — deterministic wiki freshness (hook + commit gates), native
 command-free invocation, and an episodic branch-state layer with a hook-driven upgrade path so
 gates re-sync into repos adopted before they existed. This repo dogfoods its own patterns,
 including its own `wiki/` and gates.
