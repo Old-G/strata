@@ -1,6 +1,6 @@
 ---
 name: using-strata
-description: Use at the START of work in a Strata repo, or when the user mentions Strata without naming an operation — 'what is this repo', 'how do we work here', «страта», «с чего начать», «что тут вообще есть», «как у нас устроен процесс». Orients on the four-layer model and routes to the one skill that fits — it never does the work itself. Also answers which build is loaded — 'which Strata version is running', 'did the plugin update', «какая версия страты», «страта обновилась?» — this build is v0.6.0.
+description: Use at the START of work in a Strata repo, or when the user mentions Strata without naming an operation — 'what is this repo', 'how do we work here', «страта», «с чего начать», «что тут вообще есть», «как у нас устроен процесс». Orients on the four-layer model and routes to the one skill that fits — it never does the work itself. Also answers which build is loaded — 'which Strata version is running', 'did the plugin update', «какая версия страты», «страта обновилась?» — this build is v0.6.1.
 ---
 
 # Using Strata
@@ -13,7 +13,7 @@ it composes best-of-breed tools and owns one thing: the **structure / knowledge 
 
 ## Which build is this
 
-**Strata plugin v0.6.0.** This is the version of the *plugin* loaded into the current session —
+**Strata plugin v0.6.1.** This is the version of the *plugin* loaded into the current session —
 readable from this line alone, with no shell command, and true even in a repo that never adopted
 Strata. Say it plainly when asked whether the plugin updated.
 
