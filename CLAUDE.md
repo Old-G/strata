@@ -2,7 +2,10 @@
 
 Claude Code plugin that packages a reusable way to run AI-assisted projects: AI-navigable wiki,
 architecture canon, spec→plan→TDD feature flow, a parallel review council, and drift detection with
-staged refactor. **State:** v0.4.0 — deterministic wiki freshness (hook + commit gates) and native, command-free invocation. This repo dogfoods its own patterns, including its own `wiki/` and gates.
+staged refactor. **State:** v0.5.0 — deterministic wiki freshness (hook + commit gates), native
+command-free invocation, and an episodic branch-state layer with a hook-driven upgrade path so
+gates re-sync into repos adopted before they existed. This repo dogfoods its own patterns,
+including its own `wiki/` and gates.
 
 ## Phase / status
 
@@ -10,14 +13,16 @@ staged refactor. **State:** v0.4.0 — deterministic wiki freshness (hook + comm
 |---|---|
 | Plugin installs (`plugin.json` + `marketplace.json` valid) | 🔄 building |
 | Entry skill `using-strata` routes to all commands | ✅ |
-| Skills: init / adopt / audit / refactor / feature / office-hours / autoplan / wiki-ingest / onboard / lean-plan / light-finish | 🔄 building |
+| Skills: init / adopt / audit / refactor / feature / office-hours / autoplan / wiki-ingest / onboard / lean-plan / light-finish / upgrade | 🔄 building |
 | One-line AI-led onboarding (BOOTSTRAP.md + install.sh + /strata:onboard) | ✅ verified end-to-end |
 | Adaptive ceremony in /strata:feature (triage + tiers + effort + lens-selected council) | 🔄 building |
 | Council subagents (ceo / eng / design / cso) | 🔄 building |
 | Enforcement layer (A1 Stop gate · A2 commit gate · A3 SessionStart inject · A4 drift-close) | ✅ 28/28 behavioural tests green |
-| Native invocation — EN+RU trigger specs on all 12 skills, routing map, coordinator | ✅ enforced by validate.sh |
+| Native invocation — EN+RU trigger specs on all 13 skills, routing map, coordinator | ✅ enforced by validate.sh |
 | This repo runs its own wiki pipeline (`wiki/` + `raw/` + gates) | ✅ bootstrapped 2026-08-15 |
 | Templates: core + python-fastapi stack pack | ✅ seeded from a production project, genericized |
+| Episodic state layer (`.strata/state/`) + Stop-gate trigger (c) + SessionStart summary | ✅ `test_p2_state.sh` green |
+| `/strata:upgrade` — re-syncs `scripts/**` into repos adopted before this version | ✅ fixes the confirmed no-gates-installed case |
 | Verified by adopting a real external project | ⬜ pending (user will test elsewhere) |
 
 ## Stack
@@ -32,7 +37,7 @@ Claude Code plugin · Markdown skills + subagents · bundled shell/python templa
 - `templates/core/` — portable assets: `PROJECT_PATTERN.md`, `WIKI.md`, `wiki/` skeleton, `scripts/`, CLAUDE/ADR templates.
 - `templates/stacks/<stack>/` — per-stack architecture canon (`SCALABLE_ARCHITECTURE_REFERENCE.md`) + scaffold generator.
 - `reference/` — council personas, Diataxis doc-map, tool-integration (RTK / claude-mem / Caveman).
-- `templates/core/scripts/` — installed per target project: `sync_raw_mirror.sh`, `lib/pending_ingest.sh` (the one marker rule), `hooks/` (SessionStart + Stop), `pre-commit/` guards.
+- `templates/core/scripts/` — installed per target project: `sync_raw_mirror.sh`, `lib/pending_ingest.sh` (the one marker rule), `lib/state_tools.py` (the episodic-state schema/validator), `hooks/` (SessionStart + Stop), `pre-commit/` guards, `strata_upgrade_check.sh` (re-sync diff reporter, backs `/strata:upgrade`).
 - `docs/superpowers/{specs,plans}/` — Strata's own design specs & plans (dated).
 - `raw/`, `wiki/` — this repo's own knowledge layer; `.githooks/` — its own pre-commit guards.
 
@@ -46,6 +51,7 @@ claude --plugin-dir /Users/glebzavalov/Desktop/Projects/strata
 # validate everything (manifests, skills, gates behaviour)
 bash scripts/validate.sh
 bash scripts/test_p1_gates.sh            # 28 behavioural assertions on A1/A2/A3
+bash scripts/test_p2_state.sh            # state schema/validator, Stop-gate trigger (c), upgrade check
 
 # enable this repo's own guards once per clone
 git config core.hooksPath .githooks

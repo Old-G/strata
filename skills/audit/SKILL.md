@@ -87,6 +87,14 @@ Record each as `[severity | structure | file:line | rule | suggested fix]`.
    `docs/`.
 4. **glossary drift:** if `wiki/glossary.md` has hash-pinned SoT facts
    (formulas, schema versions), re-hash the primary source and flag mismatches.
+5. **Branch state (P2 episodic layer):** for each `.strata/state/*.json`, check whether its
+   `branch` still exists (`git branch --list <branch>`, local or `git branch -r --list
+   'origin/<branch>'`). None found = MEDIUM "orphaned state file — branch closed without
+   light-finish retiring it" (name the path). For files whose branch is alive, count
+   `decisions[]` entries with `trust: "session"` (the default — nothing promotes these
+   automatically) and add a LOW note: "N unreviewed decision(s) in <path> — never auto-promoted
+   to wiki/, review or fold in manually." A missing `.strata/state/` directory entirely is not a
+   finding — the layer is optional and incremental, same as `wiki/` itself.
 
 ## Phase 3 — Doc freshness (Diataxis coverage map)
 

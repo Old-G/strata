@@ -48,3 +48,11 @@ Thumbs.db
 # raw/ is the read-only AI mirror of docs/ (see WIKI.md / PROJECT_PATTERN §1).
 # It is version-controlled on purpose so AI agents read a stable snapshot.
 # Do NOT add raw/ here. The sync_raw_mirror.sh hook keeps it in step with docs/.
+
+# --- Strata enforcement-layer state ---
+# .strata/sessions/ (gate cadence) and .strata/version (upgrade stamp) are
+# ephemeral local bookkeeping — ignored. .strata/state/ is the episodic
+# branch-state layer and IS committed on purpose (must survive a machine
+# change or a /clear). Do NOT collapse this back to a blanket ".strata/" line.
+.strata/*
+!.strata/state/

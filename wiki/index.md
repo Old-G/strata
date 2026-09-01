@@ -39,8 +39,9 @@ One page per file in `raw/`, holding a 3–7 paragraph summary (never a copy).
 | [[adaptive-ceremony-plan]] | The nine tasks that shipped v0.3.0, including the grep that asserts an absence of self-verification scaffolding. |
 | [[ai-led-onboarding-design]] | v0.2 design: one line to install and conduct setup, and the reload seam that cannot be automated away. |
 | [[ai-led-onboarding-plan]] | The six tasks that shipped v0.2.0, and the release rule they taught (bump both manifests or the marketplace serves the old build). |
+| [[episodic-state-layer]] | P2 (2026-09-01): the episodic branch-state layer + the `/strata:upgrade` re-sync path, and the four decisions that shaped them. |
 
-_All files in `raw/` are ingested as of 2026-08-15._
+_All files in `raw/` are ingested as of 2026-09-01._
 
 ---
 
@@ -66,6 +67,8 @@ solutions / Related / Sources.
 | [[session-reflector]] | ACE-style playbook growth: delta bullets of what worked and what failed, never rewrites. |
 | [[agent-teams]] | Native multi-agent primitive and the council v2 it unlocks (reviewers who argue before synthesis). |
 | [[wiki-emit]] | Compile `wiki/` → `llms.txt` / `llms-full.txt` / `AGENTS.md` for non-Claude agents. |
+| [[branch-state]] | P2 — `.strata/state/<branch>.json`: git-tracked episodic state (goal, decisions, wiki_debt) the append-only log couldn't hold. |
+| [[upgrade-path]] | P2 — `/strata:upgrade` re-syncs `scripts/**` into repos adopted before the current plugin version. |
 
 ---
 
@@ -79,6 +82,7 @@ One page per architectural decision: `decisions/adr-<n>-<slug>.md`.
 | [ADR #2](decisions/adr-2-native-invocation.md) | Skill descriptions are the routing surface; EN+RU triggers inline (resolves OQ#5). |
 | [ADR #3](decisions/adr-3-hq-nested-layout.md) | Projects live inside HQ; registry auto-discovered (resolves OQ#2). |
 | [ADR #4](decisions/adr-4-stop-gate-session-scope.md) | The Stop gate blocks only on current-session markers (resolves OQ#1). |
+| [ADR #5](decisions/adr-5-episodic-state-branch-scoped.md) | Branch state is git-tracked and branch-scoped, not session-scoped like the gate stamps it sits next to. |
 
 ---
 

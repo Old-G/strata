@@ -120,6 +120,18 @@ else
   err "scripts/test_p1_gates.sh is missing"
 fi
 
+echo "== 10. P2 episodic state layer behaves (state_tools.py, Stop-gate trigger c, upgrade check) =="
+if [ -f scripts/test_p2_state.sh ]; then
+  if out="$(bash scripts/test_p2_state.sh 2>&1)"; then
+    ok "$(printf '%s' "$out" | tail -n 1)"
+  else
+    printf '%s\n' "$out" | grep '✗' >&2
+    err "P2 state layer tests failed (run: bash scripts/test_p2_state.sh)"
+  fi
+else
+  err "scripts/test_p2_state.sh is missing"
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then echo "✅ Strata plugin validation PASSED"; else echo "❌ validation FAILED"; fi
 exit "$fail"

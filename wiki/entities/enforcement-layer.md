@@ -2,8 +2,8 @@
 title: Enforcement layer
 type: entity
 created: 2026-08-15
-updated: 2026-08-15
-links: [stop-gate, commit-gate, session-start-injection, pending-ingest-marker]
+updated: 2026-09-01
+links: [stop-gate, commit-gate, session-start-injection, pending-ingest-marker, branch-state]
 ---
 
 # Enforcement layer
@@ -41,10 +41,16 @@ Scripts live in `templates/core/scripts/hooks/` and `templates/core/scripts/pre-
 Per the Boris Cherny ablation principle (see [[ablate]]), this layer is **exempt from the
 purge**: it encodes invariants, not model-capability scaffolding.
 
+**v0.5.0 extends the invariant beyond `docs/*.md`:** [[branch-state]] gives the [[stop-gate]] a
+fourth signal — non-empty `wiki_debt` in the branch's own state file — so knowledge captured in
+conversation (a decision, a gotcha) that never became a doc edit is no longer invisible to the
+gates. [[upgrade-path]] (`/strata:upgrade`) is the companion fix for the layer's own bootstrap
+problem: a repo adopted before these hooks existed had no way to receive them later.
+
 ## Related
 
 [[stop-gate]] · [[commit-gate]] · [[session-start-injection]] · [[pending-ingest-marker]] ·
-[[raw-mirror-hook]] · [[native-invocation]] · [[ablate]]
+[[raw-mirror-hook]] · [[native-invocation]] · [[ablate]] · [[branch-state]] · [[upgrade-path]]
 
 ## Sources
 

@@ -9,10 +9,16 @@
       "name": "strata",
       "source": "./",
       "description": "Make any repo self-describing and self-correcting: AI-navigable wiki, architecture canon, spec->plan->TDD feature flow, a parallel review council, and drift detection with staged refactor.",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "license": "MIT",
       "category": "workflow",
-      "keywords": ["scaffolding", "architecture", "wiki", "drift-detection", "refactoring"]
+      "keywords": [
+        "scaffolding",
+        "architecture",
+        "wiki",
+        "drift-detection",
+        "refactoring"
+      ]
     }
   ]
 }

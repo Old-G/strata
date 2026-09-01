@@ -10,6 +10,10 @@ description: Use when implemented work needs integrating and the branch wrapped 
 3. **Do it.** Git safety holds: never a silent write to the default branch; keep commits reversible; if on the default branch, branch first.
 4. **Drift-close — not optional.** Run `/strata:wiki-ingest` on every `docs/*.md` the branch touched. If only code changed, append a one-line summary to `wiki/log.md` and update the affected `wiki/entities/` pages. This is the moment the knowledge layer is supposed to catch up; the Stop and commit gates exist because it used to get skipped here.
    `verify`: `bash scripts/lib/pending_ingest.sh` prints nothing.
+   If `.strata/state/<branch-slug>.json` exists (`python3 scripts/lib/state_tools.py path <branch>`),
+   fold its `decisions` and `gotchas` into this same `wiki/log.md` entry, then delete the state
+   file. A closed branch has no business leaving scratch state behind once its reviewed content
+   has moved to `wiki/` — a stale file here just becomes a future `audit` "orphaned state" finding.
 5. **Clean up** the branch after a merge or discard.
 
 If the project's release rule requires a version bump or changelog entry (see `CONTRIBUTING.md`), do that as part of finishing; otherwise skip it.

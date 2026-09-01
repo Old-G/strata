@@ -13,6 +13,13 @@
 # "markers this session created" from "markers that were already there".
 # See ADR #4.
 #
+# P2 additions (docs/superpowers/specs/2026-09-01-episodic-state-layer.md):
+# if the current branch has a .strata/state/<slug>.json, print its summary —
+# this is the "pop up what we already knew" half of the episodic-state layer;
+# the Stop gate's trigger (c) is the "don't let it go stale" half. And if
+# .strata/version disagrees with the plugin actually running, say so once —
+# the whole point of /strata:upgrade is that this can no longer go unnoticed.
+#
 # Install: SessionStart hook in the project's .claude/settings.json.
 # Exit code is always 0 — a context hook must never break session startup.
 
@@ -25,7 +32,7 @@ cd "$REPO_ROOT" || exit 0
 LOG="wiki/log.md"
 INDEX="wiki/index.md"
 MAX_PENDING_SHOWN=5
-MAX_INDEX_ROWS=20
+MAX_INDEX_ROWS=15
 
 # --- session stamp -----------------------------------------------------------
 # Read session_id from the hook payload; tolerate no stdin, empty stdin, or junk.
@@ -68,6 +75,24 @@ dirty="$(git status --porcelain 2>/dev/null | grep -c . || true)"
 
 echo "## Strata context"
 echo "Branch: ${branch} · uncommitted files: ${dirty:-0}"
+
+# --- branch state summary (P2) -----------------------------------------------
+STATE_TOOLS="$SCRIPT_DIR/../lib/state_tools.py"
+if [ -f "$STATE_TOOLS" ] && [ "$branch" != "?" ]; then
+  state_path="$(python3 "$STATE_TOOLS" path "$branch" 2>/dev/null)"
+  [ -n "$state_path" ] && [ -f "$state_path" ] && python3 "$STATE_TOOLS" summary "$state_path" 2>/dev/null
+fi
+
+# --- plugin version nudge (P2) ------------------------------------------------
+if [ -f .strata/version ] && [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] \
+   && [ -f "${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json" ]; then
+  installed_v="$(cat .strata/version 2>/dev/null | tr -d '[:space:]')"
+  running_v="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
+    "${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json" | head -1)"
+  if [ -n "$installed_v" ] && [ -n "$running_v" ] && [ "$installed_v" != "$running_v" ]; then
+    echo "Strata plugin is v${running_v}; installed hooks are v${installed_v} — run /strata:upgrade."
+  fi
+fi
 
 if [ -f "$SCRIPT_DIR/../lib/pending_ingest.sh" ]; then
   # shellcheck source=../lib/pending_ingest.sh

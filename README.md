@@ -210,6 +210,7 @@ All skills are invoked as `/strata:<name>` and are also auto-suggested by Claude
 | `/strata:light-finish` | Wrap up a branch: confirm green, then merge / PR / keep / discard, and clean up | An integrated (or cleanly parked) branch |
 | `/strata:autoplan` | Run the review council automatically; surface only taste calls & disagreements | A build-ready plan |
 | `/strata:wiki-ingest` | The karpathy `ingest` / `query` / `lint` protocol over docs → raw → wiki | Updated `wiki/` |
+| `/strata:upgrade` | Re-sync a repo's installed hooks with the plugin currently running — fixes a repo adopted before this version shipped | Current `scripts/**` + merged `.claude/settings.json` |
 
 ### Examples
 
@@ -299,6 +300,15 @@ wiki/   ── AI writes & queries (index, sources, entities, decisions, glossar
 
 The full protocol lives in the bundled [`templates/core/WIKI.md`](templates/core/WIKI.md).
 
+**`wiki/log.md` is a trajectory, not a state.** It answers "what happened, in order" — useful for
+an audit trail, useless for "what do we currently know about this branch". That's what
+`.strata/state/<branch>.json` is for: a small, schema-validated, git-tracked file (see
+`scripts/lib/state_tools.py`) holding the branch's goal, decisions (each with a `why` and a
+`trust: session|reviewed` flag — nothing auto-promotes an unreviewed decision into `wiki/`),
+open questions, gotchas, and `wiki_debt` — knowledge that owes the wiki but isn't a `docs/*.md`
+edit yet. SessionStart injects its summary; the Stop gate blocks once while `wiki_debt` is
+non-empty; `light-finish` folds it into `wiki/log.md` and deletes it when the branch closes.
+
 ---
 
 ## Hooks — the enforcement layer
@@ -310,7 +320,7 @@ is a hook in Strata, not a paragraph. Three of them keep the wiki honest:
 |---|---|---|
 | `scripts/sync_raw_mirror.sh` | `PostToolUse` | Mirrors an edited `docs/*.md` into `raw/` and records a `pending_ingest` marker in `wiki/log.md`. |
 | `scripts/hooks/strata_session_start.sh` | `SessionStart` | Injects ≤50 lines of state — branch, pending ingests, the head of `wiki/index.md` — into every session, and stamps where the session began. |
-| `scripts/hooks/strata_stop_gate.sh` | `Stop` | Refuses to end the turn **once** if this session left the wiki behind. |
+| `scripts/hooks/strata_stop_gate.sh` | `Stop` | Refuses to end the turn **once** if this session left the wiki behind — including a non-empty `wiki_debt` in the current branch's `.strata/state/*.json`, the episodic state layer. |
 | `scripts/pre-commit/check_wiki_fresh.sh` | pre-commit | Fails the commit while any doc is mirrored but un-ingested. |
 
 **Nothing is installed globally.** The plugin ships these as templates; `init`/`adopt` copy them

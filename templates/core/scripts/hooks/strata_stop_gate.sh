@@ -17,13 +17,18 @@
 #                                          continuation per session, ever.
 # A gate that fires forever is worse than no gate.
 #
-# TRIGGERS (either one blocks):
+# TRIGGERS (any one blocks):
 #   a) pending_ingest markers created AFTER this session started (ADR #4 — older
 #      markers are the commit gate's job, not an interruption you did not earn).
 #   b) substantive code-only change with nothing written to wiki/log.md this
 #      session. Threshold: STRATA_STOP_GATE_LINES changed lines outside
 #      wiki/ raw/ docs/ (default 50; set 0 to disable this trigger).
 #      Always satisfiable in one line — including an explicit "no-wiki-impact:".
+#   c) the current branch's .strata/state/<slug>.json (see lib/state_tools.py —
+#      P2, docs/superpowers/specs/2026-09-01-episodic-state-layer.md) has a
+#      non-empty wiki_debt array, or exists but fails schema validation. A
+#      MISSING state file is not a trigger — the layer stays adoptable
+#      incrementally, same as (a) and (b) on a project with no wiki/ at all.
 #
 # Install: Stop hook in the project's .claude/settings.json. Requires the
 # SessionStart hook to be installed too, or it is inert by design.
@@ -109,6 +114,36 @@ if [ -z "$reason" ] && [ "$LINES_THRESHOLD" -gt 0 ]; then
       reason="${reason}Append ONE line to wiki/log.md before stopping: either a summary of what changed and why,\n"
       reason="${reason}or, if this genuinely has no knowledge impact, 'no-wiki-impact: <reason>'.\n"
       reason="${reason}Update affected wiki/entities/ pages if the change altered how something works."
+    fi
+  fi
+fi
+
+# --- trigger (c): branch state owes the wiki, or is corrupt -------------------
+# python3 only runs when a state file actually exists — the clean-state (no
+# file) path stays a single [ -f ] check, so projects that never adopted the
+# state layer pay nothing here.
+if [ -z "$reason" ]; then
+  branch_now="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)"
+  STATE_TOOLS="$SCRIPT_DIR/../lib/state_tools.py"
+  if [ -n "$branch_now" ] && [ "$branch_now" != "HEAD" ] && [ -f "$STATE_TOOLS" ]; then
+    state_path="$(python3 "$STATE_TOOLS" path "$branch_now" 2>/dev/null)"
+    if [ -n "$state_path" ] && [ -f "$state_path" ]; then
+      if ! v_out="$(python3 "$STATE_TOOLS" validate "$state_path" 2>&1)"; then
+        reason="Branch state file is invalid: ${state_path}\n$(sanitize "$v_out")\n\n"
+        reason="${reason}Fix it (or re-init with state_tools.py init) before stopping."
+      else
+        debt="$(python3 "$STATE_TOOLS" debt "$state_path" 2>/dev/null)"
+        n_debt="$(printf '%s' "$debt" | grep -c . || true)"
+        if [ "${n_debt:-0}" -gt 0 ]; then
+          reason="Branch state still owes the wiki (${n_debt} item(s) in wiki_debt):\n"
+          while IFS= read -r item; do
+            [ -z "$item" ] && continue
+            reason="${reason}  - $(sanitize "$item")\n"
+          done <<< "$debt"
+          reason="${reason}\nEither fold these into wiki/log.md now, or clear wiki_debt in ${state_path}\n"
+          reason="${reason}once each item genuinely reached the wiki."
+        fi
+      fi
     fi
   fi
 fi

@@ -2,8 +2,8 @@
 title: Project Overview
 type: entity
 created: 2026-08-15
-updated: 2026-08-15
-links: [enforcement-layer, native-invocation, hq-mode]
+updated: 2026-09-01
+links: [enforcement-layer, native-invocation, hq-mode, branch-state, upgrade-path]
 ---
 
 # Overview — the big picture
@@ -18,10 +18,12 @@ of them. This repo dogfoods its own patterns.
 
 ## Current phase / status
 
-**v0.3.1 shipped** — adaptive ceremony (triage + tiers + lens-selected council), lean spine.
+**v0.5.0 shipped** — P1's [[enforcement-layer]] (A1–A4) + [[native-invocation]] (C1–C4), plus a
+second pass: [[branch-state]] (the episodic layer the enforcement layer was missing — knowledge
+captured in conversation that never became a `docs/*.md` edit) and [[upgrade-path]] (fixes repos
+adopted before the enforcement layer existed, which had no way to receive it later).
 
-**v-next in planning**, driven by [[vnext-brief]]. Phase P1 (in progress): the
-[[enforcement-layer]] (A1–A4) plus [[native-invocation]] (C1–C4). P2 is [[hq-mode]]; P3 holds
+**v-next in planning**, driven by [[vnext-brief]]. [[hq-mode]] is next; the rest of P3 holds
 [[ablate]], [[session-reflector]], [[gardener]], [[executable-wiki]], [[career-ledger]],
 [[agent-teams]], and [[wiki-emit]].
 
@@ -37,6 +39,8 @@ pipeline as a template without running it on itself.
 - [ADR #3](decisions/adr-3-hq-nested-layout.md) — projects live inside HQ.
 - [ADR #4](decisions/adr-4-stop-gate-session-scope.md) — the Stop gate blocks only on markers
   from the current session.
+- [ADR #5](decisions/adr-5-episodic-state-branch-scoped.md) — branch state is git-tracked and
+  branch-scoped, not session-scoped.
 
 ## Architectural layers
 
@@ -57,6 +61,10 @@ pipeline as a template without running it on itself.
   [[session-start-injection]] for context and on the [[enforcement-layer]] as its floor.
 - [[hq-mode]] — aggregates project wikis upward → strictly depends on the enforcement layer
   holding per project.
+- [[branch-state]] — the episodic layer `wiki/log.md`'s trajectory couldn't provide → feeds the
+  [[stop-gate]] a fourth trigger and [[session-start-injection]] a per-branch summary.
+- [[upgrade-path]] — re-syncs `scripts/**` into repos adopted before the current version → the
+  bootstrap fix for the [[enforcement-layer]] itself.
 
 ## Layout
 

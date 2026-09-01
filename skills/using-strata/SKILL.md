@@ -56,6 +56,7 @@ every session and the `Stop` gate refuses to end a turn that left the wiki behin
 | Close out a finished branch | `/strata:light-finish` | Wrap up a branch: confirm green, then merge / PR / keep / discard, and clean up |
 | Auto-run the review council | `/strata:autoplan` | Runs the 4 reviewer subagents, auto-decides mechanical calls, surfaces only taste/disagreement |
 | Update / query the knowledge wiki | `/strata:wiki-ingest` | The karpathy ingest / query / lint protocol over docs->raw->wiki |
+| Re-sync a repo's hooks with the plugin | `/strata:upgrade` | Fixes a repo adopted before the current version — installed `scripts/**` never auto-updates |
 
 ## The review council (PROCESS layer)
 
@@ -81,6 +82,11 @@ conflicts rather than smoothing them over.
 
 - **Query the wiki first.** Start from `wiki/index.md`, not by grepping the whole repo.
 - **docs/ is human source-of-truth; raw/ is its mirror; wiki/ is AI-owned.** Never hand-edit `raw/`.
+- **`.strata/state/<branch>.json` is the branch's episodic memory** — goal, decisions (with why),
+  open questions, gotchas, and `wiki_debt` (knowledge owed to `wiki/` that isn't a `docs/*.md`
+  edit yet). Distinct from both `wiki/` (reviewed, durable) and `wiki/log.md` (append-only
+  trajectory of ingests): state answers "what's true right now", not "what happened" or "what's
+  confirmed". `light-finish` folds it into `wiki/log.md` and deletes it when the branch closes.
 - **Every multi-step task is goal-driven:** each step names a `verify` command, not "I'll check it works".
 - **Drift is fixed in stages**, never big-bang. The audit finds it; refactor closes it one TDD step at a time.
 - **CLAUDE.md <= 200 lines.** Detail lives in `docs/` and skills, not in CLAUDE.md.
