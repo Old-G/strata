@@ -18,7 +18,11 @@ of them. This repo dogfoods its own patterns.
 
 ## Current phase / status
 
-**v0.5.0 shipped** — P1's [[enforcement-layer]] (A1–A4) + [[native-invocation]] (C1–C4), plus a
+**v0.6.0 shipped** — [[version-stamp]]: the running build names itself in every session's skill
+listing, and the bump is what delivers it (the plugin cache is keyed by the version string, so a
+merge without one reaches no session and reports success anyway).
+
+**v0.5.0** — P1's [[enforcement-layer]] (A1–A4) + [[native-invocation]] (C1–C4), plus a
 second pass: [[branch-state]] (the episodic layer the enforcement layer was missing — knowledge
 captured in conversation that never became a `docs/*.md` edit) and [[upgrade-path]] (fixes repos
 adopted before the enforcement layer existed, which had no way to receive it later).
