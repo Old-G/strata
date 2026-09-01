@@ -6,6 +6,22 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-09-01
+
+A build nobody can name is a build nobody can verify. `.strata/version` answers for the *repo's*
+copied `scripts/**`, not for the plugin the session actually loaded, so "did the update land" was
+only answerable by comparing cached release directories on disk. The entry skill now carries the
+stamp, which puts it in every session's skill listing — no shell, no invocation, no adopted repo
+required.
+
+The version number itself is load-bearing, and this release is the proof. The plugin cache is keyed
+by the version string (`cache/<marketplace>/<plugin>/<version>/`), so a merge into `main` that does
+not bump it is copied nowhere: the marketplace clone advances, `installed_plugins.json` keeps the
+old `gitCommitSha`, and both commands report success. Measured on 2026-09-01 — the stamp feature
+shipped to `main` as `9fe528a` and stayed invisible to every session, because the cache still held
+`3c6d90d` under the same `0.5.0` directory. Shipping the stamp therefore *requires* the bump that
+makes it reachable.
+
 ### Added
 
 - **Version stamp readable from inside a session.** `skills/using-strata/SKILL.md` now carries the

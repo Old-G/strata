@@ -190,3 +190,29 @@ the skill itself and wiki/entities/upgrade-path.md.
 ## 2026-09-01T17:09:53Z lint
 
 - errors: 0, warnings: 0
+
+## 2026-09-01T17:41:48Z lint
+
+- errors: 0, warnings: 0
+
+## 2026-09-01T17:42:25Z lint
+
+- errors: 0, warnings: 0
+
+## 2026-09-01T17:50:00Z release — v0.6.0 (the bump that delivers the stamp)
+
+- Version 0.5.0 → 0.6.0 across the four enforced stamps (`plugin.json` source · `marketplace.json` ·
+  `using-strata` description + body · `CLAUDE.md` status line) and `CHANGELOG.md` `[Unreleased]` →
+  `[0.6.0]`. 🔴 The bump is the *point*, not the paperwork: measured today, the plugin cache is keyed
+  by the version string, so yesterday's `9fe528a` sat on `main` and in the marketplace clone while
+  `installed_plugins.json` still held `gitCommitSha 3c6d90d` under the same `0.5.0` directory — whose
+  `using-strata/SKILL.md` had no stamp at all. `/plugin update` reported success and copied nothing,
+  because there was no new version directory to create. A change that must reach sessions is shipped
+  when the version is bumped, not when it lands on `main`. Recorded in [[version-stamp]].
+- Positive control on the guard, not just a green run: reverting the `CLAUDE.md` stamp alone (half-bump)
+  turned §2c red with the exact message `CLAUDE.md: stamped v0.5.0, plugin.json says v0.6.0`, exit 1;
+  restored, exit 0. validate.sh PASSED (29 P1 + 25 P2) · test_install.sh PASSED · wiki lint 0/0.
+
+## 2026-09-01T17:42:46Z lint
+
+- errors: 0, warnings: 0

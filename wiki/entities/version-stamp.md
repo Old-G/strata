@@ -54,6 +54,23 @@ Bumping a release therefore touches: `plugin.json` · `marketplace.json` · `CLA
 `using-strata` (×2) · `CHANGELOG.md`. Four of the five files are mechanically enforced; the
 changelog is not, deliberately — prose about what shipped is not a version claim.
 
+**The bump is not bookkeeping — it is the delivery mechanism.** The plugin cache is keyed by the
+version string (`~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/`), so a merge into
+`main` that leaves the version alone is copied **nowhere**, and nothing says so. Measured
+2026-09-01, hours after the stamp itself shipped: `9fe528a` was on `main` and in the marketplace
+clone, the dev repo was clean and identical to `origin/main` — and `installed_plugins.json` still
+recorded `gitCommitSha 3c6d90d` under the *same* `0.5.0` directory, whose
+`skills/using-strata/SKILL.md` carried no stamp at all (mtime 19:39, forty minutes older than the
+source file). `/plugin update` had run and reported success; the marketplace clone advanced and
+the plugin cache did not, because there was no new version directory to create.
+
+The consequence is a trap with no error message: a fix can be green in CI, merged, pushed, and
+still absent from every session — while both the marketplace update and the plugin update report
+success. So a change that must reach sessions is not shipped when it lands on `main`; it is
+shipped when the version that carries it is bumped. This is the same class as
+[[enforcement-layer]]'s rule that a guard must check the artifact rather than the intention: here
+the artifact is the cache directory, and its name is the version.
+
 **Evidence.** 5 mutations, 5 killed: source bumped (all four dependents red at once) · stale
 stamp in the description · deleted stamp in the body · lagging `marketplace.json` · `CLAUDE.md`
 stripped of its version. Each mutation was verified present in the file before the run and each
