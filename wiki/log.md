@@ -152,3 +152,13 @@ GitHub Actions caught what local runs missed. Two fixes:
   reproducing the failure locally with `git config --global init.defaultBranch master`.
 - verify: `bash scripts/validate.sh` green (29 P1 + 25 P2 assertions); CI run
   https://github.com/Old-G/strata/actions confirms green after push.
+
+## 2026-09-01T15:27:37Z fix — /strata:upgrade must not blind-overwrite a STALE file
+
+Real-world dry run against a real external project (325-marker false backlog investigation
+also happened this session) almost overwrote its check_secrets.sh: STALE verdict, but the
+diff was the template PLUS ~80 lines of a genuine PII guard + documented AWS-placeholder
+exception, not drift behind. skills/upgrade/SKILL.md Step 3 now requires reading the diff:
+template-only new lines -> copy; local-only lines present -> stop and surface to the human.
+No code change (upgrade is instructions-driven, not a script for this part) — documented in
+the skill itself and wiki/entities/upgrade-path.md.

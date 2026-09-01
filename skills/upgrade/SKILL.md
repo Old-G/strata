@@ -44,10 +44,21 @@ SessionStart notice drift on its own next time.
 1. Show the user the MISSING/STALE list from Step 1 in plain language (which files, why it
    matters — e.g. "the Stop gate script is 40 lines behind the plugin's, missing the branch-state
    trigger").
-2. For every MISSING or STALE file: copy it from `${CLAUDE_PLUGIN_ROOT}/templates/core/scripts/<path>`
-   to `scripts/<path>` (preserving the subpath) and `chmod +x` it. Do not touch files the check
-   reported `OK`, and do not touch any script under `scripts/` that has no counterpart in the
-   templates tree at all — that's the project's own, not Strata's.
+2. For every MISSING file: copy it from `${CLAUDE_PLUGIN_ROOT}/templates/core/scripts/<path>` to
+   `scripts/<path>` (preserving the subpath) and `chmod +x` it.
+
+   For every STALE file: **read the diff before copying.** A STALE verdict means "differs from
+   the template" — it does NOT mean "safe to overwrite". `check_secrets.sh` in particular tends
+   to accumulate real, project-specific guards (a PII pattern from an actual incident, a
+   documented false-positive exception) that a blind overwrite would silently delete — caught
+   exactly this way on a real repo: `diff` showed the installed file was the template PLUS ~80
+   lines of legitimate local additions, not behind it. If the diff is the template's own
+   evolution (new lines only the template has), copy it. If the diff includes lines the *local*
+   file has that the template doesn't, STOP — show the human both sides and let them decide
+   (keep local, take template, or hand-merge); never resolve that silently in either direction.
+
+   Do not touch files the check reported `OK`, and do not touch any script under `scripts/` that
+   has no counterpart in the templates tree at all — that's the project's own, not Strata's.
 3. Merge the `hooks` block from `${CLAUDE_PLUGIN_ROOT}/templates/core/claude-settings-hook.json`
    into `.claude/settings.json` — same rule adopt/init already follow: **append** to existing
    arrays per event, never overwrite, drop the `_strata_note` key. If `.claude/settings.json`
