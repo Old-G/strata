@@ -318,3 +318,21 @@ Spec/plan: docs/superpowers/{specs,plans}/2026-09-01-sdlc-right-side*.md · sour
   the v1 bug taught. Re-run when the limit resets: RUNS=3 PARALLEL=2 bash scripts/test_routing_evals.sh
 - CI: routing-evals.yml will run red on the first push until `gh secret set ANTHROPIC_API_KEY` is
   done — deliberate, per the spec: a skipped eval must never look green.
+
+## 2026-09-02T07:11:48Z fix — routing evals leave CI, stay a local command
+
+Removed .github/workflows/routing-evals.yml, shipped hours earlier in v0.7.0.
+- Why: it costs API calls on every push touching skills/**, and it went red immediately on a
+  missing ANTHROPIC_API_KEY secret. Failing loudly on a missing key is the right behaviour for
+  a paid eval (a skipped eval must not look green) — but wiring a paid job into CI at all was
+  a decision about the owner's money, and it was made without asking. In a solo repo it leaves
+  a permanently red check that only the owner can turn green: by Strata's own standard
+  (v0.6.1, AHEAD verdict) a gate nobody can satisfy is a gate nobody reads.
+- What survives: validate.sh §11, which is free and offline — the case list must stay current
+  against skills/*/SKILL.md and cover every skill, so a skill added without cases or a trigger
+  phrase edited without regenerating still fails in normal CI. Only the paid RUN moved out.
+- How to run it now: RUNS=3 bash scripts/test_routing_evals.sh (documented in CONTRIBUTING.md,
+  CLAUDE.md commands block, and entities/routing-evals.md).
+- The dated spec/plan under docs/superpowers/ still describe the CI job as planned; they are
+  historical records of what was decided that day and are left untouched. This entry is the
+  correction, per the append-only convention of this log.

@@ -50,10 +50,14 @@ gate.
   but CI runs this on every PR touching `skills/**`; they are now passed as an argument
   (`bash -c '… "$1"' _ {}`), never interpolated. Per-run spend cap `--max-budget-usd` (default
   0.10) when the CLI has the flag.
-- **Gates:** `validate.sh` §11 (free, offline) asserts the case file is current against the
-  descriptions and covers every skill; `.github/workflows/routing-evals.yml` runs the suite on
-  changes to `skills/**`, `agents/**`, `CLAUDE.md`, `evals/**`, weekly, RUNS=3, and **fails
-  loudly when the API key is absent** — a skipped eval must never look green.
+- **Gate:** `validate.sh` §11 (free, offline) asserts the case file is current against the
+  descriptions and covers every skill — so a skill added without cases, or a trigger phrase
+  edited without regenerating, fails in normal CI. The eval **run** is deliberately NOT in CI:
+  it costs API calls, and a paid job that only the repo owner can make green is a gate nobody
+  can satisfy. It is a local command, run when the routing surface changes:
+  `RUNS=3 bash scripts/test_routing_evals.sh`. (A CI workflow shipped in the first cut of
+  v0.7.0 and was removed the same day — it went red on a missing `ANTHROPIC_API_KEY` secret,
+  which is the honest behaviour for a skipped eval but a bad default for a solo repo.)
 - First run: 34/34 at 1.0 (RUNS=1), including all eight negatives.
 
 ## Related

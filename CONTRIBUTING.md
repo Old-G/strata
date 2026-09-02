@@ -71,8 +71,9 @@ So, as part of any user-facing change:
 
 Adding or renaming a skill, or editing any trigger phrase in a `description`, changes the routing
 surface: run `python3 evals/routing_cases.py` to regenerate `evals/routing-cases.json`
-(`validate.sh` §11 fails on a stale file) and let `bash scripts/test_routing_evals.sh` — or the
-`routing-evals` CI job — prove the phrases still fire their skills.
+(`validate.sh` §11 fails on a stale file), then run `RUNS=3 bash scripts/test_routing_evals.sh`
+locally to prove the phrases still fire their skills. That run costs API calls, which is why it
+is a local command and not a CI job.
 
 ## Working in this repo
 
