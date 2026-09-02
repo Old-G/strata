@@ -22,9 +22,9 @@ still relied on prose for something its own rules say must be deterministic. Spe
   --plugin-dir . --allowedTools Skill --max-turns 1` from an empty temp dir) and requires the
   first `Skill` call to be the expected one; threshold 1.0, RUNS=3. First run: 34/34.
   `validate.sh` §11 asserts (offline, free) that the case list is current and covers every
-  skill; `.github/workflows/routing-evals.yml` runs the suite on changes to the routing surface
-  and weekly, and fails loudly when the API key is absent. `claude plugin eval` is in early
-  access on this CLI, so the JSON is shaped to convert to native cases unchanged later.
+  skill; the eval **run** stays a local command (`RUNS=3 bash scripts/test_routing_evals.sh`)
+  because it costs API calls. `claude plugin eval` is in early access on this CLI, so the JSON
+  is shaped to convert to native cases unchanged later.
 - **PreToolUse guard (A5)** — `templates/core/scripts/hooks/strata_pre_tool_guard.sh`, the first
   hook that refuses a write *before* it happens. Rule (a): any write under `raw/` (a mirror of
   `docs/`), escape `STRATA_ALLOW_RAW_EDIT=1`. Rule (b): any write to a test file while
