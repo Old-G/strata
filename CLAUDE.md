@@ -24,7 +24,7 @@ diff-vs-plan review at branch close. This repo dogfoods its own patterns, includ
 | Templates: core + python-fastapi stack pack | ✅ seeded from a production project, genericized |
 | Episodic state layer (`.strata/state/`) + Stop-gate trigger (c) + SessionStart summary | ✅ `test_p2_state.sh` green |
 | `/strata:upgrade` — re-syncs `scripts/**` into repos adopted before this version | ✅ fixes the confirmed no-gates-installed case |
-| Right side of the loop — E1 routing evals · A5 PreToolUse guard · R1 diff-vs-plan review | ✅ 34/34 routes at 1.0 · `test_p3_guards.sh` green · `strata-diff-review` wired into light-finish |
+| Right side of the loop — A5 PreToolUse guard · R1 diff-vs-plan review | ✅ `test_p3_guards.sh` green · `strata-diff-review` wired into light-finish |
 | Verified by adopting a real external project | ⬜ pending (user will test elsewhere) |
 
 ## Stack
@@ -36,7 +36,6 @@ Claude Code plugin · Markdown skills + subagents · bundled shell/python templa
 - `.claude-plugin/` — `plugin.json` (manifest) + `marketplace.json` (this repo is its own marketplace).
 - `skills/<name>/SKILL.md` — one skill per command; invoked as `/strata:<name>`. `using-strata` is the entry/router.
 - `agents/strata-*-review.md` — the parallel review council subagents (plan stage) + `strata-diff-review` (branch close, diff vs plan).
-- `evals/` — routing eval cases, generated from skill descriptions by `routing_cases.py`; run by `scripts/test_routing_evals.sh` (costs API calls; CI on routing-surface changes).
 - `templates/core/` — portable assets: `PROJECT_PATTERN.md`, `WIKI.md`, `wiki/` skeleton, `scripts/`, CLAUDE/ADR templates.
 - `templates/stacks/<stack>/` — per-stack architecture canon (`SCALABLE_ARCHITECTURE_REFERENCE.md`) + scaffold generator.
 - `reference/` — council personas, Diataxis doc-map, tool-integration (RTK / claude-mem / Caveman).
@@ -56,7 +55,6 @@ bash scripts/validate.sh
 bash scripts/test_p1_gates.sh            # 28 behavioural assertions on A1/A2/A3
 bash scripts/test_p2_state.sh            # state schema/validator, Stop-gate trigger (c), upgrade check
 bash scripts/test_p3_guards.sh           # PreToolUse guard: raw/ mirror, tests read-only mid-fix, stale-toggle warning
-bash scripts/test_routing_evals.sh       # routing evals — costs API calls; RUNS=1 for a quick pass, default 3
 
 # enable this repo's own guards once per clone
 git config core.hooksPath .githooks
@@ -87,7 +85,7 @@ raw or risky idea             → office-hours grill
 - **Strata is thin glue.** Do not reimplement memory (claude-mem), token-proxying (RTK), or testing. Compose them.
 - **Skills never hand-edit a target project's `raw/`** — it is a mirror of `docs/`.
 - **The plugin ships NO global hooks.** Every hook (PostToolUse mirror, SessionStart injection, Stop gate, PreToolUse guard) and every pre-commit guard is a *template* installed into the target project by `init`/`adopt`, so the plugin stays inert in unrelated repos.
-- **Changing a skill description changes the routing surface** — regenerate `evals/routing-cases.json` (`python3 evals/routing_cases.py`, enforced by `validate.sh` §11) and let the routing evals run before merging.
+- **Changing a skill description changes the routing surface.** Descriptions are the whole routing signal, and other installed plugins compete for the same words — check the change by saying the trigger phrase in a fresh session, not by reading the file.
 - **One marker rule, one implementation.** Anything asking "does the wiki owe an ingest?" sources `scripts/lib/pending_ingest.sh`. Gates that disagree about what pending means are worse than no gates.
 - **Gates must be escapable and self-limiting.** The Stop gate blocks at most once per session and fails open when unsure; the commit gate honours `STRATA_SKIP_WIKI=1`.
 - **Skill/command names are namespaced** `/strata:<name>` — do not prefix skill dirs with `strata-` (the namespace already adds it). Subagents in `agents/` DO keep the `strata-` prefix to avoid collisions in target projects.

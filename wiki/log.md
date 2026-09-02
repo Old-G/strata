@@ -336,3 +336,26 @@ Removed .github/workflows/routing-evals.yml, shipped hours earlier in v0.7.0.
 - The dated spec/plan under docs/superpowers/ still describe the CI job as planned; they are
   historical records of what was decided that day and are left untouched. This entry is the
   correction, per the append-only convention of this log.
+
+## 2026-09-02T07:59:45Z removed — the routing-eval suite, same day it shipped
+
+Deleted evals/, scripts/test_routing_evals.sh, validate.sh §11 (guard check renumbered §12 -> §11),
+entities/routing-evals.md and every link to it. Owner's call, and the right one.
+- What it was for: proving a trigger phrase actually fires its skill — the one layer of Strata
+  that had no test, since validate.sh §8 only checks that a description CONTAINS the phrases.
+- Why it went: the harness needed two fixes to ITSELF in one day. v1 filed API rate limits as
+  routing misses (13 false alarms). v2 then filed real misses as API failures — because
+  --allowedTools Skill makes every other tool call land in the stream as "is_error":true, and
+  that token was in the transient-error pattern. Verified on routing-feature-neg-refactor:
+  no Skill call, one denied Bash call, subtype error_max_turns, empty stderr — a miss, filed
+  as inconclusive. v1 raised false alarms; v2 HID real misses, which is worse.
+- Total yield across all of it: one finding — the placeholder phrase 'build X' routed to
+  superpowers:brainstorming in 1 of 3 runs instead of strata:feature. Real, but about a phrase
+  no human types, and discoverable in two minutes by hand.
+- The principle it violated is Strata's own ([[ablate]]): machinery whose upkeep exceeds its
+  yield gets deleted. 250 lines and a per-run API cost, to learn one thing about a stub phrase.
+- What replaced it: nothing. Routing is checked by saying the phrase in a fresh session.
+  The finding it produced is real and stands on its own — skill routing is a SHARED surface:
+  every enabled plugin competes for the same words, and superpowers' 'brainstorming' claims
+  'creating features, building components' by design. That is a configuration question
+  (which plugins are enabled where), not a testing question.

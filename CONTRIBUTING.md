@@ -70,10 +70,8 @@ So, as part of any user-facing change:
    `/reload-plugins`.
 
 Adding or renaming a skill, or editing any trigger phrase in a `description`, changes the routing
-surface: run `python3 evals/routing_cases.py` to regenerate `evals/routing-cases.json`
-(`validate.sh` §11 fails on a stale file), then run `RUNS=3 bash scripts/test_routing_evals.sh`
-locally to prove the phrases still fire their skills. That run costs API calls, which is why it
-is a local command and not a CI job.
+surface — and that surface is shared with every other enabled plugin. Check the change by opening
+a fresh session and saying the phrase, rather than by reading the file back.
 
 ## Working in this repo
 
