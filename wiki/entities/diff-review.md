@@ -43,7 +43,7 @@ the same commit.
 
 ## Related
 
-[[branch-state]] · [[session-reflector]] · [[enforcement-layer]] · [[routing-evals]]
+[[branch-state]] · [[session-reflector]] · [[enforcement-layer]] · [[pre-tool-guard]]
 
 ## Sources
 

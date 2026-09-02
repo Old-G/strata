@@ -41,12 +41,11 @@ Scripts live in `templates/core/scripts/hooks/` and `templates/core/scripts/pre-
 Per the Boris Cherny ablation principle (see [[ablate]]), this layer is **exempt from the
 purge**: it encodes invariants, not model-capability scaffolding.
 
-**v0.7.0 adds the write-time layer and tests the probabilistic one:** [[pre-tool-guard]] (A5)
-refuses a write under `raw/` or to a test file mid-fix *before* it happens — the first
-`PreToolUse` hook, the deterministic form of two rules that were prose. [[routing-evals]] (E1)
-prove, for the first time, that trigger phrases fire the skills they belong to; [[diff-review]]
-(R1) checks the diff against the plan at branch close. Together they close the playbook's
-"right side of Build".
+**v0.7.0 adds the write-time layer:** [[pre-tool-guard]] (A5) refuses a write under `raw/` or
+to a test file mid-fix *before* it happens — the first `PreToolUse` hook, the deterministic form
+of two rules that were prose. [[diff-review]] (R1) checks the diff against the plan at branch
+close. The routing half stays deliberately untested by machinery: descriptions are the surface,
+other plugins compete on it, and a phrase is checked by saying it in a fresh session.
 
 **v0.5.0 extends the invariant beyond `docs/*.md`:** [[branch-state]] gives the [[stop-gate]] a
 fourth signal — non-empty `wiki_debt` in the branch's own state file — so knowledge captured in

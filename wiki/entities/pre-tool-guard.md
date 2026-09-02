@@ -44,7 +44,7 @@ block in `claude-settings-hook.json`; reaches adopted repos through [[upgrade-pa
   does not exist yet → exit 0. Bash only, `grep`/`sed` parsing — it fires on every write, so the
   Stop gate's no-`python3` rule applies. Measured allow path: 27 ms best-of-7.
 
-Covered by `scripts/test_p3_guards.sh` (24 assertions) as `validate.sh` §12.
+Covered by `scripts/test_p3_guards.sh` (24 assertions) as `validate.sh` §11.
 
 ## Related
 

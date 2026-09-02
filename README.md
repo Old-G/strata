@@ -247,11 +247,10 @@ Every skill description carries concrete trigger phrases in **English and Russia
 `## Do NOT use when` guard so neighbouring skills do not steal each other's requests. The
 routing table also lives in your project's `CLAUDE.md`, which is in context every session.
 
-Routing is still probabilistic — which is exactly why the hooks below are not, and why the routing
-itself is now tested: `evals/routing-cases.json` holds one EN and one RU trigger phrase per skill
-(generated verbatim from the descriptions) plus borderline prompts for the confusable pairs, and
-`bash scripts/test_routing_evals.sh` proves each one fires its skill (threshold 1.0, CI on every
-change to `skills/**`).
+Routing is still probabilistic — which is exactly why the hooks below are not. It is also shared:
+every other plugin you have enabled competes for the same words, so a phrase like "build X" can
+land in another plugin's skill instead. If routing goes to the wrong place, the fix is the
+descriptions (or disabling the competing plugin), not more machinery.
 
 ## The review council
 

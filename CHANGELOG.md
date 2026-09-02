@@ -14,24 +14,13 @@ still relied on prose for something its own rules say must be deterministic. Spe
 `docs/superpowers/specs/2026-09-01-sdlc-right-side.md`.
 
 ### Added
-- **Routing evals (E1)** — the first test of Strata's probabilistic half. `evals/routing_cases.py`
-  generates `evals/routing-cases.json` from the skill descriptions: one EN and one RU trigger
-  phrase per skill, **verbatim**, plus eight borderline prompts for the confusable pairs
-  (`feature`/`refactor`, `office-hours`/`lean-plan`, `wiki-ingest`/`using-strata`,
-  `upgrade`/`adopt`). `scripts/test_routing_evals.sh` runs each case headless (`claude -p
-  --plugin-dir . --allowedTools Skill --max-turns 1` from an empty temp dir) and requires the
-  first `Skill` call to be the expected one; threshold 1.0, RUNS=3. First run: 34/34.
-  `validate.sh` §11 asserts (offline, free) that the case list is current and covers every
-  skill; the eval **run** stays a local command (`RUNS=3 bash scripts/test_routing_evals.sh`)
-  because it costs API calls. `claude plugin eval` is in early access on this CLI, so the JSON
-  is shaped to convert to native cases unchanged later.
 - **PreToolUse guard (A5)** — `templates/core/scripts/hooks/strata_pre_tool_guard.sh`, the first
   hook that refuses a write *before* it happens. Rule (a): any write under `raw/` (a mirror of
   `docs/`), escape `STRATA_ALLOW_RAW_EDIT=1`. Rule (b): any write to a test file while
   `.strata/guard-tests` exists — `feature`/`refactor` set the toggle at "make the failing test
   pass" and clear it once green; SessionStart warns about a stale one. Exit 2 with the reason on
   stderr, bash-only, fails open, 27 ms. `scripts/test_p3_guards.sh` (24 assertions) as
-  `validate.sh` §12. Reaches adopted repos through `/strata:upgrade`. The branch's own
+  `validate.sh` §11. Reaches adopted repos through `/strata:upgrade`. The branch's own
   `strata-diff-review` run caught the first cut narrowing the spec's `*_test.*` to `.py`/`.go`
   (Dart/Deno test files slipped through) — widened back before release.
 - **Diff-vs-plan review (R1)** — `agents/strata-diff-review.md`, a fifth read-only agent that runs
@@ -44,8 +33,17 @@ still relied on prose for something its own rules say must be deterministic. Spe
 
 ### Changed
 - `adopt`/`init` copy lists include the guard and `lib/state_tools.py`; `claude-settings-hook.json`
-  carries the `PreToolUse` block; `CLAUDE.md` hard rules gain "changing a skill description
-  changes the routing surface — regenerate the cases".
+  carries the `PreToolUse` block.
+
+### Removed
+- **The routing-eval suite, same day it shipped.** It was meant to test the probabilistic half
+  (does a trigger phrase fire its skill). In practice it needed two bug fixes to the harness
+  itself — v1 filed API rate limits as routing misses, v2 filed real misses as API failures,
+  because `--allowedTools Skill` makes every other tool call surface as `"is_error":true` —
+  and it cost API calls per run. Total yield: one finding, that the placeholder phrase
+  "build X" sometimes routes to another installed plugin's `brainstorming` skill. Machinery
+  that costs more than it returns is machinery Strata's own `ablate` principle says to delete.
+  Routing is checked by saying the phrase in a fresh session.
 
 ## [0.6.1] — 2026-09-01
 
