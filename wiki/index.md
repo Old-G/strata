@@ -71,6 +71,9 @@ solutions / Related / Sources.
 | [[branch-state]] | P2 — `.strata/state/<branch>.json`: git-tracked episodic state (goal, decisions, wiki_debt) the append-only log couldn't hold. |
 | [[upgrade-path]] | P2 — `/strata:upgrade` re-syncs `scripts/**` into repos adopted before the current plugin version. |
 | [[version-stamp]] | Which plugin build a session loaded — stamped in `using-strata`'s description, held true by `validate.sh` §2c. |
+| [[routing-evals]] | E1 — 34 generated cases prove each trigger phrase fires its skill; headless `claude -p`, threshold 1.0, CI on routing-surface changes. |
+| [[pre-tool-guard]] | A5 — `PreToolUse` hook refusing writes under `raw/` and to test files mid-fix; exit 2 with reason, fails open. |
+| [[diff-review]] | R1 — fifth read-only agent at branch close: diff vs plan, bugs, security-lite; second occurrence → `CLAUDE.md`. |
 
 ---
 

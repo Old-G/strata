@@ -69,6 +69,11 @@ So, as part of any user-facing change:
 3. After merge, existing installs refresh with `/plugin marketplace update strata` → reinstall →
    `/reload-plugins`.
 
+Adding or renaming a skill, or editing any trigger phrase in a `description`, changes the routing
+surface: run `python3 evals/routing_cases.py` to regenerate `evals/routing-cases.json`
+(`validate.sh` §11 fails on a stale file) and let `bash scripts/test_routing_evals.sh` — or the
+`routing-evals` CI job — prove the phrases still fire their skills.
+
 ## Working in this repo
 
 Strata dogfoods its own enforcement layer, so enable its guards once per clone:

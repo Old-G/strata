@@ -6,6 +6,47 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-09-02
+
+The right side of the loop. Anthropic's AI-Native SDLC playbook (2026-08-21) turned out to be
+ADR #1 in other words, and every gap it exposed sat to the right of Build — places where Strata
+still relied on prose for something its own rules say must be deterministic. Spec:
+`docs/superpowers/specs/2026-09-01-sdlc-right-side.md`.
+
+### Added
+- **Routing evals (E1)** — the first test of Strata's probabilistic half. `evals/routing_cases.py`
+  generates `evals/routing-cases.json` from the skill descriptions: one EN and one RU trigger
+  phrase per skill, **verbatim**, plus eight borderline prompts for the confusable pairs
+  (`feature`/`refactor`, `office-hours`/`lean-plan`, `wiki-ingest`/`using-strata`,
+  `upgrade`/`adopt`). `scripts/test_routing_evals.sh` runs each case headless (`claude -p
+  --plugin-dir . --allowedTools Skill --max-turns 1` from an empty temp dir) and requires the
+  first `Skill` call to be the expected one; threshold 1.0, RUNS=3. First run: 34/34.
+  `validate.sh` §11 asserts (offline, free) that the case list is current and covers every
+  skill; `.github/workflows/routing-evals.yml` runs the suite on changes to the routing surface
+  and weekly, and fails loudly when the API key is absent. `claude plugin eval` is in early
+  access on this CLI, so the JSON is shaped to convert to native cases unchanged later.
+- **PreToolUse guard (A5)** — `templates/core/scripts/hooks/strata_pre_tool_guard.sh`, the first
+  hook that refuses a write *before* it happens. Rule (a): any write under `raw/` (a mirror of
+  `docs/`), escape `STRATA_ALLOW_RAW_EDIT=1`. Rule (b): any write to a test file while
+  `.strata/guard-tests` exists — `feature`/`refactor` set the toggle at "make the failing test
+  pass" and clear it once green; SessionStart warns about a stale one. Exit 2 with the reason on
+  stderr, bash-only, fails open, 27 ms. `scripts/test_p3_guards.sh` (24 assertions) as
+  `validate.sh` §12. Reaches adopted repos through `/strata:upgrade`. The branch's own
+  `strata-diff-review` run caught the first cut narrowing the spec's `*_test.*` to `.py`/`.go`
+  (Dart/Deno test files slipped through) — widened back before release.
+- **Diff-vs-plan review (R1)** — `agents/strata-diff-review.md`, a fifth read-only agent that runs
+  at branch close on the diff (the council runs on the plan). Finds the plan itself
+  (`docs/superpowers/plans/*<branch>*`, else the branch state, else "no plan to check against");
+  three tagged passes — compliance, bugs, security-lite; Important vs Nit, ≤5 nits. Wired as
+  `light-finish` step 2: advisory (cannot block), unskippable, Important findings written to the
+  branch state's `gotchas`. **Second-occurrence rule:** a gotcha already in `wiki/log.md`
+  proposes one `CLAUDE.md` line in the same closing commit.
+
+### Changed
+- `adopt`/`init` copy lists include the guard and `lib/state_tools.py`; `claude-settings-hook.json`
+  carries the `PreToolUse` block; `CLAUDE.md` hard rules gain "changing a skill description
+  changes the routing surface — regenerate the cases".
+
 ## [0.6.1] — 2026-09-01
 
 ### Fixed

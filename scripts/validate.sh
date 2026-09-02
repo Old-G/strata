@@ -181,6 +181,39 @@ else
   err "scripts/test_p2_state.sh is missing"
 fi
 
+echo "== 11. every skill has a routing eval case (E1) =="
+# The eval RUN costs API calls and lives in scripts/test_routing_evals.sh (+ CI on skill
+# changes). This is the free, offline half: the case list must exist, be current against
+# the descriptions it is generated from, and cover every skill — so adding a skill without
+# its cases, or editing a trigger phrase without regenerating, fails right here.
+if [ -f evals/routing_cases.py ] && [ -f evals/routing-cases.json ]; then
+  if python3 evals/routing_cases.py --check >/dev/null 2>&1; then
+    missing=""
+    for d in skills/*/; do
+      s="$(basename "$d")"
+      grep -q "\"routing-${s}-en\"" evals/routing-cases.json \
+        && grep -q "\"routing-${s}-ru\"" evals/routing-cases.json || missing="$missing $s"
+    done
+    if [ -z "$missing" ]; then ok "routing-cases.json is current and covers every skill (EN+RU)"; else err "skills without routing cases:$missing"; fi
+  else
+    err "evals/routing-cases.json is stale against skills/*/SKILL.md — run: python3 evals/routing_cases.py"
+  fi
+else
+  err "evals/routing_cases.py or evals/routing-cases.json is missing"
+fi
+
+echo "== 12. P3 PreToolUse guard behaves (A5: raw/ mirror, tests read-only mid-fix) =="
+if [ -f scripts/test_p3_guards.sh ]; then
+  if out="$(bash scripts/test_p3_guards.sh 2>&1)"; then
+    ok "$(printf '%s' "$out" | tail -n 1)"
+  else
+    printf '%s\n' "$out" | grep '✗' >&2
+    err "P3 guard tests failed (run: bash scripts/test_p3_guards.sh)"
+  fi
+else
+  err "scripts/test_p3_guards.sh is missing"
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then echo "✅ Strata plugin validation PASSED"; else echo "❌ validation FAILED"; fi
 exit "$fail"

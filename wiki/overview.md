@@ -27,9 +27,10 @@ second pass: [[branch-state]] (the episodic layer the enforcement layer was miss
 captured in conversation that never became a `docs/*.md` edit) and [[upgrade-path]] (fixes repos
 adopted before the enforcement layer existed, which had no way to receive it later).
 
-**Next: P3 — the right side of the loop** ([[sdlc-right-side]], spec + plan approved
-2026-09-01, target v0.7.0): routing evals for the probabilistic half, a `PreToolUse` guard for
-`raw/` and for test files mid-fix, and a diff-vs-plan review at branch close. Triggered by
+**v0.7.0 — P3, the right side of the loop** ([[sdlc-right-side]]): [[routing-evals]] test the
+probabilistic half for the first time (34 cases, 1.0), the [[pre-tool-guard]] refuses writes
+under `raw/` and to test files mid-fix before they happen, and [[diff-review]] checks the diff
+against the plan at branch close with the "mistake twice → `CLAUDE.md`" rule. Triggered by
 Anthropic's AI-Native SDLC playbook, which turned out to be ADR #1 in other words.
 
 **Still in planning**, driven by [[vnext-brief]]: [[hq-mode]], then [[ablate]],

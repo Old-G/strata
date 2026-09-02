@@ -247,7 +247,11 @@ Every skill description carries concrete trigger phrases in **English and Russia
 `## Do NOT use when` guard so neighbouring skills do not steal each other's requests. The
 routing table also lives in your project's `CLAUDE.md`, which is in context every session.
 
-Routing is still probabilistic — which is exactly why the hooks below are not.
+Routing is still probabilistic — which is exactly why the hooks below are not, and why the routing
+itself is now tested: `evals/routing-cases.json` holds one EN and one RU trigger phrase per skill
+(generated verbatim from the descriptions) plus borderline prompts for the confusable pairs, and
+`bash scripts/test_routing_evals.sh` proves each one fires its skill (threshold 1.0, CI on every
+change to `skills/**`).
 
 ## The review council
 
@@ -266,6 +270,13 @@ you** rather than smoothing them over.
 | `strata-eng-review` | Eng-Manager / Staff Eng | Architecture, edge cases, **complexity smell** (8+ files / 2+ new classes → STOP), tests, reversibility |
 | `strata-design-review` | Senior Designer | UX, 0–10 ratings, empty/error states, "AI slop is the enemy" (frontend stacks only) |
 | `strata-cso-review` | CSO | OWASP Top-10 + STRIDE, secrets, PII, with a confidence bar to avoid false-positive noise |
+
+A fifth read-only reviewer runs **after** the code exists, not before: `strata-diff-review` is invoked
+by `/strata:light-finish` at branch close to check the diff against the plan it was meant to implement
+(done as planned / done differently / planned-not-done / done-not-planned), then bugs and light
+security. It cannot block a merge — you decide — but it cannot be skipped, its Important findings land
+in the branch state and `wiki/log.md`, and a mistake it flags for the **second time** proposes a line
+for `CLAUDE.md` in the same closing commit.
 
 `/strata:autoplan` runs them and classifies every surfaced decision:
 
@@ -321,6 +332,7 @@ is a hook in Strata, not a paragraph. Three of them keep the wiki honest:
 | `scripts/sync_raw_mirror.sh` | `PostToolUse` | Mirrors an edited `docs/*.md` into `raw/` and records a `pending_ingest` marker in `wiki/log.md`. |
 | `scripts/hooks/strata_session_start.sh` | `SessionStart` | Injects ≤50 lines of state — branch, pending ingests, the head of `wiki/index.md` — into every session, and stamps where the session began. |
 | `scripts/hooks/strata_stop_gate.sh` | `Stop` | Refuses to end the turn **once** if this session left the wiki behind — including a non-empty `wiki_debt` in the current branch's `.strata/state/*.json`, the episodic state layer. |
+| `scripts/hooks/strata_pre_tool_guard.sh` | `PreToolUse` | Refuses a write **before it happens**: always under `raw/` (a mirror — edit `docs/`; escape `STRATA_ALLOW_RAW_EDIT=1`), and to test files while `.strata/guard-tests` exists (a fix is in progress — fix the code, not the test). Exit 2 with the reason; fails open on anything it cannot parse. |
 | `scripts/pre-commit/check_wiki_fresh.sh` | pre-commit | Fails the commit while any doc is mirrored but un-ingested. |
 
 **Nothing is installed globally.** The plugin ships these as templates; `init`/`adopt` copy them

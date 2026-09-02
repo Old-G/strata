@@ -41,6 +41,10 @@ Boundary rule carried over from the brief's research digest: Claude Code's own p
 Memory (`MEMORY.md`) is the model's private scratch preferences; `wiki/` is reviewed project
 truth. Never duplicate a fact across the two.
 
+**v0.7.0:** one more conditional line — if `.strata/guard-tests` survives into a new session
+(a fix left the [[pre-tool-guard]]'s test-file toggle behind), say so up front, or every test
+file is read-only for reasons nobody remembers.
+
 **Two additions, shipped in v0.5.0:** if the current branch has a [[branch-state]] file, prints
 its summary (goal, status, decision/open-question/`wiki_debt` counts) — the "here's what we
 already knew" half of the episodic layer, complementing the Stop gate's "don't let it go stale"
