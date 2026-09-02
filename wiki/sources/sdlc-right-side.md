@@ -59,6 +59,15 @@ and its own rules say must be deterministic.
   `intent.md` stage before `spec.md`). Strata's adaptive ceremony exists to not impose that on
   one person; `office-hours` already yields intent and spec in one dialogue.
 
+## What shipped (v0.7.0, same day)
+
+[[routing-evals]] — 34 generated cases, 34/34 at 1.0 on the first run, `validate.sh` §11 +
+`routing-evals.yml`; D1 amended to headless `claude -p` because `claude plugin eval` is in early
+access. [[pre-tool-guard]] — one script, both rules, 24 assertions as `validate.sh` §12, wired in
+`claude-settings-hook.json` and this repo. [[diff-review]] — `agents/strata-diff-review.md`,
+`light-finish` step 2 + the second-occurrence rule. Toggle lifecycle in `feature`/`refactor`/
+SessionStart; `adopt`/`init` copy lists updated; version 0.6.1 → 0.7.0.
+
 ## Plan shape
 
 Eight tasks: E1 eval suite → runner + CI + `validate.sh` §11 → A5 guard script → guard tests +

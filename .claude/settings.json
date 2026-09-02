@@ -30,6 +30,17 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/strata_pre_tool_guard.sh"
+          }
+        ]
+      }
     ]
   }
 }

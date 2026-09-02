@@ -49,6 +49,8 @@ Skip this entire phase for human-only repos (§9 skip-list). When enabled:
    - `lib/pending_ingest.sh` → `scripts/lib/pending_ingest.sh` (shared marker-retirement rule — required by the others)
    - `hooks/strata_session_start.sh` → `scripts/hooks/strata_session_start.sh` (A3 context injection + the session stamp the Stop gate reads)
    - `hooks/strata_stop_gate.sh` → `scripts/hooks/strata_stop_gate.sh` (A1 — blocks turn-end ONCE while this session owes wiki work; inert without the SessionStart stamp)
+   - `hooks/strata_pre_tool_guard.sh` → `scripts/hooks/strata_pre_tool_guard.sh` (A5 — PreToolUse: refuses a write under `raw/`, and to test files while `.strata/guard-tests` exists; exit 2 with the reason, fails open otherwise)
+   - `lib/state_tools.py` → `scripts/lib/state_tools.py` (the branch-state schema/validator the Stop gate and SessionStart read)
 
    Then MERGE `${CLAUDE_PLUGIN_ROOT}/templates/core/claude-settings-hook.json`'s `hooks` block into the project's `.claude/settings.json` (create the file if absent; if an array for an event already exists, append the entry — never overwrite). Drop the `_strata_note` key when merging. Add `.strata/` to `.gitignore` — it holds per-session gate state, not source.
 5. Hand the wiki population to `/strata:wiki-ingest` for `raw/Architecture.md` and `raw/ADR-Lean.md` (do not hand-write deep entity pages here).

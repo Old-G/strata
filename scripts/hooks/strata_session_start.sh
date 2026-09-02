@@ -94,6 +94,14 @@ if [ -f .strata/version ] && [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] \
   fi
 fi
 
+# --- stale test-file guard (P3 / A5) -------------------------------------------
+# feature/refactor set this toggle at "make the failing test pass" and clear it
+# once green. If it survives into a new session, every test file is read-only
+# for reasons nobody remembers — say so once, up front.
+if [ -e .strata/guard-tests ]; then
+  echo "Stale test-file guard: .strata/guard-tests is set — a previous fix session did not clear it; remove it or tests stay read-only."
+fi
+
 if [ -f "$SCRIPT_DIR/../lib/pending_ingest.sh" ]; then
   # shellcheck source=../lib/pending_ingest.sh
   . "$SCRIPT_DIR/../lib/pending_ingest.sh"

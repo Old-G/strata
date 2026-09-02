@@ -76,6 +76,11 @@ For each step, run the `superpowers:test-driven-development` loop:
    findings, follow the SAR pattern named in the design (e.g. Strangler-Fig
    move of SQL into a repository method — migrate one call site, leave the old
    path until the last caller is gone).
+   Tests are read-only while you do this: `touch .strata/guard-tests` before the
+   first code edit, `rm -f .strata/guard-tests` once the step is green. The
+   PreToolUse guard refuses test-file writes while the toggle exists — fix the
+   code, not the test. If the test itself is wrong, that is a RED step, not a
+   GREEN one: clear the toggle, fix the test, re-run RED.
 3. **VERIFY** — run the step's `verify` command. Step is done only when it
    passes AND the full fast suite is still green (no regression). If a behavior
    bug is involved or the cause is murky, invoke

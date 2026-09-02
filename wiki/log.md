@@ -259,3 +259,62 @@ the skill itself and wiki/entities/upgrade-path.md.
 - Source: Anthropic's "AI-Native SDLC playbook" (2026-08-21). Verdict recorded: independent confirmation of ADR #1; gaps are all right of Build — routing evals (claude plugin eval is already in the CLI), PreToolUse guards (none shipped today), diff-vs-plan review at light-finish.
 - Decisions D1–D4 are settled in the spec so the implementing session does not re-litigate; the playbook's org structure (roles, intent.md stage) is explicitly rejected — mechanisms only.
 - Next: a fresh session executes the plan on a branch; version target 0.7.0.
+
+## 2026-09-02T06:55:15Z branch close — P3 shipped (v0.7.0), right side of the loop
+
+Branch strata/p3-right-side, closed through the light-finish step 2 that this very branch adds.
+Spec/plan: docs/superpowers/{specs,plans}/2026-09-01-sdlc-right-side*.md · sources/sdlc-right-side.md
+
+### Shipped
+- E1 routing evals: evals/routing_cases.py generates 34 cases (13 skills x EN+RU verbatim from
+  their own descriptions, + 8 borderline negatives for the confusable pairs);
+  scripts/test_routing_evals.sh runs them headless; validate.sh §11 keeps the list honest;
+  .github/workflows/routing-evals.yml runs them on any routing-surface change and weekly.
+- A5 PreToolUse guard: templates/core/scripts/hooks/strata_pre_tool_guard.sh — refuses writes
+  under raw/ (escape STRATA_ALLOW_RAW_EDIT=1) and to test files while .strata/guard-tests exists;
+  exit 2 with the reason, fails open, 27ms. scripts/test_p3_guards.sh = validate.sh §12, 24/24.
+- R1 diff review: agents/strata-diff-review.md + light-finish step 2 + second-occurrence rule.
+- Toggle lifecycle in feature/refactor/SessionStart; adopt+init copy lists; 0.6.1 -> 0.7.0.
+
+### The dogfood run found two Important things, both fixed before this commit
+1. compliance (spec D2 <-> strata_pre_tool_guard.sh): rule (b) had narrowed the spec's `*_test.*`
+   to `*_test.py|*_test.go`, so foo_test.dart / .ts / .rb / .rs slipped through with the toggle
+   set — verified in a fixture. Widened to the spec's pattern; two cases added (24 assertions now).
+2. security-lite (test_routing_evals.sh): case prompts were spliced INTO a `bash -c` script via
+   `xargs -I{}`, so `$(...)` inside a prompt executed. Prompts are repo-controlled, but CI runs
+   this on every PR touching skills/**. Now passed as argv (`bash -c '... "$1"' _ {}`); proved
+   literal with a hostile test string.
+   Nits also taken: STRATA_EVAL_MODEL never reached the xargs children (bash arrays don't export);
+   no spend cap (--max-budget-usd, per run, feature-detected); CHANGELOG date corrected to 09-02.
+   Nits declined with reason: validate.sh §11's per-skill grep is redundant with --check (belt and
+   braces); CI's claude-code install left unpinned until a routing regression is traced to it.
+
+### Gotchas (first occurrence each — second-occurrence grep over this log returned 0 for all)
+- The eval runner's v1 counted API rate-limit failures as routing misses: a RUNS=3 PARALLEL=8 pass
+  showed 13 cases at 0.00 with nothing fired; every one routed correctly when re-run alone. An eval
+  that cannot tell 'the model chose wrong' from 'the API said no' is worse than no eval. Three
+  verdicts now: OK / routing miss (exit 1) / inconclusive (exit 2), with the CLI's own words shown.
+- macOS mktemp paths are symlinked (/var -> /private/var) while git rev-parse reports the physical
+  root, so an absolute path under raw/ slipped past the guard until the dir part was resolved with
+  `pwd -P`. Caught by the test, not by reasoning.
+- The EN trigger-phrase regex read the apostrophe in "repo's" as an opening quote and produced a
+  nonsense case; quotes now count only when not glued to a word.
+- `claude plugin eval` prints 'currently in early access' for both init and run on this account and
+  creates nothing — the plan had assumed it was available (D1 amended to headless `claude -p`;
+  the JSON shape still converts to native cases unchanged when it opens up).
+- v0.6.0 improved templates/core/scripts/strata_upgrade_check.sh (AHEAD verdict) but never
+  re-mirrored it to scripts/ — this repo's own copy of the re-sync checker was itself out of sync.
+  Re-mirrored here. A validate.sh parity check over templates/core/scripts/** <-> scripts/** would
+  have caught it: candidate follow-up.
+- Unplanned but right: lib/state_tools.py added to the adopt/init copy lists. P2's state layer was
+  never delivered to adopted repos by a first-time install, only by /strata:upgrade.
+
+### Evidence, including what is NOT proven
+- validate.sh §1-§12 PASSED: P1 29/29, P2 28/28, P3 24/24, version stamps agree, wiki lint 0/0.
+- Routing: a full RUNS=1 pass scored 34/34 at 1.00, including all 8 negatives. The authoritative
+  RUNS=3 gate is NOT met — it stopped at 6/34 conclusive (adopt, audit, autoplan x EN+RU, all 1.00)
+  and 28 inconclusive: the org hit its monthly spend limit mid-run. This is a billing state, not a
+  routing result, and the runner reported it as such rather than as failure — the exact behaviour
+  the v1 bug taught. Re-run when the limit resets: RUNS=3 PARALLEL=2 bash scripts/test_routing_evals.sh
+- CI: routing-evals.yml will run red on the first push until `gh secret set ANTHROPIC_API_KEY` is
+  done — deliberate, per the spec: a skipped eval must never look green.

@@ -13,7 +13,7 @@ Classify the request with `${CLAUDE_PLUGIN_ROOT}/skills/feature/sections/triage.
 
 ## The floor — always, every tier
 
-1. **Evidence** — show that the change works: run the real test or command and report its output. Ask for proof, not reassurance.
+1. **Evidence** — show that the change works: run the real test or command and report its output. Ask for proof, not reassurance. When the evidence is a failing test you are about to make pass: `touch .strata/guard-tests` before the first code edit, `rm -f .strata/guard-tests` once green — the PreToolUse guard keeps test files read-only in between, so the proof cannot be weakened by the fix. Fix the code, not the test.
 2. **Risk escalation** — a risk surface (see the rubric) makes the task `risky`, however small it looks.
 3. **Drift-close** — if docs or a documented fact changed, run `/strata:wiki-ingest` on them; otherwise nothing to do.
 4. **Git safety** — work on a branch, keep commits reversible, never write silently to the default branch.
