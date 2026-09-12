@@ -359,3 +359,14 @@ entities/routing-evals.md and every link to it. Owner's call, and the right one.
   every enabled plugin competes for the same words, and superpowers' 'brainstorming' claims
   'creating features, building components' by design. That is a configuration question
   (which plugins are enabled where), not a testing question.
+
+## 2026-09-12T19:47:35Z auto-mirror
+
+- pending_ingest: docs/superpowers/specs/2026-09-12-p4-field-patterns.md (mirrored docs/ -> raw/, ingest still owed)
+
+[2026-09-12T19:50:22Z] ingest raw/superpowers/specs/2026-09-12-p4-field-patterns.md → created: sources/p4-field-patterns.md; entities/{friction-capture, diagram-layer}.md; updated: index.md, overview.md, glossary.md, entities/{session-reflector, executable-wiki}.md — retires the marker for docs/superpowers/specs/2026-09-12-p4-field-patterns.md
+
+## 2026-09-12T21:14:38Z auto-mirror
+
+- pending_ingest: docs/superpowers/plans/2026-09-12-p4-field-patterns-plan.md (mirrored docs/ -> raw/, ingest still owed)
+[2026-09-12T21:15:53Z] ingest raw/superpowers/plans/2026-09-12-p4-field-patterns-plan.md → covered by sources/p4-field-patterns.md (spec and plan share one source page, as sdlc-right-side did); status → approved, in progress — retires the marker for docs/superpowers/plans/2026-09-12-p4-field-patterns-plan.md

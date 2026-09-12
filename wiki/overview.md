@@ -2,8 +2,8 @@
 title: Project Overview
 type: entity
 created: 2026-08-15
-updated: 2026-09-01
-links: [enforcement-layer, native-invocation, hq-mode, branch-state, upgrade-path]
+updated: 2026-09-12
+links: [enforcement-layer, native-invocation, hq-mode, branch-state, upgrade-path, friction-capture, diagram-layer]
 ---
 
 # Overview — the big picture
@@ -32,6 +32,13 @@ refuses writes under `raw/` and to test files mid-fix before they happen, and [[
 checks the diff against the plan at branch close with the "mistake twice → `CLAUDE.md`" rule.
 Triggered by Anthropic's AI-Native SDLC playbook, which turned out to be ADR #1 in other words.
 A routing-eval suite shipped alongside them and was removed the same day — see the log.
+
+**P4 — spec written 2026-09-12, awaiting approval** ([[p4-field-patterns]]): three field reports
+(TeamAI-CLI, Archify, OpenAI Agents API) confirmed Strata's bets and contributed three mechanisms —
+[[friction-capture]] (the Stop gate learns which sessions hurt and asks for the gotcha),
+[[diagram-layer]] (`wiki/diagrams/`: Archify JSON with commit-pinned sources, one HTML per story,
+stale pins become `wiki_debt`; Mermaid leaves the canon), and the promotion ladder written down
+once in `WIKI.md`. Ships as `0.8.0`.
 
 **Still in planning**, driven by [[vnext-brief]]: [[hq-mode]], then [[ablate]],
 [[session-reflector]], [[gardener]] (now carrying the playbook's `bands.yaml` σ-tier pattern as

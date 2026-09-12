@@ -1,0 +1,12 @@
+{
+  "goal": "P4: friction Stop-gate trigger (d), wiki/diagrams layer with Archify evidence pins + diagram_check.sh, promotion ladder + auto-memory docs, Mermaid out, deferred notes; ship 0.8.0",
+  "status": "active",
+  "branch": "strata/p4-field-patterns",
+  "updated": "2026-09-12T21:13:56Z",
+  "verify": "bash scripts/validate.sh green incl. §12 friction + §13 diagram check; wiki/diagrams/system.architecture.json validates 9/9 with --repo-root .; grep -ri mermaid templates/ skills/ reference/ empty; both manifests 0.8.0",
+  "decisions": [],
+  "open_questions": [],
+  "gotchas": [],
+  "wiki_debt": [],
+  "files_touched": []
+}

@@ -2,7 +2,7 @@
 title: Session reflector (ACE playbook)
 type: entity
 created: 2026-08-15
-updated: 2026-09-01
+updated: 2026-09-12
 links: [gardener, hq-mode, branch-state]
 ---
 
@@ -41,6 +41,10 @@ too lossy.
 
 Open: trigger on every session end (noisy) or only sessions that closed a feature or hit a
 failure (signal) — OQ#8; and whether `hq-sync` lifts cross-project bullets upward — OQ#9.
+
+**OQ#8 answered** by the P4 spec ([[p4-field-patterns]] D1): trigger on *measured friction*, not
+on every session — see [[friction-capture]]. The reflector, if it is ever built, reads the gotchas
+that trigger produces.
 
 **Not the same object as [[branch-state]]** (P2, shipped v0.5.0): branch state is this-branch,
 in-progress, per-file facts written directly during the work. This reflector, once built,

@@ -2,7 +2,7 @@
 title: Executable wiki (self-verifying facts)
 type: entity
 created: 2026-08-15
-updated: 2026-08-15
+updated: 2026-09-12
 links: [gardener]
 ---
 
@@ -37,6 +37,9 @@ stale. Execution belongs to [[gardener]] tier 1, which is why it costs nothing. 
 lint for entities with zero verified facts on critical paths.
 
 Open: verify sandboxing — plain subprocess with a timeout, or a read-only container (OQ#11).
+
+The architecture form of this idea is the [[diagram-layer]] (P4): a diagram node pinned to
+`path:line@commit` is a claim Archify's validator checks for free, with stable rule codes.
 
 ## Related
 

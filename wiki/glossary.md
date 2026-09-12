@@ -2,7 +2,7 @@
 title: Glossary
 type: entity
 created: 2026-08-15
-updated: 2026-08-15
+updated: 2026-09-12
 links: [overview]
 ---
 
@@ -23,6 +23,12 @@ finds a page contradicting the glossary, the glossary wins — fix the page.
 | drift | When `docs/`, `raw/`, and `wiki/` (or two wiki pages) disagree about a fact. Surfaced by `lint`, fixed by re-ingest — never auto-fixed. | `WIKI.md` |
 | pending_ingest | Marker line in `wiki/log.md` meaning a doc was mirrored to `raw/` but not yet ingested. The single token the enforcement layer reads. | [[pending-ingest-marker]] |
 | Stop gate | `Stop`-event hook that refuses to end the turn once while this session owes wiki work. | [[stop-gate]] |
+| friction signal | One of three deterministic counts read from the session transcript at `Stop`: interrupts ("Request interrupted by user"), denials (the user declined a tool call), tool errors (`"is_error":true`). Default thresholds 1 / 2 / 8. | [[friction-capture]] |
+| gotcha / no-gotcha | The one-line answer to a friction block: a `gotchas` entry in the branch state, or `gotcha: <what>` / `no-gotcha: <why>` in `wiki/log.md`. | [[friction-capture]] |
+| evidence pin | An Archify `sources[]` entry (`path`, optional `line`/`end_line`, `label`) verified against the blob at `meta.repository.revision`; an unresolvable pin fails the render with a `repository-evidence/*` rule code. | [[diagram-layer]] |
+| diagram layer | `wiki/diagrams/`: canonical `<name>.architecture.json` + one tracked `<name>.html`; dated JSON history only when `compare` reports a changed `semanticSha256`; history HTML never committed. | [[diagram-layer]] |
+| promotion ladder | observation → branch-state `gotchas` → `wiki/log.md` (once) → `CLAUDE.md` "Things Claude gets wrong" (second occurrence) → a hook (when the line says always/never). | [[p4-field-patterns]] D6 |
+| Archify | MIT agent skill + dependency-free Node CLI (`node bin/archify.mjs`) compiling typed JSON IR into validated, self-contained HTML diagrams; declared by Strata, never bundled. | [[diagram-layer]] |
 | commit gate | Pre-commit guard that fails the commit while any `pending_ingest` marker is outstanding. Escape hatch: `STRATA_SKIP_WIKI=1`. | [[commit-gate]] |
 | SessionStart injection | Hook whose stdout becomes model context; opens every session with branch, pending list, and wiki index head. Budget ~30–50 lines. | [[session-start-injection]] |
 | advisory vs deterministic | Skill prose is probabilistic; hooks are deterministic. Rule: if you write "the agent must always…", that is a hook, not a paragraph. | [ADR #1](decisions/adr-1-deterministic-enforcement.md) |
