@@ -1,0 +1,452 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Strata — how the plugin holds a repo together",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1280,
+      860
+    ],
+    "repository": {
+      "url": "https://github.com/Old-G/strata",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "2d4139990658a40055d2206c8c4bd354de5a6dc6"
+    },
+    "views": [
+      {
+        "id": "knowledge",
+        "label": "Knowledge path",
+        "focus": [
+          "docs",
+          "mirror",
+          "raw",
+          "wiki"
+        ],
+        "note": "Humans write docs/; a hook mirrors it into raw/; the AI ingests raw/ into wiki/ and answers from wiki/ first."
+      },
+      {
+        "id": "enforcement",
+        "label": "Enforcement layer",
+        "focus": [
+          "mirror",
+          "marker",
+          "stopgate",
+          "commitgate",
+          "session",
+          "guard"
+        ],
+        "note": "One marker rule read by every gate: Stop blocks once per session, pre-commit blocks the commit, SessionStart shows the debt."
+      },
+      {
+        "id": "process",
+        "label": "Process layer",
+        "focus": [
+          "skills",
+          "council",
+          "state",
+          "wiki"
+        ],
+        "note": "Skills route plain language to a flow; risky work meets the council; the branch state carries goal, decisions and debt."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "docs",
+      "type": "external",
+      "label": "docs/",
+      "sublabel": "human source of truth",
+      "pos": [
+        60,
+        110
+      ],
+      "size": [
+        170,
+        68
+      ]
+    },
+    {
+      "id": "mirror",
+      "type": "backend",
+      "label": "sync_raw_mirror.sh",
+      "sublabel": "PostToolUse hook",
+      "pos": [
+        320,
+        110
+      ],
+      "size": [
+        190,
+        68
+      ],
+      "sources": [
+        {
+          "path": "templates/core/scripts/sync_raw_mirror.sh",
+          "line": 1,
+          "label": "mirror hook"
+        }
+      ]
+    },
+    {
+      "id": "raw",
+      "type": "database",
+      "label": "raw/",
+      "sublabel": "read-only mirror",
+      "pos": [
+        600,
+        110
+      ],
+      "size": [
+        170,
+        68
+      ]
+    },
+    {
+      "id": "wiki",
+      "type": "database",
+      "label": "wiki/",
+      "sublabel": "AI-owned · queried first",
+      "pos": [
+        860,
+        110
+      ],
+      "size": [
+        190,
+        68
+      ],
+      "sources": [
+        {
+          "path": "templates/core/WIKI.md",
+          "line": 1,
+          "label": "protocol"
+        },
+        {
+          "path": "templates/core/scripts/diagram_check.sh",
+          "line": 1,
+          "label": "diagram check"
+        }
+      ]
+    },
+    {
+      "id": "guard",
+      "type": "security",
+      "label": "PreToolUse guard",
+      "sublabel": "refuses writes under raw/",
+      "pos": [
+        590,
+        290
+      ],
+      "size": [
+        190,
+        68
+      ],
+      "sources": [
+        {
+          "path": "templates/core/scripts/hooks/strata_pre_tool_guard.sh",
+          "line": 1,
+          "label": "A5"
+        }
+      ]
+    },
+    {
+      "id": "marker",
+      "type": "backend",
+      "label": "pending_ingest.sh",
+      "sublabel": "the one marker rule",
+      "pos": [
+        320,
+        460
+      ],
+      "size": [
+        190,
+        68
+      ],
+      "sources": [
+        {
+          "path": "templates/core/scripts/lib/pending_ingest.sh",
+          "line": 1,
+          "label": "marker rule"
+        }
+      ]
+    },
+    {
+      "id": "stopgate",
+      "type": "security",
+      "label": "Stop gate",
+      "sublabel": "blocks once · friction (d)",
+      "pos": [
+        60,
+        640
+      ],
+      "size": [
+        170,
+        68
+      ],
+      "sources": [
+        {
+          "path": "templates/core/scripts/hooks/strata_stop_gate.sh",
+          "line": 1,
+          "end_line": 60,
+          "label": "A1"
+        }
+      ]
+    },
+    {
+      "id": "commitgate",
+      "type": "security",
+      "label": "Commit gate",
+      "sublabel": "pre-commit",
+      "pos": [
+        330,
+        640
+      ],
+      "size": [
+        170,
+        68
+      ],
+      "sources": [
+        {
+          "path": "templates/core/scripts/pre-commit/check_wiki_fresh.sh",
+          "line": 1,
+          "label": "A2"
+        }
+      ]
+    },
+    {
+      "id": "session",
+      "type": "backend",
+      "label": "SessionStart inject",
+      "sublabel": "branch · debt · index",
+      "pos": [
+        600,
+        640
+      ],
+      "size": [
+        190,
+        68
+      ],
+      "sources": [
+        {
+          "path": "templates/core/scripts/hooks/strata_session_start.sh",
+          "line": 1,
+          "label": "A3"
+        }
+      ]
+    },
+    {
+      "id": "skills",
+      "type": "frontend",
+      "label": "skills/*",
+      "sublabel": "plain language → flow",
+      "pos": [
+        1040,
+        330
+      ],
+      "size": [
+        190,
+        68
+      ],
+      "sources": [
+        {
+          "path": "skills/feature/SKILL.md",
+          "line": 1,
+          "label": "feature flow"
+        },
+        {
+          "path": "skills/using-strata/SKILL.md",
+          "line": 1,
+          "label": "router"
+        }
+      ]
+    },
+    {
+      "id": "council",
+      "type": "backend",
+      "label": "review council",
+      "sublabel": "plan · then the diff",
+      "pos": [
+        1040,
+        560
+      ],
+      "size": [
+        190,
+        68
+      ],
+      "sources": [
+        {
+          "path": "agents/strata-diff-review.md",
+          "line": 1,
+          "label": "diff review"
+        },
+        {
+          "path": "agents/strata-eng-review.md",
+          "line": 1,
+          "label": "eng lens"
+        }
+      ]
+    },
+    {
+      "id": "state",
+      "type": "database",
+      "label": ".strata/state/",
+      "sublabel": "goal · decisions · wiki_debt",
+      "pos": [
+        830,
+        560
+      ],
+      "size": [
+        190,
+        68
+      ],
+      "sources": [
+        {
+          "path": "templates/core/scripts/lib/state_tools.py",
+          "line": 1,
+          "label": "schema"
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Knowledge layer",
+      "wraps": [
+        "docs",
+        "mirror",
+        "raw",
+        "wiki"
+      ],
+      "pad": 18
+    },
+    {
+      "kind": "security-group",
+      "label": "Enforcement layer",
+      "wraps": [
+        "guard",
+        "marker",
+        "stopgate",
+        "commitgate",
+        "session"
+      ],
+      "pad": 18
+    },
+    {
+      "kind": "region",
+      "label": "Process layer",
+      "wraps": [
+        "skills",
+        "council",
+        "state"
+      ],
+      "pad": 18
+    }
+  ],
+  "connections": [
+    {
+      "id": "edit",
+      "from": "docs",
+      "to": "mirror",
+      "label": "edit docs/*.md"
+    },
+    {
+      "id": "cp",
+      "from": "mirror",
+      "to": "raw",
+      "label": "cp -p"
+    },
+    {
+      "id": "ingest",
+      "from": "raw",
+      "to": "wiki",
+      "label": "ingest",
+      "variant": "emphasis"
+    },
+    {
+      "id": "mark",
+      "from": "mirror",
+      "to": "marker",
+      "label": "pending_ingest marker",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        415,
+        330
+      ]
+    },
+    {
+      "id": "guardraw",
+      "from": "guard",
+      "to": "raw",
+      "label": "refuses hand edits",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "sess",
+      "from": "marker",
+      "to": "stopgate",
+      "label": "this session",
+      "fromSide": "left",
+      "toSide": "top"
+    },
+    {
+      "id": "all",
+      "from": "marker",
+      "to": "commitgate",
+      "label": "all markers",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        415,
+        590
+      ]
+    },
+    {
+      "id": "pend",
+      "from": "marker",
+      "to": "session",
+      "label": "pending list",
+      "fromSide": "right",
+      "toSide": "top"
+    },
+    {
+      "id": "query",
+      "from": "skills",
+      "to": "wiki",
+      "label": "query first",
+      "fromSide": "left",
+      "toSide": "bottom",
+      "variant": "emphasis",
+      "labelAt": [
+        955,
+        250
+      ]
+    },
+    {
+      "id": "review",
+      "from": "skills",
+      "to": "council",
+      "label": "risky tier",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        1135,
+        480
+      ]
+    },
+    {
+      "id": "carry",
+      "from": "skills",
+      "to": "state",
+      "label": "goal · decisions · wiki_debt",
+      "fromSide": "left",
+      "toSide": "top",
+      "labelAt": [
+        925,
+        470
+      ]
+    }
+  ]
+}
