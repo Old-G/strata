@@ -2,7 +2,7 @@
 title: Project Overview
 type: entity
 created: 2026-08-15
-updated: 2026-09-12
+updated: 2026-09-13
 links: [enforcement-layer, native-invocation, hq-mode, branch-state, upgrade-path, friction-capture, diagram-layer]
 ---
 
@@ -33,12 +33,13 @@ checks the diff against the plan at branch close with the "mistake twice → `CL
 Triggered by Anthropic's AI-Native SDLC playbook, which turned out to be ADR #1 in other words.
 A routing-eval suite shipped alongside them and was removed the same day — see the log.
 
-**P4 — spec written 2026-09-12, awaiting approval** ([[p4-field-patterns]]): three field reports
-(TeamAI-CLI, Archify, OpenAI Agents API) confirmed Strata's bets and contributed three mechanisms —
-[[friction-capture]] (the Stop gate learns which sessions hurt and asks for the gotcha),
-[[diagram-layer]] (`wiki/diagrams/`: Archify JSON with commit-pinned sources, one HTML per story,
-stale pins become `wiki_debt`; Mermaid leaves the canon), and the promotion ladder written down
-once in `WIKI.md`. Ships as `0.8.0`.
+**v0.8.0 — P4, what the field taught us** ([[p4-field-patterns]]): three field reports (TeamAI-CLI,
+Archify, OpenAI Agents API) confirmed Strata's bets and contributed three mechanisms —
+[[friction-capture]] (Stop-gate trigger (d): a session that hurt cannot end without its gotcha),
+[[diagram-layer]] (`wiki/diagrams/`: Archify JSON with commit-pinned sources, one self-contained
+HTML per story, `diagram_check.sh` turns a changed pin into `wiki_debt`; text-diagram DSLs leave
+the canon), and the promotion ladder written once in `WIKI.md`. This repo's own picture:
+`wiki/diagrams/system.html`.
 
 **Still in planning**, driven by [[vnext-brief]]: [[hq-mode]], then [[ablate]],
 [[session-reflector]], [[gardener]] (now carrying the playbook's `bands.yaml` σ-tier pattern as
@@ -82,6 +83,10 @@ pipeline as a template without running it on itself.
   [[stop-gate]] a fourth trigger and [[session-start-injection]] a per-branch summary.
 - [[upgrade-path]] — re-syncs `scripts/**` into repos adopted before the current version → the
   bootstrap fix for the [[enforcement-layer]] itself.
+- [[friction-capture]] — the [[stop-gate]]'s fourth trigger → reads the session transcript, asks
+  for the gotcha that the second-occurrence rule in [[diff-review]] later lifts to `CLAUDE.md`.
+- [[diagram-layer]] — `wiki/diagrams/` → pins verified by Archify, drift surfaced by
+  `diagram_check.sh` as [[branch-state]] `wiki_debt`; a human artifact, never a gate.
 
 ## Layout
 
@@ -94,4 +99,5 @@ pipeline as a template without running it on itself.
 - `templates/stacks/<stack>/` — per-stack architecture canon + scaffold generator.
 - `reference/` — council personas, Diataxis doc-map, tool integration.
 - `docs/superpowers/{specs,plans}/` — Strata's own design specs and plans, dated.
-- `raw/`, `wiki/` — this repo's own knowledge layer (mirror + curated).
+- `raw/`, `wiki/` — this repo's own knowledge layer (mirror + curated); `wiki/diagrams/` — its
+  system diagram (canonical JSON + one HTML).

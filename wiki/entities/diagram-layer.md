@@ -2,7 +2,7 @@
 title: Diagram layer (wiki/diagrams, Archify)
 type: entity
 created: 2026-09-12
-updated: 2026-09-12
+updated: 2026-09-13
 links: [executable-wiki, branch-state, stop-gate, upgrade-path, diff-review]
 ---
 
@@ -26,11 +26,15 @@ with `repository-evidence/file-missing`, `line-out-of-range` or `revision-unavai
 
 ## Current solutions
 
-Spec'd in P4 ([[p4-field-patterns]] D2–D5), not yet built. Verified by hand on 2026-09-12: a
-nine-node architecture of Strata's knowledge and enforcement layers reached `validate` 9/9 and
-`deliver` after about eight diagnosed repairs — 4,766 bytes of JSON, 807,645 bytes of HTML with
-zero external references and fonts embedded, five pins linking to
-`github.com/Old-G/strata/blob/<sha>/…`.
+**Shipped in v0.8.0.** `templates/core/scripts/diagram_check.sh` + `state_tools.py add-debt`,
+`scripts/test_p4_diagrams.sh` (14 assertions) as `validate.sh` §13, wiring in `light-finish` step 5,
+`audit` Phase 2 item 6, `onboard`/`init`/`adopt`, and this repo's own first diagram:
+`wiki/diagrams/system.architecture.json` + `system.html` — 12 components across the knowledge,
+enforcement and process layers, 11 connections, 3 boundaries, 3 guided views, every hook, gate,
+skill and agent pinned to a file at the 0.8.0 commit; `validate` 9/9 with `--repo-root`, about
+nine diagnosed repairs (positions, edge sides, label placement, a `viewBox` that projected node
+copy below 6 px at 1440 px). The pre-spec trial on 2026-09-12 (nine nodes, 807,645-byte HTML,
+zero external references) is what proved the path.
 
 - **Layout.** `wiki/diagrams/<name>.architecture.json` (canonical, tracked) + `<name>.html`
   (current render, tracked, ≈0.8 MB, regenerable byte-for-byte) + `history/<date>-<name>.json`
@@ -40,10 +44,15 @@ zero external references and fonts embedded, five pins linking to
   architecture-only; other Archify types (workflow, sequence, dataflow, lifecycle) are optional
   extra stories.
 - **Trigger.** `scripts/diagram_check.sh` (template, delivered by [[upgrade-path]]): pinned
-  paths ∩ `git diff --name-only <base>...HEAD`, plus — when archify is present — a copy of the
-  JSON re-pinned to `HEAD` run through `validate --repo-root .`. Any hit appends
-  `diagram <name>: <reason>` to the [[branch-state]] `wiki_debt`. Runs in `light-finish` step 5
-  and as `audit` Phase 2 item 6. Archify absent → the debt still lands, the render waits.
+  paths ∩ files changed **since the diagram's pinned revision** (`git diff <revision> HEAD` when
+  that revision is an ancestor of `HEAD`, else the merge-base window with the base branch) plus
+  the working tree; and — when archify is present — a copy of the JSON re-pinned to `HEAD` run
+  through `validate --repo-root .`, reporting only `repository-evidence/*` codes. Any hit appends
+  `diagram <name>: <reason>` to the [[branch-state]] `wiki_debt` via `state_tools.py add-debt`
+  (idempotent). Runs in `light-finish` step 5 and as `audit` Phase 2 item 6; exit 0 always.
+  Archify absent → the git half still runs, one skip line, the render waits. The since-revision
+  window matters: a diagram authored on a branch *after* the changes it depicts must not be
+  flagged by its own branch, which the merge-base window would have done.
 - **Refresh.** Agent work inside `light-finish`: edit the changed area (never re-author), set
   `revision` to `HEAD`, `validate` → `deliver` via the archify skill, `compare` against the
   previous JSON, log the summary line, snapshot the JSON if the semantics changed.

@@ -26,7 +26,7 @@ description: Use when implemented work needs integrating and the branch wrapped 
    each one through the **archify** skill: edit only the changed area of `<name>.architecture.json`, set
    `meta.repository.revision` to the branch's latest commit, `validate --repo-root .` → `deliver` to
    `<name>.html`, then `compare` the previous JSON (`git show <base>:wiki/diagrams/<name>.architecture.json`)
-   against the new one: if `summary.semanticSha256` differs, copy the new JSON to
+   against the new one: if `summary.semanticSha256` differs, `mkdir -p wiki/diagrams/history` and copy the new JSON to
    `wiki/diagrams/history/<YYYY-MM-DD>-<name>.architecture.json` and put the compare summary counts in this
    entry's `wiki/log.md` line; history HTML is never committed. Archify not installed → the debt item stays
    and the log line says so; do not hand-edit the HTML.

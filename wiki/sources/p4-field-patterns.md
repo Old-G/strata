@@ -3,15 +3,15 @@ title: "P4 — Friction, evidence-pinned diagrams, and the promotion ladder (spe
 type: source
 source: raw/superpowers/specs/2026-09-12-p4-field-patterns.md
 created: 2026-09-12
-updated: 2026-09-12
+updated: 2026-09-13
 links: [friction-capture, diagram-layer, stop-gate, branch-state, session-reflector, executable-wiki, upgrade-path, gardener]
 ---
 
 # P4 — Friction, evidence-pinned diagrams, and the promotion ladder
 
 Sources: [spec](../../raw/superpowers/specs/2026-09-12-p4-field-patterns.md) ·
-[plan](../../raw/superpowers/plans/2026-09-12-p4-field-patterns-plan.md) · status: approved 2026-09-13,
-in progress on `strata/p4-field-patterns`.
+[plan](../../raw/superpowers/plans/2026-09-12-p4-field-patterns-plan.md) · status: approved and implemented
+2026-09-13 on `strata/p4-field-patterns`, shipped as v0.8.0.
 
 ## Summary
 

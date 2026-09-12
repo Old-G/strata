@@ -2,11 +2,71 @@
   "goal": "P4: friction Stop-gate trigger (d), wiki/diagrams layer with Archify evidence pins + diagram_check.sh, promotion ladder + auto-memory docs, Mermaid out, deferred notes; ship 0.8.0",
   "status": "active",
   "branch": "strata/p4-field-patterns",
-  "updated": "2026-09-12T21:13:56Z",
+  "updated": "2026-09-12T21:36:04Z",
   "verify": "bash scripts/validate.sh green incl. §12 friction + §13 diagram check; wiki/diagrams/system.architecture.json validates 9/9 with --repo-root .; grep -ri mermaid templates/ skills/ reference/ empty; both manifests 0.8.0",
-  "decisions": [],
+  "decisions": [
+    {
+      "what": "Friction pass = one fixed-string grep over the transcript (interrupt marker + is_error) under LC_ALL=C, counts over the candidates; a denial is an is_error result and is subtracted from errors.",
+      "why": "BSD grep in a UTF-8 locale cost +153 ms on 5 MB with three -E pipelines; fixed strings + C locale brought it to +≈90 ms. The ≤50 ms aspiration in the spec is not met and is recorded as such.",
+      "evidence": "scripts/test_p4_friction.sh timing case, best of 7",
+      "trust": "reviewed"
+    },
+    {
+      "what": "diagram_check.sh diffs since the diagram's pinned revision (when it is an ancestor of HEAD), falling back to the merge-base window.",
+      "why": "A diagram authored on a branch after the changes it depicts was flagged by its own branch under the merge-base window — a false positive on the very first dogfood run.",
+      "evidence": "bash scripts/diagram_check.sh main is silent on this branch after authoring wiki/diagrams/system",
+      "trust": "reviewed"
+    },
+    {
+      "what": "The SAR/PROJECT_PATTERN replacement lines say 'text-diagram DSLs that cannot be verified against the code' instead of naming Mermaid.",
+      "why": "The spec's verify is a literal grep for the word across templates/ skills/ reference/; naming the thing we removed would keep the grep non-empty forever.",
+      "evidence": "grep -rin mermaid templates/ skills/ reference/ → empty",
+      "trust": "reviewed"
+    },
+    {
+      "what": "Version bump committed before the diagram, and the diagram pinned to that commit.",
+      "why": "skills/using-strata/SKILL.md is a pinned source; bumping it after pinning would have made the first diagram_check report the diagram stale on its own branch.",
+      "evidence": "commits 2d41399 (release) then f601383 (diagram, revision 2d41399…)",
+      "trust": "reviewed"
+    }
+  ],
   "open_questions": [],
-  "gotchas": [],
+  "gotchas": [
+    "bash 3.2 (macOS /bin/bash) mis-parses a quote character inside \"${var:-default}\" — keep defaults with apostrophes in their own assignment",
+    "BSD `seq 1 0` counts DOWN and emits two lines — generate fixture loops with bash arithmetic, not seq",
+    "In this shell `grep` is rewritten to ugrep by the RTK hook, so shell-measured timings do not match what a script sees (BSD grep); measure inside the script",
+    "Archify `labelAt` is a point [x, y], not a fraction along the edge",
+    "Archify showcase fails composition/desktop-readability when viewBox width × node copy projects below 6 px at a 1440 px viewport — shrink the viewBox before shrinking text",
+    "A tracked .strata/state file modified by add-debt blocks `git checkout` in a fixture — commit state before switching branches in tests"
+  ],
   "wiki_debt": [],
-  "files_touched": []
+  "files_touched": [
+    ".claude-plugin/marketplace.json",
+    ".claude-plugin/plugin.json",
+    ".gitignore",
+    "CHANGELOG.md",
+    "CLAUDE.md",
+    "README.md",
+    "WIKI.md",
+    "reference/tool-integration.md",
+    "scripts/test_p4_diagrams.sh",
+    "scripts/test_p4_friction.sh",
+    "scripts/validate.sh",
+    "skills/adopt/SKILL.md",
+    "skills/audit/SKILL.md",
+    "skills/init/SKILL.md",
+    "skills/light-finish/SKILL.md",
+    "skills/onboard/SKILL.md",
+    "skills/using-strata/SKILL.md",
+    "templates/core/PROJECT_PATTERN.md",
+    "templates/core/WIKI.md",
+    "templates/core/claude-settings-hook.json",
+    "templates/core/gitignore.tmpl",
+    "templates/core/scripts/diagram_check.sh",
+    "templates/core/scripts/hooks/strata_stop_gate.sh",
+    "templates/core/scripts/lib/state_tools.py",
+    "templates/stacks/python-fastapi/SCALABLE_ARCHITECTURE_REFERENCE.md",
+    "wiki/diagrams/system.architecture.json",
+    "wiki/diagrams/system.html"
+  ]
 }

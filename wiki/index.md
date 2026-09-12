@@ -2,7 +2,7 @@
 title: Wiki Index
 type: index
 created: 2026-08-15
-updated: 2026-09-12
+updated: 2026-09-13
 ---
 
 # Wiki Index — start here
@@ -41,7 +41,7 @@ One page per file in `raw/`, holding a 3–7 paragraph summary (never a copy).
 | [[ai-led-onboarding-plan]] | The six tasks that shipped v0.2.0, and the release rule they taught (bump both manifests or the marketplace serves the old build). |
 | [[episodic-state-layer]] | P2 (2026-09-01): the episodic branch-state layer + the `/strata:upgrade` re-sync path, and the four decisions that shaped them. |
 | [[sdlc-right-side]] | P3 spec + plan (2026-09-01): the AI-Native SDLC playbook read against v0.6.1 — routing evals, PreToolUse guards, diff-vs-plan review; decisions D1–D4 settled. |
-| [[p4-field-patterns]] | P4 spec (2026-09-12): TeamAI-CLI, Archify and the Agents API read against v0.7.0 — friction trigger, evidence-pinned diagram layer, promotion ladder; decisions D1–D7. |
+| [[p4-field-patterns]] | P4 spec + plan (2026-09-12/13): TeamAI-CLI, Archify and the Agents API read against v0.7.0 — friction trigger, evidence-pinned diagram layer, promotion ladder; D1–D7; shipped as v0.8.0. |
 
 _All files in `raw/` are ingested as of 2026-09-12._
 

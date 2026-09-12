@@ -2,7 +2,7 @@
 title: Friction capture (Stop-gate trigger d)
 type: entity
 created: 2026-09-12
-updated: 2026-09-12
+updated: 2026-09-13
 links: [stop-gate, branch-state, session-reflector, diff-review]
 ---
 
@@ -24,7 +24,9 @@ second-occurrence rule in [[diff-review]] — a gotcha recorded at the moment it
 
 ## Current solutions
 
-Spec'd in P4 ([[p4-field-patterns]] D1), not yet built. Shape:
+**Shipped in v0.8.0** inside `templates/core/scripts/hooks/strata_stop_gate.sh` as trigger (d) —
+see [[stop-gate]] for the mechanics as built. `scripts/test_p4_friction.sh`, 24 assertions, is
+`validate.sh` §12. Shape:
 
 - **Signals**, each a `grep -c` over `transcript_path` with `"isSidechain":true` lines dropped:
   `interrupts` = "Request interrupted by user"; `denials` = the user declined a tool call
@@ -38,14 +40,18 @@ Spec'd in P4 ([[p4-field-patterns]] D1), not yet built. Shape:
 - **Satisfied** by a `gotchas` entry in `.strata/state/<branch>.json`, or one line
   `gotcha: <what>` / `no-gotcha: <why>` in `wiki/log.md`. When another trigger fires anyway,
   the counts ride along in its reason.
-- Runs last, after the cheap checks; budget ≤ 50 ms on a 5 MB transcript; fails open on a
+- Runs last, after the cheap checks: one fixed-string `grep` pass under `LC_ALL=C` selects the
+  candidate lines (interrupts and `is_error` results — a denial *is* an `is_error` result), the
+  counts run over that small set. Measured +≈90 ms on a 5 MB transcript (best of 7); the spec's
+  ≤ 50 ms aspiration was not met with BSD grep and is recorded as such. Fails open on a
   missing or unreadable transcript. No new hook event — Claude Code exposes no Esc or
   permission-denied event, the transcript is the only deterministic channel.
 - Not adopted: TeamAI's "correction within 60 s" keyword heuristic — language-dependent and
   noisy in a bilingual repo.
 
-Tests land as `validate.sh` §12 with synthetic transcripts; delivered to adopted repos by
-[[upgrade-path]] since it lives inside the existing Stop-gate script.
+Delivered to adopted repos by [[upgrade-path]] since it lives inside the existing Stop-gate script.
+Two fixture lessons from building it (also in [[stop-gate]]): bash 3.2 mis-parses a quote inside
+`"${var:-default}"`; BSD `seq 1 0` counts down and emits two lines.
 
 ## Related
 
