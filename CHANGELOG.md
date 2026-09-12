@@ -6,6 +6,46 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-09-13
+
+Three field reports (Tencent TeamAI-CLI, Archify, OpenAI's Agents API) read against v0.7.0
+confirmed Strata's bets — git as memory, index-first disclosure, skills as a directory — and
+contributed three mechanisms. Spec: `docs/superpowers/specs/2026-09-12-p4-field-patterns.md`.
+
+### Added
+- **Friction — Stop-gate trigger (d).** The gate reads the session's own transcript
+  (`transcript_path`) and counts user interrupts, denied tool calls and tool errors; a session at
+  or past a threshold (`STRATA_FRICTION_INTERRUPTS=1`, `_DENIALS=2`, `_ERRORS=8`; `0` disables)
+  with nothing recorded since the session stamp blocks once and asks for a `gotchas` entry in the
+  branch state or one `gotcha:` / `no-gotcha:` line in `wiki/log.md`. Same one-block cap, fails
+  open, one fixed-string grep pass under `LC_ALL=C` (+≈90 ms on a 5 MB transcript). The sessions
+  worth documenting are the painful ones, and pain is countable without a model.
+  `scripts/test_p4_friction.sh` (24 assertions) as `validate.sh` §12.
+- **Diagram layer — `wiki/diagrams/`.** One Archify JSON per bounded story
+  (`<name>.architecture.json`, canonical, every node pinned to `path[:line]` at
+  `meta.repository.revision`) plus one self-contained `<name>.html`; dated JSON snapshots in
+  `history/` only when `compare` reports a changed `semanticSha256`; history HTML never committed.
+  `templates/core/scripts/diagram_check.sh` — pinned paths ∩ files changed since the pinned
+  revision, plus (archify installed) a re-pin-to-`HEAD` `validate --repo-root` that surfaces
+  `repository-evidence/*` codes; findings become `wiki_debt` (`state_tools.py add-debt`, new,
+  idempotent), which the Stop gate already enforces. Wired into `light-finish` step 5 and `audit`
+  Phase 2 item 6; offered (never forced) by `init`/`adopt`; a companion row in `onboard`. Archify
+  is declared in `reference/tool-integration.md`, never bundled; never called from a hook.
+  `scripts/test_p4_diagrams.sh` (14 assertions) as §13. Strata's own
+  `wiki/diagrams/system.architecture.json` + `system.html` ship as the first diagram.
+- **Promotion ladder** written once in `WIKI.md`: observation → branch-state `gotchas` →
+  `wiki/log.md` (once) → `CLAUDE.md` (second occurrence) → hook (when the line says always/never).
+- `reference/tool-integration.md` names Claude Code auto memory as the third memory next to
+  claude-mem and `wiki/` — personal, per-machine, unversioned; twice there → `wiki/`.
+
+### Changed
+- SAR §14 and `PROJECT_PATTERN.md` §1: diagrams are Archify JSON in `wiki/diagrams/`; text-diagram
+  DSLs that cannot be verified against the code are no longer recommended.
+- `.gitignore` templates ignore `wiki/diagrams/history/*.html`.
+
+### Deferred (recorded in the wiki, not built)
+- Wiki recall counts as gardener input; owned-region markers in `CLAUDE.md` for `/strata:upgrade`.
+
 ## [0.7.0] — 2026-09-02
 
 The right side of the loop. Anthropic's AI-Native SDLC playbook (2026-08-21) turned out to be
