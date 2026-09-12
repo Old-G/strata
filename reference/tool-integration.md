@@ -30,6 +30,14 @@ before." The rule that keeps them from fighting:
 > from "we learned this once" to "this is canonical," it moves *into* the wiki
 > and stops being just an observation.
 
+**The third memory — Claude Code auto memory.** Claude Code keeps its own notes per
+project under `~/.claude/projects/<project>/memory/`: a `MEMORY.md` index (the first
+200 lines / 25 KB load every session) plus one-fact files opened on demand. It is
+*personal, per-machine and unversioned* — like claude-mem it is the wrong home for a
+canonical fact. Same rule, third store: if something surfaces there twice, or a
+teammate would need it, it moves into `wiki/`; if it is a lesson about how to work
+here, it climbs the promotion ladder in `WIKI.md` instead.
+
 When claude-mem is present, Strata prefers its smart-Read over full-file Reads
 for exploration, and queries its memory before re-deriving something from
 scratch. When it's absent, Strata falls back to plain Read/Grep/Glob and the
@@ -102,6 +110,39 @@ present and never depends on its output format.
 
 ---
 
+## Archify — the DIAGRAM layer's renderer
+
+**What it does.** An agent skill plus a dependency-free Node CLI (`node
+~/.claude/skills/archify/bin/archify.mjs`, Node ≥ 18, MIT). The agent authors a typed
+JSON IR (components, connections, boundaries, ≤ 12 primary nodes); `validate` runs nine
+fail-closed artifact checks and `deliver` compiles one self-contained HTML (≈0.8 MB, fonts
+embedded, works offline) with search, focus, relationship tracing and PNG/SVG/WebM export
+in the viewer. With `meta.repository {url, revision}` and `components[].sources[]`,
+`--repo-root` verifies every pin against the blob at that commit and fails with a stable
+rule code (`repository-evidence/file-missing`, `line-out-of-range`,
+`revision-unavailable`). `compare base.json head.json` yields per-kind change counts and
+a `semanticSha256` that ignores presentation.
+
+**How Strata relies on it.** `wiki/diagrams/<name>.architecture.json` is canonical and
+tracked; `<name>.html` is the current render, tracked; dated JSON snapshots land in
+`history/` only when the semantics changed; history HTML is never committed.
+`scripts/diagram_check.sh` (installed by `init`/`adopt`, re-synced by `upgrade`) runs in
+`light-finish` step 5 and `audit` Phase 2: pinned paths ∩ the branch diff, plus — when
+archify is present — a re-pin-to-`HEAD` validate. Findings become `wiki_debt`, which the
+Stop gate already enforces; the refresh itself is the agent's work through the archify
+skill. A diagram is a human artifact and never a gate: a stale one is a debt item and an
+`audit` finding, not a refused commit. Never call archify from a hook; set
+`ARCHIFY_UPDATE_CHECK_DISABLED=1` wherever Strata invokes it so no script touches the
+network. `meta.repository.url` comes from `git remote get-url origin`; GitHub and Gitee
+get `link_mode: web`, any other forge `local-only` (SRC markers without hyperlinks).
+
+**Declared, not bundled.** Install once per machine: `npx skills add tt-a1i/archify -g -a
+claude-code -s archify -y` (the skills CLI writes to `~/.claude/skills/archify`;
+`ARCHIFY_BIN` overrides the path). Absent, `diagram_check.sh` still runs its git half and
+prints one skip line; the render waits for a machine that has it.
+
+---
+
 ## Summary
 
 | Tool | Layer role | Savings | Strata's stance | Bundled? |
@@ -110,6 +151,7 @@ present and never depends on its output format.
 | RTK | Bash output compaction | 60–90% on dev ops | assume hook handles verbosity; watch path-form | no — global |
 | Superpowers | PROCESS skills | n/a (workflow) | wrap, don't replace | no — global |
 | Caveman | prose compression | ~4–10% | optional, low priority | no — global |
+| Archify | diagram layer renderer + pin verifier | n/a (human artifact) | rely-if-present; never a gate, never from a hook | no — global skill |
 
 All four are **install-once, machine-global**. Strata composes them; it does not
 ship them.

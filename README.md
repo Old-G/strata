@@ -348,12 +348,20 @@ It also blocks a session that changed a lot of code and wrote nothing to the wik
 code-only changes were the drift nobody caught. That block is always satisfiable with one line in
 `wiki/log.md`, including an explicit `no-wiki-impact: <reason>`.
 
+And it knows when a session **hurt**: from the session transcript it counts your interrupts, denied
+tool calls and tool errors, and a session past the threshold cannot end without a recorded lesson —
+a `gotchas` entry in the branch state, or one `gotcha: …` / `no-gotcha: …` line in `wiki/log.md`.
+The sessions worth documenting are the painful ones, and pain is countable without a model.
+
 ```bash
 STRATA_STOP_GATE_LINES=0     # disable the code-only trigger (default: 50 changed lines)
+STRATA_FRICTION_INTERRUPTS=1 STRATA_FRICTION_DENIALS=2 STRATA_FRICTION_ERRORS=8   # friction thresholds; 0 disables
 STRATA_SKIP_WIKI=1 git commit -m "wip"   # escape hatch for a genuine WIP commit
 ```
 
-Verify the whole layer end-to-end: `bash scripts/test_p1_gates.sh`.
+Verify the whole layer end-to-end: `bash scripts/test_p1_gates.sh` (markers, gates), `test_p2_state.sh`
+(branch state), `test_p3_guards.sh` (PreToolUse), `test_p4_friction.sh` (friction), `test_p4_diagrams.sh`
+(diagram layer) — or all of them through `bash scripts/validate.sh`.
 
 ---
 
@@ -402,11 +410,12 @@ strata/
 │   │   └── scripts/         # installed per-project by init/adopt:
 │   │       ├── sync_raw_mirror.sh        # PostToolUse: docs → raw + marker
 │   │       ├── lib/pending_ingest.sh     # the one marker-retirement rule
-│   │       ├── hooks/                    # SessionStart injection · Stop gate
+│   │       ├── hooks/                    # SessionStart injection · Stop gate (+ friction) · PreToolUse guard
+│   │       ├── diagram_check.sh          # wiki/diagrams/: pinned-source drift → wiki_debt
 │   │       └── pre-commit/               # secrets · raw mirror · wiki freshness
 │   └── stacks/python-fastapi/   # SCALABLE_ARCHITECTURE_REFERENCE.md + scaffold generator
 ├── reference/               # council personas, tool-integration, Diataxis doc-map
-├── scripts/                 # validate.sh + behavioural tests (installer, P1 gates)
+├── scripts/                 # validate.sh + behavioural tests (installer, P1–P4)
 ├── .githooks/pre-commit     # Strata's own guards (git config core.hooksPath .githooks)
 ├── raw/  wiki/              # Strata's own knowledge layer — it dogfoods the wiki
 ├── CLAUDE.md                # Strata dogfoods its own pattern

@@ -95,6 +95,14 @@ Record each as `[severity | structure | file:line | rule | suggested fix]`.
    automatically) and add a LOW note: "N unreviewed decision(s) in <path> — never auto-promoted
    to wiki/, review or fold in manually." A missing `.strata/state/` directory entirely is not a
    finding — the layer is optional and incremental, same as `wiki/` itself.
+6. **Diagram layer (P4):** if `wiki/diagrams/*.architecture.json` exist, run `bash scripts/diagram_check.sh`
+   (on the default branch it checks the working tree and, with archify installed, re-pins every diagram to
+   `HEAD` and verifies its source pins). Each `pinned file changed` line = MEDIUM "diagram may be stale";
+   each `pin fails at HEAD` line (`repository-evidence/file-missing`, `line-out-of-range`) = HIGH "documented
+   architecture no longer matches the code" — name the diagram and the path. Also flag a diagram whose
+   `<name>.html` is older than its JSON (`git log -1 --format=%ct`) as LOW "render behind its source". If the
+   script reports archify missing, say so in `Coverage` (pins were not verified) rather than claiming they hold.
+   No `wiki/diagrams/` at all is not a finding — the layer is optional, like `wiki/` itself.
 
 ## Phase 3 — Doc freshness (Diataxis coverage map)
 

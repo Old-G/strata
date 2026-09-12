@@ -2,8 +2,8 @@
 title: Stop gate (A1)
 type: entity
 created: 2026-08-15
-updated: 2026-09-01
-links: [enforcement-layer, pending-ingest-marker, commit-gate, branch-state]
+updated: 2026-09-13
+links: [enforcement-layer, pending-ingest-marker, commit-gate, branch-state, friction-capture]
 ---
 
 # Stop gate (A1)
@@ -50,10 +50,27 @@ but fails schema validation (`scripts/lib/state_tools.py validate`). A *missing*
 a trigger — same incremental-adoption stance as triggers (a)/(b). `python3` only runs when a state
 file actually exists, so the clean/no-layer path pays nothing extra.
 
+**Trigger (d), shipped in v0.8.0 — [[friction-capture]]:** the gate reads the session's own transcript
+(`transcript_path` in the Stop payload) and counts three signals: user interrupts
+(`[Request interrupted by user` on `"type":"user"` lines), denied tool calls (an `is_error`
+tool_result matching `STRATA_FRICTION_DENY_RE`, default `doesn't want to proceed`) and other tool errors
+(`"is_error":true`). Subagent sidechains are dropped. Thresholds `STRATA_FRICTION_INTERRUPTS=1`,
+`_DENIALS=2`, `_ERRORS=8`; `0` disables a signal, all three `0` the trigger. It fires only when (a)–(c)
+did not, some signal met its threshold, there is somewhere to record (`wiki/log.md` or a branch state
+exists) and nothing was recorded since the session stamp (log line count unchanged, state file not
+`-newer` than the stamp). Satisfied by a `gotchas` entry in `.strata/state/<branch>.json` or one line
+`gotcha: …` / `no-gotcha: …` in `wiki/log.md`; when another trigger fires anyway, the counts are appended to
+its reason. One fixed-string `grep` pass under `LC_ALL=C` selects candidate lines, the counts run over
+that small set; skipped when the payload has no `transcript_path`, fails open on an unreadable file.
+Measured: a 5 MB transcript adds ≈90 ms to the gate (`test_p4_friction.sh`, best of 7). Two fixture
+lessons: bash 3.2 (macOS `/bin/bash`) mis-parses a quote inside `"${var:-default}"` — keep defaults in
+their own assignment; BSD `seq 1 0` counts *down* and emits two lines — generate fixtures with
+arithmetic loops.
+
 ## Related
 
 [[enforcement-layer]] · [[pending-ingest-marker]] · [[commit-gate]] ·
-[[session-start-injection]] · [[branch-state]]
+[[session-start-injection]] · [[branch-state]] · [[friction-capture]]
 
 ## Sources
 

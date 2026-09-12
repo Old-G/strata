@@ -2,7 +2,7 @@
 title: Upgrade path (/strata:upgrade)
 type: entity
 created: 2026-09-01
-updated: 2026-09-01
+updated: 2026-09-13
 links: [enforcement-layer, session-start-injection, branch-state]
 ---
 
@@ -61,6 +61,14 @@ Two implementation notes worth keeping. `diff | grep` cannot be used to decide t
 of what grep matched; the diff is captured into a variable first. And the verdict is behavioural,
 not advisory: 4 mutations, 4 killed — inverted direction, `AHEAD` re-armed to fail the gate, the
 `pipefail` workaround removed, and the STALE branch deleted outright.
+
+**Deferred, recorded by P4 ([[p4-field-patterns]] D7): owned-region markers in `CLAUDE.md`.** TeamAI-CLI
+writes team rules into `CLAUDE.md` between `<!-- [teamai:rules:start] -->` / `end` markers so a re-sync can
+replace exactly its own block and nothing else. Strata's routing map and "Things Claude gets wrong" are
+free text today, so `/strata:upgrade` re-syncs `scripts/**` but leaves `CLAUDE.md` alone. Wrapping the
+Strata-owned routing block in `<!-- strata:routing:start -->` / `end` in `CLAUDE.md.tmpl` would let
+`upgrade` refresh it idempotently while every human-written line stays untouched. Small; do it the next
+time the routing map itself changes.
 
 ## Related
 

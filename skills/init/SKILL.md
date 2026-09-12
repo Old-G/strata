@@ -51,9 +51,11 @@ Skip this entire phase for human-only repos (§9 skip-list). When enabled:
    - `hooks/strata_stop_gate.sh` → `scripts/hooks/strata_stop_gate.sh` (A1 — blocks turn-end ONCE while this session owes wiki work; inert without the SessionStart stamp)
    - `hooks/strata_pre_tool_guard.sh` → `scripts/hooks/strata_pre_tool_guard.sh` (A5 — PreToolUse: refuses a write under `raw/`, and to test files while `.strata/guard-tests` exists; exit 2 with the reason, fails open otherwise)
    - `lib/state_tools.py` → `scripts/lib/state_tools.py` (the branch-state schema/validator the Stop gate and SessionStart read)
+   - `diagram_check.sh` → `scripts/diagram_check.sh` (P4 diagram layer — pinned-source drift check run by `light-finish` and `audit`; not a hook)
 
    Then MERGE `${CLAUDE_PLUGIN_ROOT}/templates/core/claude-settings-hook.json`'s `hooks` block into the project's `.claude/settings.json` (create the file if absent; if an array for an event already exists, append the entry — never overwrite). Drop the `_strata_note` key when merging. Add `.strata/` to `.gitignore` — it holds per-session gate state, not source.
 5. Hand the wiki population to `/strata:wiki-ingest` for `raw/Architecture.md` and `raw/ADR-Lean.md` (do not hand-write deep entity pages here).
+6. **Offer — never force — the first diagram.** If `node` and the archify skill are available (`~/.claude/skills/archify/bin/archify.mjs`), ask once whether to seed `wiki/diagrams/system.architecture.json` from the `docs/Architecture.md` sketch: ≤ 12 primary nodes, `meta.repository` = `git remote get-url origin` + the first commit's sha (`link_mode: web` for GitHub/Gitee, `local-only` otherwise), one `sources[]` pin per node that maps to a real file, `validate --repo-root .` → `deliver` to `wiki/diagrams/system.html`. No origin remote yet → skip and say so; the diagram can be added at the first `light-finish`. Add `wiki/diagrams/history/*.html` to `.gitignore` either way.
 
 ## Phase 4 — Skip-list trimming (§9)
 

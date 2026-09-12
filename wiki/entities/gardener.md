@@ -2,7 +2,7 @@
 title: Gardener (nightly curator)
 type: entity
 created: 2026-08-15
-updated: 2026-08-15
+updated: 2026-09-13
 links: [executable-wiki, hq-mode, session-reflector]
 ---
 
@@ -44,6 +44,13 @@ flag for a human.
 
 Runtime options: local launchd (start here), own VPS for true 24/7, or Anthropic cloud
 Routines for GitHub-reachable repos like Strata itself.
+
+**Deferred input, recorded by P4 ([[p4-field-patterns]] D7): recall counts.** TeamAI-CLI auto-upvotes a
+learning every time `recall` returns it and reports "silent candidates" — entries never recalled. The
+Strata equivalent is a `PostToolUse` hook on `Read`/`Grep` over `wiki/**` appending one line per hit to
+`.strata/wiki-hits.log`, which tier 1 folds into per-page counts; a page with zero hits since creation is a
+prune candidate for tier 2, a page hit every session is a candidate for a tighter TLDR in `index.md`.
+Build it only *with* the gardener — counts nobody reads are the AHEAD-verdict mistake in a new coat.
 
 ## Related
 

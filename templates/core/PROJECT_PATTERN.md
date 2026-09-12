@@ -17,6 +17,7 @@ Not dogma — individual blocks can be turned off (see the §9 skip-list).
 - `raw/` is never hand-edited — it's a copy of `docs/`.
 - Any change to `docs/<file>.md` → always `cp -p docs/<file>.md raw/<file>.md` + AI ingest.
 - The AI answers project questions via `wiki/`, not `raw/`. If the wiki can't answer — that's a signal the ingest is incomplete.
+- **Diagrams live in `wiki/diagrams/`** as Archify JSON (`<name>.architecture.json`, every node pinned to `path:line@commit`) plus one self-contained `<name>.html` per story; `scripts/diagram_check.sh` turns a changed pin into wiki debt. A diagram that cannot be verified against the code is prose with boxes — text-diagram DSLs are not used.
 - Lint weekly: the AI looks for contradictions / orphans / outdated pages and writes to `wiki/log.md`.
 
 The pattern is inspired by karpathy-wiki — a pull-forward knowledge base, not an append-only journal.

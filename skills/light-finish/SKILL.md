@@ -20,7 +20,18 @@ description: Use when implemented work needs integrating and the branch wrapped 
 3. **Ask once:** merge to base locally · push + open a PR · keep the branch · discard.
 4. **Do it.** Git safety holds: never a silent write to the default branch; keep commits reversible; if on the default branch, branch first.
 5. **Drift-close — not optional.** Run `/strata:wiki-ingest` on every `docs/*.md` the branch touched. If only code changed, append a one-line summary to `wiki/log.md` and update the affected `wiki/entities/` pages. This is the moment the knowledge layer is supposed to catch up; the Stop and commit gates exist because it used to get skipped here.
-   `verify`: `bash scripts/lib/pending_ingest.sh` prints nothing.
+   **Diagrams first** (P4 diagram layer): run `bash scripts/diagram_check.sh <base-branch>`. Every line it
+   prints is a diagram in `wiki/diagrams/` whose pinned source files changed on this branch (or whose pins
+   no longer resolve at `HEAD`); it has already been written into the branch state's `wiki_debt`. Refresh
+   each one through the **archify** skill: edit only the changed area of `<name>.architecture.json`, set
+   `meta.repository.revision` to the branch's latest commit, `validate --repo-root .` → `deliver` to
+   `<name>.html`, then `compare` the previous JSON (`git show <base>:wiki/diagrams/<name>.architecture.json`)
+   against the new one: if `summary.semanticSha256` differs, copy the new JSON to
+   `wiki/diagrams/history/<YYYY-MM-DD>-<name>.architecture.json` and put the compare summary counts in this
+   entry's `wiki/log.md` line; history HTML is never committed. Archify not installed → the debt item stays
+   and the log line says so; do not hand-edit the HTML.
+   `verify`: `bash scripts/lib/pending_ingest.sh` prints nothing, and `bash scripts/diagram_check.sh <base-branch>`
+   prints nothing.
    If `.strata/state/<branch-slug>.json` exists (`python3 scripts/lib/state_tools.py path <branch>`),
    fold its `decisions` and `gotchas` (including step 2's findings) into this same `wiki/log.md`
    entry, then delete the state file. A closed branch has no business leaving scratch state behind

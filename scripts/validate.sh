@@ -193,6 +193,30 @@ else
   err "scripts/test_p3_guards.sh is missing"
 fi
 
+echo "== 12. P4 Stop-gate trigger (d) — friction from the session transcript =="
+if [ -f scripts/test_p4_friction.sh ]; then
+  if out="$(bash scripts/test_p4_friction.sh 2>&1)"; then
+    ok "$(printf '%s' "$out" | tail -n 1)"
+  else
+    printf '%s\n' "$out" | grep '✗' >&2
+    err "P4 friction tests failed (run: bash scripts/test_p4_friction.sh)"
+  fi
+else
+  err "scripts/test_p4_friction.sh is missing"
+fi
+
+echo "== 13. P4 diagram layer — state_tools add-debt, diagram_check.sh =="
+if [ -f scripts/test_p4_diagrams.sh ]; then
+  if out="$(bash scripts/test_p4_diagrams.sh 2>&1)"; then
+    ok "$(printf '%s' "$out" | tail -n 1)"
+  else
+    printf '%s\n' "$out" | grep '✗' >&2
+    err "P4 diagram tests failed (run: bash scripts/test_p4_diagrams.sh)"
+  fi
+else
+  err "scripts/test_p4_diagrams.sh is missing"
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then echo "✅ Strata plugin validation PASSED"; else echo "❌ validation FAILED"; fi
 exit "$fail"

@@ -19,3 +19,9 @@ __pycache__/
 # (P2) and is tracked on purpose — it must survive a machine change or a /clear.
 .strata/*
 !.strata/state/
+
+# --- Strata diagram layer (P4) ---
+# wiki/diagrams/<name>.architecture.json (canonical) and <name>.html (current render)
+# ARE committed. History keeps only the small JSON snapshots; any historic HTML or a
+# compare delta (≈2 MB) is regenerated on demand from the JSON — never committed.
+wiki/diagrams/history/*.html

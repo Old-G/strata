@@ -126,6 +126,27 @@ Output — a section in `wiki/log.md` under the date; **the AI does NOT auto-fix
 
 ---
 
+## Promotion ladder — how an observation becomes a rule
+
+Knowledge climbs one rung at a time; nothing is auto-promoted, and each rung has a cost paid by
+a different reader. Write it at the lowest rung that fits and let repetition lift it.
+
+| Rung | Where | Who pays | Lifts when |
+|---|---|---|---|
+| observation | the conversation, claude-mem, Claude Code auto memory | nobody — personal, per-machine, unversioned | it matters beyond this session |
+| gotcha | `gotchas[]` in `.strata/state/<branch>.json` | this branch | the branch closes (`light-finish` folds it into `wiki/log.md`) |
+| lesson | one line in `wiki/log.md` (`gotcha: …` / `no-gotcha: …`) | whoever greps the log | it happens a **second** time |
+| rule | one line in `CLAUDE.md` ("Things Claude gets wrong") | every session, every turn | the line says **always** or **never** |
+| invariant | a hook or pre-commit guard (`scripts/hooks/`, `scripts/pre-commit/`) | a few ms per event | — (the top; delete it when `audit` shows it no longer fires) |
+
+Two forces keep the ladder honest. The Stop gate's friction trigger asks for the gotcha at the
+moment a session hurt, so rung two is filled when the memory is fresh. The second-occurrence rule
+in `light-finish` is the only path from rung three to rung four — a `CLAUDE.md` line without a
+prior log line is a rule nobody proved was needed. Facts (formulas, paths, schemas) are not on
+this ladder at all: they go to `wiki/` and are queried on demand, never into `CLAUDE.md`.
+
+---
+
 ## Workflow for common scenarios
 
 | Scenario | Actions |

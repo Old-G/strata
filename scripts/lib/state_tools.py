@@ -193,6 +193,39 @@ def cmd_debt(args):
     return 0
 
 
+def cmd_add_debt(args):
+    """Append one wiki_debt item, idempotently. Used by diagram_check.sh (P4) and by
+    any skill that discovers the wiki is owed something mid-branch."""
+    if len(args) < 2 or not args[1].strip():
+        print("usage: state_tools.py add-debt <path> '<item>'", file=sys.stderr)
+        return 1
+    path = Path(args[0])
+    item = args[1].strip()
+    if not path.exists():
+        print(f"not found: {path}", file=sys.stderr)
+        return 2
+    try:
+        obj = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        print(f"invalid JSON: {e}", file=sys.stderr)
+        return 1
+    debt = list(obj.get("wiki_debt") or [])
+    if item in debt:
+        print("already present")
+        return 0
+    debt.append(item)
+    obj["wiki_debt"] = debt
+    obj["updated"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    errors = validate_obj(obj)
+    if errors:
+        for e in errors:
+            print(f"  - {e}", file=sys.stderr)
+        return 1
+    path.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print("added")
+    return 0
+
+
 def cmd_summary(args):
     if not args:
         print("usage: state_tools.py summary <path>", file=sys.stderr)
@@ -233,6 +266,7 @@ def main(argv):
         "init": cmd_init,
         "validate": cmd_validate,
         "debt": cmd_debt,
+        "add-debt": cmd_add_debt,
         "summary": cmd_summary,
     }
     fn = dispatch.get(cmd)

@@ -25,6 +25,8 @@ diff-vs-plan review at branch close. This repo dogfoods its own patterns, includ
 | Episodic state layer (`.strata/state/`) + Stop-gate trigger (c) + SessionStart summary | ✅ `test_p2_state.sh` green |
 | `/strata:upgrade` — re-syncs `scripts/**` into repos adopted before this version | ✅ fixes the confirmed no-gates-installed case |
 | Right side of the loop — A5 PreToolUse guard · R1 diff-vs-plan review | ✅ `test_p3_guards.sh` green · `strata-diff-review` wired into light-finish |
+| Friction — Stop-gate trigger (d) asks for the gotcha when a session hurt | ✅ `test_p4_friction.sh` green |
+| Diagram layer — `wiki/diagrams/` (Archify JSON, commit-pinned sources) + `diagram_check.sh` | ✅ `test_p4_diagrams.sh` green · Strata's own `system` diagram |
 | Verified by adopting a real external project | ⬜ pending (user will test elsewhere) |
 
 ## Stack
@@ -39,7 +41,8 @@ Claude Code plugin · Markdown skills + subagents · bundled shell/python templa
 - `templates/core/` — portable assets: `PROJECT_PATTERN.md`, `WIKI.md`, `wiki/` skeleton, `scripts/`, CLAUDE/ADR templates.
 - `templates/stacks/<stack>/` — per-stack architecture canon (`SCALABLE_ARCHITECTURE_REFERENCE.md`) + scaffold generator.
 - `reference/` — council personas, Diataxis doc-map, tool-integration (RTK / claude-mem / Caveman).
-- `templates/core/scripts/` — installed per target project: `sync_raw_mirror.sh`, `lib/pending_ingest.sh` (the one marker rule), `lib/state_tools.py` (the episodic-state schema/validator), `hooks/` (SessionStart + Stop + PreToolUse guard), `pre-commit/` guards, `strata_upgrade_check.sh` (re-sync diff reporter, backs `/strata:upgrade`).
+- `templates/core/scripts/` — installed per target project: `sync_raw_mirror.sh`, `lib/pending_ingest.sh` (the one marker rule), `lib/state_tools.py` (the episodic-state schema/validator), `hooks/` (SessionStart + Stop + PreToolUse guard), `pre-commit/` guards, `strata_upgrade_check.sh` (re-sync diff reporter, backs `/strata:upgrade`), `diagram_check.sh` (P4 — pinned-source drift check for `wiki/diagrams/`; run by light-finish/audit, never a hook).
+- `wiki/diagrams/` — this repo's own diagram layer: `system.architecture.json` (canonical, Archify JSON, sources pinned to a commit) + `system.html` (open it to see the whole plugin); `history/*.json` only when the semantics changed.
 - `docs/superpowers/{specs,plans}/` — Strata's own design specs & plans (dated).
 - `raw/`, `wiki/` — this repo's own knowledge layer; `.githooks/` — its own pre-commit guards.
 
@@ -55,6 +58,9 @@ bash scripts/validate.sh
 bash scripts/test_p1_gates.sh            # 28 behavioural assertions on A1/A2/A3
 bash scripts/test_p2_state.sh            # state schema/validator, Stop-gate trigger (c), upgrade check
 bash scripts/test_p3_guards.sh           # PreToolUse guard: raw/ mirror, tests read-only mid-fix, stale-toggle warning
+bash scripts/test_p4_friction.sh         # Stop-gate trigger (d): friction counted from the session transcript
+bash scripts/test_p4_diagrams.sh         # diagram layer: state_tools add-debt, diagram_check.sh (archify half runs where installed)
+bash scripts/diagram_check.sh main       # does a wiki/diagrams/ picture owe an update on this branch?
 
 # enable this repo's own guards once per clone
 git config core.hooksPath .githooks

@@ -1011,7 +1011,10 @@ stale CLAUDE.md misleads the next AI session and costs hours.
   - `db_schema/` — table dumps + sample rows (refreshed via a script).
   - `runbooks/` — "what to do when X breaks", one file per failure mode.
   - `adrs/` — Architecture Decision Records for non-obvious choices.
-- **Diagrams** in Mermaid (`*.mermaid.md`) — text-diffable, render in GitHub.
+- **Diagrams** are Archify JSON in `wiki/diagrams/` (`<name>.architecture.json`, nodes pinned
+  to `path:line@commit`), rendered to one self-contained `<name>.html`; `scripts/diagram_check.sh`
+  flags a diagram whose pinned files changed. Text-diagram DSLs that cannot be verified
+  against the code are not used.
 - **No screenshots** of code. Quote the file with a permalink.
 
 ---
