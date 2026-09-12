@@ -370,3 +370,53 @@ entities/routing-evals.md and every link to it. Owner's call, and the right one.
 
 - pending_ingest: docs/superpowers/plans/2026-09-12-p4-field-patterns-plan.md (mirrored docs/ -> raw/, ingest still owed)
 [2026-09-12T21:15:53Z] ingest raw/superpowers/plans/2026-09-12-p4-field-patterns-plan.md → covered by sources/p4-field-patterns.md (spec and plan share one source page, as sdlc-right-side did); status → approved, in progress — retires the marker for docs/superpowers/plans/2026-09-12-p4-field-patterns-plan.md
+
+## 2026-09-12T21:44:34Z lint
+
+- errors: 0, warnings: 0
+
+## 2026-09-12T21:47:56Z branch close — P4 shipped (v0.8.0), friction · diagram layer · promotion ladder
+
+Branch strata/p4-field-patterns, spec docs/superpowers/specs/2026-09-12-p4-field-patterns.md, plan
+docs/superpowers/plans/2026-09-12-p4-field-patterns-plan.md. Validate §1–§13 green (P1 29 · P2 28 · P3 24 ·
+P4 friction 24 · P4 diagrams 14); wiki lint 0/0; both manifests 0.8.0.
+
+### Shipped
+- Stop-gate trigger (d): friction from the session transcript — interrupts / denials / tool errors, thresholds
+  1/2/8 via STRATA_FRICTION_*, one block per session, satisfied by a gotchas entry or a gotcha:/no-gotcha: line.
+- Diagram layer: wiki/diagrams/ (canonical Archify JSON + one HTML), state_tools.py add-debt, diagram_check.sh
+  (pinned paths ∩ changes since the pinned revision + re-pin-to-HEAD archify validate), light-finish step 5 and
+  audit Phase 2 item 6, onboard/init/adopt, gitignore for history HTML, SAR/PROJECT_PATTERN drop text-diagram DSLs,
+  Archify declared in reference/tool-integration.md. First diagram: wiki/diagrams/system (12 nodes, 11 edges,
+  3 boundaries, 3 views, 13 pins at 2d41399); first render, so no history snapshot and no compare summary yet.
+- WIKI.md promotion ladder; tool-integration names Claude Code auto memory as the third memory.
+- Deferred with a paragraph each: recall counts (gardener), owned-region CLAUDE.md markers (upgrade-path).
+
+### Decisions (folded from the branch state, all reviewed)
+- Friction pass = one fixed-string grep (interrupt marker + is_error) under LC_ALL=C, counts over the candidates;
+  a denial is an is_error result and is subtracted from errors. Measured +≈90 ms on 5 MB; the spec's ≤50 ms
+  aspiration is NOT met with BSD grep — recorded, not hidden.
+- diagram_check.sh diffs since the diagram's pinned revision (ancestor of HEAD), else the merge-base window —
+  the merge-base window flagged the brand-new diagram on its own branch on the first dogfood run.
+- The SAR/PROJECT_PATTERN lines say "text-diagram DSLs that cannot be verified against the code" so the spec's
+  literal grep stays empty.
+- Version bump committed before the diagram and the diagram pinned to that commit, because using-strata's
+  SKILL.md is a pinned source.
+
+### Gotchas (first occurrence each — no CLAUDE.md line yet; a repeat lifts them)
+- bash 3.2 (macOS /bin/bash) mis-parses a quote inside "${var:-default}" — keep such defaults in their own assignment.
+- BSD `seq 1 0` counts DOWN and emits two lines — fixture loops use bash arithmetic.
+- In the interactive shell `grep` is rewritten to ugrep by the RTK hook; timings measured there do not match
+  what a script sees (BSD grep) — measure inside the script.
+- Archify `labelAt` is a point [x, y], not a fraction along the edge.
+- Archify showcase fails composition/desktop-readability when viewBox width × node copy projects below 6 px at
+  1440 px — shrink the viewBox before shrinking text.
+- A tracked .strata/state file modified by add-debt blocks `git checkout` in a fixture — commit state before
+  switching branches in tests.
+
+### Review
+- strata-diff-review could NOT run: the org hit its monthly spend limit (HTTP 429) when the subagent started.
+  A manual compliance pass over T0–T5 was done in-session instead (24 checks, all green — see the close commit);
+  bugs/security-lite were skimmed by the author only. Re-run the agent on main when the limit resets:
+  it is advisory and cannot block, but it is the only independent read this branch has not had.
+- Diagram check on this branch: silent. Pending ingest: none. Branch state folded here and deleted.
