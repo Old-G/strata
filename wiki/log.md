@@ -420,3 +420,38 @@ P4 friction 24 · P4 diagrams 14); wiki lint 0/0; both manifests 0.8.0.
   bugs/security-lite were skimmed by the author only. Re-run the agent on main when the limit resets:
   it is advisory and cannot block, but it is the only independent read this branch has not had.
 - Diagram check on this branch: silent. Pending ingest: none. Branch state folded here and deleted.
+
+## 2026-09-12T22:04:45Z lint
+
+- errors: 0, warnings: 0
+
+## 2026-09-12T22:07:12Z auto-mirror
+
+- pending_ingest: docs/superpowers/specs/2026-09-12-p4-field-patterns.md (mirrored docs/ -> raw/, ingest still owed)
+
+[2026-09-12T22:25:00Z] ingest raw/superpowers/specs/2026-09-12-p4-field-patterns.md → updated: nothing in wiki/ (the spec's two stale mentions of `wiki/diagrams/strata.architecture.json` were reconciled to `system`, which sources/p4-field-patterns.md already said) — retires the marker for docs/superpowers/specs/2026-09-12-p4-field-patterns.md
+
+## 2026-09-12T22:25:00Z review addendum — strata-diff-review ran after the spend limit was raised
+
+VERDICT: FINDINGS · 0 Important · 5 Nit · "nothing here blocks integration". Verify lines honoured 10/12.
+- Fixed on the branch (three nits): `diagram_check.sh` `record()` swallowed an `add-debt` failure and the
+  closing line still said "recorded as wiki_debt" — it now counts recorded vs unrecorded, prints the honest
+  "could not record … state does not validate" line, and `state_tools.py add-debt` validates the loaded state
+  before answering "already present" (exit 0 now means "the item is in a VALID state file"); a test for an
+  unreadable (mode 000) transcript was missing — added, root-guarded; the spec named the first diagram
+  `strata.architecture.json` in two places while D2 and the plan said `system` — reconciled.
+- Left as recorded (two nits): the plan file still says "one awk pass" and "merge-base window" where the code
+  shipped a grep pipeline and a since-pinned-revision window — per this log's convention the dated plan is a
+  record of what was decided that day and the correction lives here (2026-09-13 close entry); tests and
+  implementation landed in one commit, so git holds no evidence of the red run — the red output was observed
+  in-session (14 failures before the gate change, 2 before the add-debt change) but not committed. Process note.
+- Nits not shown by the reviewer: CHANGELOG as unplanned release hygiene; audit item 6's extra LOW
+  "render behind its source" check; block-reason wording differs from D1's literal text with the same content.
+- Reviewer re-ran: validate §1–§13, cmp of the three shared scripts and WIKI.md, the archify validate 9/9,
+  `system.html` has no script/link/fetch loads, `diagram_check.sh main` silent, wiki lint 0/0, and checked the
+  friction counters against the four real transcripts on this machine (10/10 interrupts pass the user-line
+  filter, 48/48 observed denials match the default regex).
+- gotcha (first occurrence): a helper that answers "already present" before validating the file lets a caller
+  report success on a corrupt state — validate first, then check membership.
+
+Post-review suites: P4 diagrams 17/17, P4 friction 25/25, P2 28/28.

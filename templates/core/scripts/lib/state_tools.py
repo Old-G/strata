@@ -209,6 +209,13 @@ def cmd_add_debt(args):
     except json.JSONDecodeError as e:
         print(f"invalid JSON: {e}", file=sys.stderr)
         return 1
+    # A caller must be able to trust exit 0 as "the item is in a VALID state file":
+    # validate what was loaded before answering "already present".
+    errors = validate_obj(obj)
+    if errors:
+        for e in errors:
+            print(f"  - {e}", file=sys.stderr)
+        return 1
     debt = list(obj.get("wiki_debt") or [])
     if item in debt:
         print("already present")

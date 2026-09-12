@@ -124,7 +124,7 @@ claude-mem and `wiki/` that `reference/tool-integration.md` does not mention yet
   item and an `audit` finding, not a refused commit.
 - `CLAUDE.md` ≤ 200 lines. Release rule: shipped behaviour → `0.7.0 → 0.8.0` in both
   manifests. Repo artifacts in English.
-- **Dogfood.** Strata's own `wiki/diagrams/strata.architecture.json` is the first diagram, and
+- **Dogfood.** Strata's own `wiki/diagrams/system.architecture.json` is the first diagram, and
   the branch that ships this closes through a `light-finish` that runs the new diagram check.
 
 ## Decisions (made here so the implementing session does not re-litigate)
@@ -228,7 +228,7 @@ Stop → silent, env thresholds honoured, unreadable transcript → fail open, c
 holds; §13 diagram check — a fixture repo with a pinned diagram reports no debt on an
 unrelated change, one `wiki_debt` item when a pinned file changes, a rule code when a pinned
 file is deleted (archify present), and a one-line skip when archify is absent. On this repo:
-`wiki/diagrams/strata.architecture.json` validates 9/9 with `--repo-root .`, `strata.html`
+`wiki/diagrams/system.architecture.json` validates 9/9 with `--repo-root .`, `strata.html`
 opens offline with every SRC link pinned to the shipping commit, and
 `grep -ri mermaid templates/ skills/ reference/` returns nothing. The shipping branch closes
 through `light-finish` with the diagram check having run, and both manifests read `0.8.0`.

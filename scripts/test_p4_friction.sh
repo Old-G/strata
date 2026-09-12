@@ -122,6 +122,14 @@ check "all thresholds 0 → silent on a loud transcript" \
 # 7. fail open: no transcript_path, or a path that does not exist
 new_session s7a; check "payload without transcript_path → silent" "$(stop_gate s7a -)" ""
 new_session s7b; check "transcript_path pointing nowhere → silent (fail open)" "$(stop_gate s7b "$TR/missing.jsonl")" ""
+if [ "$(id -u)" != "0" ]; then   # root reads mode-000 files; the case is meaningless there
+  mk_transcript "$TR/noread.jsonl" 3 3 20
+  chmod 000 "$TR/noread.jsonl"
+  new_session s7c; check "transcript unreadable (mode 000) → silent (fail open)" "$(stop_gate s7c "$TR/noread.jsonl")" ""
+  chmod 644 "$TR/noread.jsonl"
+else
+  ok "transcript unreadable → skipped (running as root)"
+fi
 
 # 8. recorded via wiki/log.md after the session stamp → silent
 new_session s8

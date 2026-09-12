@@ -105,6 +105,17 @@ check "  finding recorded as wiki_debt"                 "$(python3 "$ST" debt "$
 out2="$(ARCHIFY_BIN=/nonexistent bash "$CHECK" main 2>/dev/null)"
 check "  second run does not duplicate the debt item"   "$(python3 "$ST" debt "$BSTATE" | grep -c 'diagram system')" "1"
 check "archify absent → one skip line, exit 0"          "$(has "$out" 'pin verification skipped')" yes
+# 3b. a branch state that no longer validates: the finding is still printed, and the script
+#     must not claim it recorded anything (review nit on the first cut: record() swallowed the
+#     add-debt failure and the closing line said 'recorded' regardless)
+python3 - "$BSTATE" <<'PY'
+import json,sys; o=json.load(open(sys.argv[1])); o["status"]="wip"; json.dump(o,open(sys.argv[1],"w"),indent=2)
+PY
+out="$(ARCHIFY_BIN=/nonexistent bash "$CHECK" main 2>/dev/null)"
+check "invalid branch state → finding still printed"          "$(has "$out" 'diagram system:')" yes
+check "  no false 'recorded as wiki_debt' line"                "$(has "$out" 'recorded as wiki_debt')" no
+check "  says it could not record, and why"                    "$(has "$out" 'could not record')" yes
+git checkout -q -- "$BSTATE"
 git add -A >/dev/null && git commit -qm "debt recorded" >/dev/null   # state is tracked; commit before switching branches
 
 # 4. with archify installed: deleting the pinned file fails the re-pinned validate

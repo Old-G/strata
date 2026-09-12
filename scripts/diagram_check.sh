@@ -95,12 +95,16 @@ if [ -f "$STATE_TOOLS" ] && [ -n "$branch" ] && [ "$branch" != "HEAD" ]; then
   [ -n "$state_path" ] && [ -f "$state_path" ] || state_path=""
 fi
 
-findings=0
+findings=0; recorded=0; unrecorded=0
 record() {
   printf '%s\n' "$1"
   findings=$((findings + 1))
   if [ -n "$state_path" ]; then
-    python3 "$STATE_TOOLS" add-debt "$state_path" "$1" >/dev/null 2>&1 || true
+    if python3 "$STATE_TOOLS" add-debt "$state_path" "$1" >/dev/null 2>&1; then
+      recorded=$((recorded + 1))
+    else
+      unrecorded=$((unrecorded + 1))   # e.g. the state file no longer validates
+    fi
   fi
 }
 
@@ -181,7 +185,10 @@ done
 if [ "$skipped_evidence" -eq 1 ]; then
   echo "diagram layer: archify not found (set ARCHIFY_BIN, or install: npx skills add tt-a1i/archify -g) — pin verification skipped, only the diff intersection ran"
 fi
-if [ -n "$state_path" ] && [ "$findings" -gt 0 ]; then
+if [ -n "$state_path" ] && [ "$recorded" -gt 0 ]; then
   echo "→ recorded as wiki_debt in $state_path (Stop gate trigger c enforces it; light-finish clears it once the diagram is refreshed)"
+fi
+if [ "$unrecorded" -gt 0 ]; then
+  echo "! could not record $unrecorded finding(s) in $state_path — the state file does not validate (python3 $STATE_TOOLS validate $state_path); the Stop gate's trigger (c) blocks on an invalid state anyway"
 fi
 exit 0
