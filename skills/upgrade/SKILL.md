@@ -94,7 +94,26 @@ what lets SessionStart notice a *future* drift without anyone running this skill
    `strata_session_start` and `sync_raw_mirror` — each present exactly once per event, not
    duplicated.
 4. Report a one-line summary: files re-synced (count), settings.json merged (yes/no — it's fine
-   if it was already current), version stamped.
+   if it was already current), version stamped, diagram layer (offered / seeded / declined / archify absent).
+
+## Step 6 — Offer the first diagram (P4 diagram layer; never force)
+
+`init` and `adopt` offer to seed `wiki/diagrams/system` on the way in; a repo adopted before v0.8.0
+never got that offer, and nothing else will make it — `scripts/diagram_check.sh` is silent while
+`wiki/diagrams/` does not exist. So, once, here:
+
+- Skip silently when the repo has no `wiki/` (no knowledge layer, no diagram layer) or already has
+  `wiki/diagrams/*.architecture.json`.
+- If `node` is on PATH and `${ARCHIFY_BIN:-$HOME/.claude/skills/archify/bin/archify.mjs}` exists,
+  ask ONE question: seed `wiki/diagrams/system.architecture.json` now? On yes, do exactly what
+  `adopt` Phase 3 step 5 describes — the ≤ 12 components that actually exist, `meta.repository` from
+  `git remote get-url origin` at `HEAD` (`link_mode: web` for GitHub/Gitee, `local-only` for any other
+  forge), one `sources[]` pin per node on a real entrypoint, `validate --repo-root .` → `deliver` to
+  `wiki/diagrams/system.html` through the archify skill — and add `wiki/diagrams/history/*.html` to
+  `.gitignore` (merge, never overwrite). On no, say that `light-finish` will not offer again until a
+  diagram exists, so the phrase to use later is «нарисуй системную диаграмму в wiki/diagrams».
+- If archify is absent, print one line — `npx skills add tt-a1i/archify -g -a claude-code -s archify -y`
+  (Node ≥ 18, no npm dependencies) — and move on. Not a finding, not a blocker.
 
 ## Do NOT use when
 

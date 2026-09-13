@@ -6,6 +6,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.8.1] — 2026-09-13
+
+### Added
+- `/strata:upgrade` Step 6 offers — never forces — to seed `wiki/diagrams/system` in a repo adopted
+  before the diagram layer existed, when archify is installed and `wiki/diagrams/` is absent; prints
+  the install one-liner otherwise. Closes the gap where only `init`/`adopt` could make that offer and
+  `diagram_check.sh` stays silent without a diagram.
+
 ## [0.8.0] — 2026-09-13
 
 Three field reports (Tencent TeamAI-CLI, Archify, OpenAI's Agents API) read against v0.7.0

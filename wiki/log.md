@@ -455,3 +455,5 @@ VERDICT: FINDINGS · 0 Important · 5 Nit · "nothing here blocks integration". 
   report success on a corrupt state — validate first, then check membership.
 
 Post-review suites: P4 diagrams 17/17, P4 friction 25/25, P2 28/28.
+
+[2026-09-13T06:23:05Z] release 0.8.1 → skills/upgrade Step 6 offers the first diagram (archify present, wiki/diagrams/ absent); entities/upgrade-path.md updated; CHANGELOG [0.8.1]. Gap found while writing the "how to deliver 0.8.0 to adopted repos" answer: only init/adopt ever offered the seed.

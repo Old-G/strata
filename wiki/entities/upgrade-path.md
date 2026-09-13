@@ -3,7 +3,7 @@ title: Upgrade path (/strata:upgrade)
 type: entity
 created: 2026-09-01
 updated: 2026-09-13
-links: [enforcement-layer, session-start-injection, branch-state]
+links: [enforcement-layer, session-start-injection, branch-state, diagram-layer]
 ---
 
 # Upgrade path (/strata:upgrade)
@@ -70,9 +70,15 @@ Strata-owned routing block in `<!-- strata:routing:start -->` / `end` in `CLAUDE
 `upgrade` refresh it idempotently while every human-written line stays untouched. Small; do it the next
 time the routing map itself changes.
 
+**v0.8.1 — Step 6 offers the first diagram.** A repo adopted before v0.8.0 never got `adopt`'s offer to
+seed `wiki/diagrams/system`, and `diagram_check.sh` is silent until a diagram exists, so nothing would
+ever make the offer. `upgrade` now asks once when archify is installed and `wiki/diagrams/` is absent,
+seeds exactly as `adopt` Phase 3 step 5 does, and prints the install one-liner when archify is missing.
+See [[diagram-layer]].
+
 ## Related
 
-[[enforcement-layer]] · [[session-start-injection]] · [[branch-state]]
+[[enforcement-layer]] · [[session-start-injection]] · [[branch-state]] · [[diagram-layer]]
 
 ## Sources
 
