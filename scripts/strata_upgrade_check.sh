@@ -12,7 +12,19 @@
 # adopted in the past (confirmed on a real project: wiki/ existed, all three
 # hooks did not). See docs/superpowers/specs/2026-09-01-episodic-state-layer.md.
 #
-# Usage: bash strata_upgrade_check.sh <templates-scripts-dir> [<installed-scripts-dir>]
+# Usage: bash strata_upgrade_check.sh [--apply-safe] <templates-scripts-dir> [<installed-scripts-dir>]
+#
+# --apply-safe (v0.9.0 — used by the SessionStart auto-sync and strata-upgrade-all):
+#   also COPIES every file whose copy cannot lose a local line — MISSING files, and
+#   STALE files that are either a strict subset of the template (no line the
+#   template lacks) or byte-identical to a version the plugin once shipped: the
+#   manifest <templates-scripts-dir>.history lists "<git blob hash>  <path>" for
+#   every version of every template (scripts/gen_template_history.sh). Prints
+#   SYNCED for those, CONFLICT for a STALE file that diverged on BOTH sides (left
+#   untouched — that one needs a human, /strata:upgrade), AHEAD untouched as
+#   always. Files are REPLACED (temp + mv, new inode), never rewritten in place: a
+#   running bash script — SessionStart syncing itself — reads its file as it goes.
+#   Exit 0 when nothing is left to do, 1 while a CONFLICT remains.
 #   <templates-scripts-dir>   e.g. $CLAUDE_PLUGIN_ROOT/templates/core/scripts
 #   <installed-scripts-dir>   default: ./scripts (repo root, from cwd)
 #
@@ -30,8 +42,26 @@
 
 set -uo pipefail
 
+APPLY=0
+if [ "${1:-}" = "--apply-safe" ]; then APPLY=1; shift; fi
 TEMPLATES_DIR="${1:-}"
 INSTALLED_DIR="${2:-scripts}"
+
+HISTORY="${TEMPLATES_DIR%/}.history"
+# Was this installed file a version the plugin once shipped (= never edited here)?
+shipped_before() { # <installed-file> <rel>
+  [ -f "$HISTORY" ] || return 1
+  local h; h="$(git hash-object -- "$1" 2>/dev/null)" || return 1
+  grep -qxF "$h  $2" "$HISTORY"
+}
+
+# Replace dest with src atomically: temp file in the same directory, then mv.
+replace_file() {
+  local src="$1" dest="$2" tmp
+  mkdir -p "$(dirname "$dest")" || return 1
+  tmp="$(dirname "$dest")/.strata-sync.$$.$(basename "$dest")"
+  cp -p "$src" "$tmp" && mv -f "$tmp" "$dest" || { rm -f "$tmp"; return 1; }
+}
 
 if [ -z "$TEMPLATES_DIR" ] || [ ! -d "$TEMPLATES_DIR" ]; then
   echo "usage: strata_upgrade_check.sh <templates-scripts-dir> [<installed-scripts-dir>]" >&2
@@ -48,8 +78,12 @@ while IFS= read -r -d '' tpl_file; do
   installed_file="${INSTALLED_DIR%/}/${rel}"
 
   if [ ! -f "$installed_file" ]; then
-    echo "MISSING  $rel"
-    status=1
+    if [ "$APPLY" -eq 1 ] && replace_file "$tpl_file" "$installed_file"; then
+      echo "SYNCED   $rel"
+    else
+      echo "MISSING  $rel"
+      status=1
+    fi
   elif ! cmp -s "$tpl_file" "$installed_file"; then
     # "Differs" hides two OPPOSITE situations, and reporting one word for both
     # is what made this check useless on a real repo. Either the template moved
@@ -67,8 +101,20 @@ while IFS= read -r -d '' tpl_file; do
     # status regardless of what grep found.
     file_diff="$(diff "$tpl_file" "$installed_file" || true)"
     if printf '%s\n' "$file_diff" | grep -q '^<'; then
-      echo "STALE    $rel"
-      status=1
+      if [ "$APPLY" -eq 0 ]; then
+        echo "STALE    $rel"
+        status=1
+      elif printf '%s\n' "$file_diff" | grep -q '^>' && ! shipped_before "$installed_file" "$rel"; then
+        # Both sides carry lines the other lacks and the installed copy is not a
+        # version we ever shipped — a copy would delete local work.
+        echo "CONFLICT $rel"
+        status=1
+      elif replace_file "$tpl_file" "$installed_file"; then
+        echo "SYNCED   $rel"
+      else
+        echo "STALE    $rel"
+        status=1
+      fi
     else
       # Nothing to copy: the plugin has nothing this repo is missing. Printed,
       # not silenced — the human still needs to see that the file diverged.

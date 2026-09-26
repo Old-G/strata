@@ -39,7 +39,11 @@ Shipped in `templates/core/scripts/hooks/`, installed into the target project's
 
 A second trigger covers code-only sessions: ~50+ changed lines outside `wiki/ raw/ docs/` with
 nothing written to `wiki/log.md` blocks once, satisfiable by a single log line (including an
-explicit `no-wiki-impact:`). Tune with `STRATA_STOP_GATE_LINES`; `0` disables it.
+explicit `no-wiki-impact:`). Tune with `STRATA_STOP_GATE_LINES`; `0` disables it. Since v0.9.0 it
+counts only what *this* session touched: SessionStart snapshots the already-dirty files as
+`(blob hash, path)` (`lib/tree_snapshot.sh`) and (b) skips any file whose pair is unchanged — a
+session opened on top of someone's uncommitted work is no longer billed for it ([[p5-provenance]]
+D10). Without a snapshot (older SessionStart) it falls back to the whole-tree count.
 
 The hook payload is parsed with `grep`/`sed`, not `python3` — interpreter startup measured ~36 ms,
 unaffordable against the sub-100 ms budget. Verified clean-state path: 69 ms.

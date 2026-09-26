@@ -2,7 +2,7 @@
 title: Upgrade path (/strata:upgrade)
 type: entity
 created: 2026-09-01
-updated: 2026-09-13
+updated: 2026-09-26
 links: [enforcement-layer, session-start-injection, branch-state, diagram-layer]
 ---
 
@@ -75,6 +75,21 @@ seed `wiki/diagrams/system`, and `diagram_check.sh` is silent until a diagram ex
 ever make the offer. `upgrade` now asks once when archify is installed and `wiki/diagrams/` is absent,
 seeds exactly as `adopt` Phase 3 step 5 does, and prints the install one-liner when archify is missing.
 See [[diagram-layer]].
+
+**v0.9.0 — updates arrive by themselves** ([[p5-provenance]] D11). The installed SessionStart hook
+resolves the plugin (`$CLAUDE_PLUGIN_ROOT`, else Claude Code's `plugins/installed_plugins.json`:
+this project's entry, else the user-scope one — the old nudge silently never fired because project
+hooks may not get `$CLAUDE_PLUGIN_ROOT`) and, when it is newer than `.strata/version`, runs
+`strata_upgrade_check.sh --apply-safe`. That copies only what cannot lose a local line: MISSING
+files, and files byte-identical to a version the plugin once shipped — `templates/core/scripts.history`
+lists every shipped blob (`scripts/gen_template_history.sh`, validate §2d). A changed template line
+makes any diff two-sided, so this manifest is what separates "old version" from "edited here".
+Files are replaced via temp + `mv` because SessionStart syncs itself while bash reads it. Locally
+edited files → `CONFLICT`, named in the session context, left for this skill; the version is stamped
+only when none remain. `bin/strata-upgrade-all` (on PATH in every session) does it for all projects
+at once — registry + scan, linked worktrees skipped, never commits. `STRATA_NO_AUTOSYNC=1` opts out.
+A repo adopted before 0.9.0 still has the old SessionStart: one `upgrade` (or `strata-upgrade-all`)
+installs the auto-syncing one, and every later release arrives on its own.
 
 ## Related
 

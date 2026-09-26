@@ -20,6 +20,18 @@
 # .strata/version disagrees with the plugin actually running, say so once —
 # the whole point of /strata:upgrade is that this can no longer go unnoticed.
 #
+# v0.9.0 — AUTO-SYNC: when the Strata plugin on this machine is newer than
+# .strata/version, re-sync scripts/** from the plugin's templates BEFORE anything
+# else runs, with strata_upgrade_check.sh --apply-safe: only files whose copy
+# cannot lose a local line (missing, or byte-identical to a version the plugin
+# once shipped). A locally edited file is left alone and named — that one is
+# /strata:upgrade's. The version is stamped only when nothing is left over, so
+# the next session tries again. The changes are ordinary uncommitted files, said
+# out loud in this context — commit them like any other change.
+# Escape: STRATA_NO_AUTOSYNC=1. Plugin location: $CLAUDE_PLUGIN_ROOT when set,
+# else Claude Code's own registry (plugins/installed_plugins.json — the entry
+# for this project, else the user-scope one).
+#
 # Install: SessionStart hook in the project's .claude/settings.json.
 # Exit code is always 0 — a context hook must never break session startup.
 
@@ -33,6 +45,59 @@ LOG="wiki/log.md"
 INDEX="wiki/index.md"
 MAX_PENDING_SHOWN=5
 MAX_INDEX_ROWS=15
+
+# --- plugin auto-sync (v0.9.0) -----------------------------------------------
+strata_plugin_root() {
+  if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json" ]; then
+    printf '%s\n' "$CLAUDE_PLUGIN_ROOT"; return
+  fi
+  python3 -c '
+import json, os, sys
+root, reg = sys.argv[1], sys.argv[2]
+try:
+    plugins = json.load(open(reg))["plugins"]
+except Exception:
+    sys.exit(0)
+user = None
+for key, entries in plugins.items():
+    if key.split("@")[0] != "strata":
+        continue
+    for e in entries:
+        p = e.get("installPath") or ""
+        if not os.path.isfile(os.path.join(p, ".claude-plugin", "plugin.json")):
+            continue
+        if e.get("scope") in ("local", "project") and e.get("projectPath") == root:
+            print(p); sys.exit(0)
+        if e.get("scope") == "user" and user is None:
+            user = p
+if user:
+    print(user)
+' "$REPO_ROOT" "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/plugins/installed_plugins.json" 2>/dev/null
+}
+plugin_version() { sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$1/.claude-plugin/plugin.json" 2>/dev/null | head -1; }
+
+autosync_msg=""
+PLUGIN_ROOT=""
+if [ -f .strata/version ] && [ -d scripts ]; then
+  PLUGIN_ROOT="$(strata_plugin_root)"
+fi
+if [ -n "$PLUGIN_ROOT" ] && [ "${STRATA_NO_AUTOSYNC:-}" != "1" ]; then
+  have_v="$(tr -d '[:space:]' < .strata/version 2>/dev/null)"
+  plug_v="$(plugin_version "$PLUGIN_ROOT")"
+  tpl="$PLUGIN_ROOT/templates/core/scripts"
+  if [ -n "$have_v" ] && [ -n "$plug_v" ] && [ "$have_v" != "$plug_v" ] && [ -f "$tpl/strata_upgrade_check.sh" ] \
+     && [ "$(printf '%s\n%s\n' "$have_v" "$plug_v" | sort -V | tail -1)" = "$plug_v" ]; then
+    sync_out="$(bash "$tpl/strata_upgrade_check.sh" --apply-safe "$tpl" scripts 2>/dev/null)"; sync_rc=$?
+    n_synced="$(printf '%s\n' "$sync_out" | grep -c '^SYNCED' || true)"
+    left="$(printf '%s\n' "$sync_out" | grep -E '^(CONFLICT|MISSING|STALE) ' | awk '{print $2}' | tr '\n' ' ')"
+    if [ "$sync_rc" -eq 0 ]; then
+      printf '%s\n' "$plug_v" > .strata/version
+      autosync_msg="Strata auto-synced hooks ${have_v} → ${plug_v}: ${n_synced} file(s) under scripts/ (uncommitted — commit them)."
+    else
+      autosync_msg="Strata ${plug_v} auto-synced ${n_synced} file(s); edited locally, not touched: ${left}— merge those via /strata:upgrade (version stays ${have_v} until then)."
+    fi
+  fi
+fi
 
 # --- session stamp -----------------------------------------------------------
 # Read session_id from the hook payload; tolerate no stdin, empty stdin, or junk.
@@ -63,18 +128,31 @@ mkdir -p .strata/sessions 2>/dev/null || true
   echo "LOG_LINES=$log_lines"
 } > ".strata/sessions/${session_id}.start" 2>/dev/null || true
 
+# Snapshot of the uncommitted files that were ALREADY dirty when this session
+# began, so the Stop gate's trigger (b) bills a session only for its own code
+# (lib/tree_snapshot.sh — one format for writer and reader).
+if [ -f "$SCRIPT_DIR/../lib/tree_snapshot.sh" ]; then
+  # shellcheck source=../lib/tree_snapshot.sh
+  . "$SCRIPT_DIR/../lib/tree_snapshot.sh"
+  strata_tree_snapshot > ".strata/sessions/${session_id}.dirty" 2>/dev/null || true
+fi
+
 # Keep the directory from growing forever.
 find .strata/sessions -type f -mtime +7 -delete 2>/dev/null || true
 
 # --- context block -----------------------------------------------------------
 # Nothing to say in a project that does not use the knowledge layer.
-[ -f "$INDEX" ] || [ -f "$LOG" ] || exit 0
+if [ ! -f "$INDEX" ] && [ ! -f "$LOG" ]; then
+  [ -n "$autosync_msg" ] && echo "$autosync_msg"
+  exit 0
+fi
 
 branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "?")"
 dirty="$(git status --porcelain 2>/dev/null | grep -c . || true)"
 
 echo "## Strata context"
 echo "Branch: ${branch} · uncommitted files: ${dirty:-0}"
+[ -n "$autosync_msg" ] && echo "$autosync_msg"
 
 # --- branch state summary (P2) -----------------------------------------------
 STATE_TOOLS="$SCRIPT_DIR/../lib/state_tools.py"
@@ -84,11 +162,9 @@ if [ -f "$STATE_TOOLS" ] && [ "$branch" != "?" ]; then
 fi
 
 # --- plugin version nudge (P2) ------------------------------------------------
-if [ -f .strata/version ] && [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] \
-   && [ -f "${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json" ]; then
+if [ -f .strata/version ] && [ -n "$PLUGIN_ROOT" ]; then
   installed_v="$(cat .strata/version 2>/dev/null | tr -d '[:space:]')"
-  running_v="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
-    "${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json" | head -1)"
+  running_v="$(plugin_version "$PLUGIN_ROOT")"
   if [ -n "$installed_v" ] && [ -n "$running_v" ] && [ "$installed_v" != "$running_v" ]; then
     echo "Strata plugin is v${running_v}; installed hooks are v${installed_v} — run /strata:upgrade."
   fi

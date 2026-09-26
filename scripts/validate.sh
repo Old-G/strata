@@ -90,6 +90,16 @@ for got in found:
 sys.exit(1 if bad else 0)
 PY
 
+echo "== 2d. templates/core/scripts.history lists every shipped template version =="
+# strata_upgrade_check.sh --apply-safe (SessionStart auto-sync, strata-upgrade-all)
+# replaces an installed script only when it matches a version listed here. A
+# stale manifest makes every file edited in this release look locally modified.
+if bash scripts/gen_template_history.sh --check 2>/dev/null; then
+  ok "scripts.history is current"
+else
+  err "templates/core/scripts.history is stale — run: bash scripts/gen_template_history.sh"
+fi
+
 echo "== 3. every skill has name + description frontmatter =="
 for f in skills/*/SKILL.md; do
   [ -f "$f" ] || continue
@@ -106,7 +116,7 @@ for f in agents/*.md; do
 done
 
 echo "== 5. shell templates pass 'bash -n' =="
-for f in $(find templates -name '*.sh'); do
+for f in $(find templates -name '*.sh') bin/*; do
   bash -n "$f" 2>/dev/null && ok "$f" || err "$f has a shell syntax error"
 done
 

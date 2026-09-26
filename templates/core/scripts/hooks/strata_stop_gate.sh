@@ -22,7 +22,9 @@
 #      markers are the commit gate's job, not an interruption you did not earn).
 #   b) substantive code-only change with nothing written to wiki/log.md this
 #      session. Threshold: STRATA_STOP_GATE_LINES changed lines outside
-#      wiki/ raw/ docs/ (default 50; set 0 to disable this trigger).
+#      wiki/ raw/ docs/ (default 50; set 0 to disable this trigger). Counts only
+#      files THIS session touched — uncommitted work already in the tree at
+#      SessionStart is not billed (lib/tree_snapshot.sh, v0.9.0).
 #      Always satisfiable in one line — including an explicit "no-wiki-impact:".
 #   c) the current branch's .strata/state/<slug>.json (see lib/state_tools.py —
 #      P2, docs/superpowers/specs/2026-09-01-episodic-state-layer.md) has a
@@ -128,13 +130,23 @@ fi
 # --- trigger (b): substantive code change, wiki silent -----------------------
 if [ -z "$reason" ] && [ "$LINES_THRESHOLD" -gt 0 ]; then
   if [ "$log_lines_now" -le "$start_log_lines" ]; then
-    changed="$(git diff HEAD --numstat -- . ':(exclude)wiki' ':(exclude)raw' ':(exclude)docs' 2>/dev/null \
-      | awk '{a=($1=="-")?0:$1; d=($2=="-")?0:$2; s+=a+d} END {print s+0}')"
-    while IFS= read -r f; do
-      [ -z "$f" ] && continue
-      case "$f" in wiki/*|raw/*|docs/*) continue ;; esac
-      [ -f "$f" ] && changed=$(( changed + $(wc -l < "$f" | tr -d ' ') ))
-    done < <(git ls-files --others --exclude-standard 2>/dev/null)
+    DIRTY=".strata/sessions/${session_id}.dirty"
+    if [ -f "$DIRTY" ] && [ -f "$SCRIPT_DIR/../lib/tree_snapshot.sh" ]; then
+      # Only what THIS session touched: files dirty now whose (hash, path) was
+      # not already dirty at session start (lib/tree_snapshot.sh).
+      # shellcheck source=../lib/tree_snapshot.sh
+      . "$SCRIPT_DIR/../lib/tree_snapshot.sh"
+      changed="$(strata_session_changed_lines "$DIRTY")"
+    else
+      # No start snapshot (SessionStart predates it): whole-tree count, as before.
+      changed="$(git diff HEAD --numstat -- . ':(exclude)wiki' ':(exclude)raw' ':(exclude)docs' 2>/dev/null \
+        | awk '{a=($1=="-")?0:$1; d=($2=="-")?0:$2; s+=a+d} END {print s+0}')"
+      while IFS= read -r f; do
+        [ -z "$f" ] && continue
+        case "$f" in wiki/*|raw/*|docs/*) continue ;; esac
+        [ -f "$f" ] && changed=$(( changed + $(wc -l < "$f" | tr -d ' ') ))
+      done < <(git ls-files --others --exclude-standard 2>/dev/null)
+    fi
 
     if [ "${changed:-0}" -ge "$LINES_THRESHOLD" ]; then
       reason="This session changed ~${changed} lines of code and wrote nothing to the wiki.\n"

@@ -48,6 +48,7 @@ Skip this entire phase for human-only repos (§9 skip-list). When enabled:
 4. Install the knowledge hooks. Copy from `${CLAUDE_PLUGIN_ROOT}/templates/core/scripts/`, preserving the layout, and `chmod +x` each:
    - `sync_raw_mirror.sh` → `scripts/sync_raw_mirror.sh` (docs→raw mirror + `pending_ingest` marker)
    - `lib/pending_ingest.sh` → `scripts/lib/pending_ingest.sh` (shared marker-retirement rule — required by the others)
+   - `lib/tree_snapshot.sh` → `scripts/lib/tree_snapshot.sh` (what THIS session touched — SessionStart writes it, the Stop gate reads it)
    - `hooks/strata_session_start.sh` → `scripts/hooks/strata_session_start.sh` (A3 context injection + the session stamp the Stop gate reads)
    - `hooks/strata_stop_gate.sh` → `scripts/hooks/strata_stop_gate.sh` (A1 — blocks turn-end ONCE while this session owes wiki work; inert without the SessionStart stamp)
    - `hooks/strata_pre_tool_guard.sh` → `scripts/hooks/strata_pre_tool_guard.sh` (A5 — PreToolUse: refuses a write under `raw/`, and to test files while `.strata/guard-tests` exists; exit 2 with the reason, fails open otherwise)

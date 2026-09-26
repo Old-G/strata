@@ -489,3 +489,21 @@ Post-review suites: P4 diagrams 17/17, P4 friction 25/25, P2 28/28.
 - gotcha (SECOND occurrence — P4 close had it as "git holds no evidence of the red run"): a verify step run in-session but recorded nowhere is, to the branch review, a verify that did not happen.
 - open question: Stop-gate trigger (b) in a brand-new session counted the pre-existing uncommitted diff (≈36k lines) as that session's code change — is (b) scoped to the session stamp or to the tree?
 [2026-09-26T20:23:44Z] diagram system → re-pinned to 7e26ee3 after the strata_why.sh review fix; compare: provenance only (0 semantic changes, no history snapshot); deliver 9/9, visual-check pass.
+
+## 2026-09-26T20:46:46Z auto-mirror
+
+- pending_ingest: docs/superpowers/specs/2026-09-26-p5-provenance.md (mirrored docs/ -> raw/, ingest still owed)
+
+## 2026-09-26T20:46:46Z auto-mirror
+
+- pending_ingest: docs/superpowers/plans/2026-09-26-p5-provenance-plan.md (mirrored docs/ -> raw/, ingest still owed)
+
+[2026-09-26T20:46:46Z] ingest raw/superpowers/specs/2026-09-26-p5-provenance.md → D9 declined (owner), D10 Stop-gate (b) per-session, D11 auto-sync to every project; updated: entities/stop-gate.md, entities/upgrade-path.md, entities/session-start-injection.md, glossary (auto-sync, scripts.history, strata-upgrade-all), index; CLAUDE.md Hard rules +2 (verify-not-recorded — second occurrence; regenerate scripts.history).
+[2026-09-26T20:46:46Z] ingest raw/superpowers/plans/2026-09-26-p5-provenance-plan.md → T7 (close-out decisions) + T8 (update every project) folded into sources/p5-provenance.md via the spec.
+- evidence: test_p1_gates 33/33 (red first on "pre-existing uncommitted code → clear"); test_p2_state 54/54 (apply-safe + auto-sync red first — 11 failures before the code; strata-upgrade-all tests were written AFTER the script, no red run); apply-safe dry-run over copies of the real app-a / app-b / app-c scripts/: SYNCED 6–7 each, CONFLICT lib/pending_ingest.sh + pre-commit/check_secrets.sh in app-a and app-b (local edits), AHEAD sync_raw_mirror.sh.
+- gotcha (first occurrence): "installed has no line the template lacks" cannot tell an old shipped version from a local edit — any changed template line makes the diff two-sided. Keep a manifest of shipped blob hashes instead.
+- gotcha (first occurrence): a script that overwrites itself in place (cp onto the running file) corrupts the running bash — replace via temp + mv.
+
+## 2026-09-26T20:46:48Z lint
+
+- errors: 0, warnings: 0

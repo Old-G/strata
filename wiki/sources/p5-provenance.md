@@ -49,8 +49,13 @@ except the lenses deferral — kept at the owner's request, recorded as D8.
 surfaced a real P4 bug in [[stop-gate]] trigger (d) — see [[friction-capture]] — and a stale
 pin on the [[diagram-layer]]'s own system picture; both fixed on this branch.
 
+**Close-out (owner, same day):** D9 change brief declined, not deferred. D10 — Stop-gate
+trigger (b) now bills a session only for files it touched (start snapshot of the dirty tree). D11
+— updates reach every project: SessionStart auto-syncs from a newer plugin through
+`--apply-safe` + the shipped-versions manifest `scripts.history`; `strata-upgrade-all` does all
+projects at once. See [[upgrade-path]], [[stop-gate]].
+
 ## Open
 
-The change brief (D9: an RFC-shaped write-up at `light-finish`, one rule-picked diagram) is the
-next candidate. Unverified: whether `--resume` keeps the session id — harmless either way, since
+Nothing parked from this branch. Unverified: whether `--resume` keeps the session id — harmless either way, since
 the exported id and the transcript filename agree.

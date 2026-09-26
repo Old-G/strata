@@ -1,6 +1,6 @@
 ---
 name: upgrade
-description: Use when this repo's installed Strata hooks might be behind the plugin currently running — 'update strata', 'sync the hooks', 'upgrade strata here', 'my hooks are stale', «обнови страту», «синхронизируй хуки», «страта отстала», «подтяни обновления страты», «почему гейты не срабатывают». Re-syncs templates/core/scripts/** and the settings.json hook block into a repo that was adopted before this plugin version shipped. Idempotent — a clean repo reports nothing to do.
+description: Use when this repo's installed Strata hooks might be behind the plugin currently running — 'update strata', 'sync the hooks', 'upgrade strata here', 'my hooks are stale', «обнови страту», «синхронизируй хуки», «страта отстала», «подтяни обновления страты», «почему гейты не срабатывают», 'upgrade strata in all projects', «обнови страту во всех проектах», «обнови страту везде». Re-syncs templates/core/scripts/** and the settings.json hook block into a repo that was adopted before this plugin version shipped. Idempotent — a clean repo reports nothing to do.
 ---
 
 # /strata:upgrade — re-sync installed hooks with the running plugin
@@ -11,6 +11,20 @@ repo adopted in the past. Confirmed case: a project with `wiki/` fully populated
 installed, because it was adopted before the enforcement layer (v0.4.0) existed. If "the wiki
 never updates itself" and the project genuinely has `wiki/`, checking here first is often faster
 than debugging the flow — see `docs/superpowers/specs/2026-09-01-episodic-state-layer.md`.
+
+**Since v0.9.0 most of this happens by itself.** The installed SessionStart hook auto-syncs
+`scripts/**` whenever the plugin on the machine is newer than `.strata/version` — every file
+whose copy cannot lose a local line (missing, or byte-identical to a version listed in
+`templates/core/scripts.history`). What is left for this skill: files edited locally
+(CONFLICT — a human merges), the `settings.json` hook block, the trailer question, and repos
+adopted before auto-sync existed (their SessionStart is the old one — one run here fixes that).
+
+**All projects at once** («обнови страту во всех проектах»): run `strata-upgrade-all --dry-run`
+(it is on PATH — the plugin's `bin/`), show the list, then `strata-upgrade-all`. It applies the same
+safe sync to every Strata repo on the machine (Claude Code's install registry + a scan), skips
+linked worktrees, never commits or pushes, and names every repo with a locally edited file —
+for those, continue with Step 3 below inside that repo. Then offer to commit per repo (on the
+repo's current branch, only `scripts/` + `.strata/version`, never mixing in the owner's WIP).
 
 This skill NEVER touches `wiki/`, `CLAUDE.md`, or application code. It only re-syncs the
 mechanical layer: `scripts/**` and the hook block in `.claude/settings.json`.

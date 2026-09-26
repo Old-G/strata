@@ -2,7 +2,7 @@
 title: SessionStart injection (A3)
 type: entity
 created: 2026-08-15
-updated: 2026-09-01
+updated: 2026-09-26
 links: [enforcement-layer, native-invocation, pending-ingest-marker, branch-state, upgrade-path]
 ---
 
@@ -27,6 +27,11 @@ Fixed token budget of roughly 30–50 lines — this text is paid for on every
 single session, so it stays small by design:
 
 ```
+**v0.9.0 side effects, both before the context block:** (1) auto-sync of `scripts/**` from a newer
+plugin — see [[upgrade-path]]; its one-line result is printed under `Branch:`; (2) the dirty-tree
+snapshot `.strata/sessions/<id>.dirty` that lets the [[stop-gate]]'s trigger (b) bill a session only
+for its own code.
+
 ## Strata context
 Branch: <branch> · Last wiki log: <last 3 lines of wiki/log.md>
 Pending ingest: <list or "none">

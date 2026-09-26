@@ -30,6 +30,7 @@ git config user.name "Strata Test"
 git checkout -q -b main
 mkdir -p docs raw wiki src tests scripts/lib scripts/hooks
 cp "$TPL/lib/pending_ingest.sh"          scripts/lib/
+cp "$TPL/lib/tree_snapshot.sh" scripts/lib/
 cp "$TPL/lib/state_tools.py"             scripts/lib/
 cp "$TPL/hooks/strata_session_start.sh"  scripts/hooks/
 cp "$TPL/hooks/strata_pre_tool_guard.sh" scripts/hooks/

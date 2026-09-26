@@ -35,6 +35,9 @@ finds a page contradicting the glossary, the glossary wins — fix the page.
 | provenance | The trail from a line of code to the session that wrote it; history, not specification — every claim re-checked against current code. | [[agent-session-trailer]] |
 | lens | A reading bucket for a diff: non-implementation swept first, then implementation by design part in reading order. | [[diff-review]] |
 | decided, not asked | A choice the agent made that neither the plan nor the user settled; unrecorded + behaviour-changing is Important at branch close. | [[diff-review]] |
+| auto-sync | SessionStart re-syncing `scripts/**` from a newer plugin with `--apply-safe`; locally edited files are left and named; `STRATA_NO_AUTOSYNC=1` opts out. | [[upgrade-path]] |
+| scripts.history | `templates/core/scripts.history` — blob hash of every version every template ever shipped; what auto-sync may replace. Regenerate: `scripts/gen_template_history.sh`. | [[upgrade-path]] |
+| strata-upgrade-all | Plugin `bin/` command (on PATH in sessions): the safe sync for every Strata project on the machine; never commits. | [[upgrade-path]] |
 | commit gate | Pre-commit guard that fails the commit while any `pending_ingest` marker is outstanding. Escape hatch: `STRATA_SKIP_WIKI=1`. | [[commit-gate]] |
 | SessionStart injection | Hook whose stdout becomes model context; opens every session with branch, pending list, and wiki index head. Budget ~30–50 lines. | [[session-start-injection]] |
 | advisory vs deterministic | Skill prose is probabilistic; hooks are deterministic. Rule: if you write "the agent must always…", that is a hook, not a paragraph. | [ADR #1](decisions/adr-1-deterministic-enforcement.md) |

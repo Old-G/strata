@@ -109,3 +109,22 @@ blocks at most once per session.
 
 The same run also found `wiki/diagrams/system` pinned at `2d41399` while `395edc0`/`5781576`
 changed pinned files — folded into T5 (re-pin while drawing P5 in).
+
+## T7 — Close-out decisions (owner, 2026-09-26)
+
+Merge + push; trailers stay in Strata's public history; the "verify not recorded" line goes into
+`CLAUDE.md` Hard rules (second occurrence); lenses stay; the change brief (D9) is declined, not
+deferred; the Stop-gate open question is fixed now (D10), not parked.
+`verify`: `test_p1_gates.sh` — pre-existing dirt clear, re-edited file blocked, new big file
+blocked, no-snapshot fallback blocked (33/33).
+
+## T8 — Update every project from one place (D11)
+
+`strata_upgrade_check.sh --apply-safe`, `templates/core/scripts.history` +
+`scripts/gen_template_history.sh` (validate §2d), SessionStart auto-sync with registry
+resolution, `bin/strata-upgrade-all`, upgrade skill "all projects" section + triggers.
+`verify`: `test_p2_state.sh` (apply-safe: known old version synced, unknown edit CONFLICT,
+AHEAD kept, new inode; auto-sync: copies + stamps, conflict not stamped, escape, no downgrade,
+registry resolution; upgrade-all: dry run, clean vs edited repo, worktree skipped, no commits);
+dry-run of apply-safe over copies of the real app-a / app-b / app-c `scripts/`;
+then the real rollout, recorded per repo in `wiki/log.md`.

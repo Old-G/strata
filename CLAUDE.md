@@ -46,6 +46,7 @@ Claude Code plugin · Markdown skills + subagents · bundled shell/python templa
 - `reference/` — council personas, Diataxis doc-map, tool-integration (RTK / claude-mem / Caveman).
 - `templates/core/scripts/` — installed per target project: `sync_raw_mirror.sh`, `lib/pending_ingest.sh` (the one marker rule), `lib/state_tools.py` (the episodic-state schema/validator), `hooks/` (SessionStart + Stop + PreToolUse guard), `pre-commit/` guards, `strata_upgrade_check.sh` (re-sync diff reporter, backs `/strata:upgrade`), `diagram_check.sh` (P4 — pinned-source drift check for `wiki/diagrams/`; run by light-finish/audit, never a hook), `git-hooks/strata_commit_trailer.sh` + `strata_why.sh` (P5 provenance — a *git* hook, never registered in settings.json; install: `reference/agent-session-trailer.md`).
 - `wiki/diagrams/` — this repo's own diagram layer: `system.architecture.json` (canonical, Archify JSON, sources pinned to a commit) + `system.html` (open it to see the whole plugin); `history/*.json` only when the semantics changed.
+- `bin/strata-upgrade-all` — on PATH in every Claude session (plugin `bin/`); `templates/core/scripts.history` — hash of every shipped template version (what auto-sync may safely replace).
 - `docs/superpowers/{specs,plans}/` — Strata's own design specs & plans (dated).
 - `raw/`, `wiki/` — this repo's own knowledge layer; `.githooks/` — its own pre-commit guards.
 
@@ -65,6 +66,8 @@ bash scripts/test_p4_friction.sh         # Stop-gate trigger (d): friction count
 bash scripts/test_p4_diagrams.sh         # diagram layer: state_tools add-debt, diagram_check.sh (archify half runs where installed)
 bash scripts/test_p5_provenance.sh       # Agent-Session trailer hook (replays, empty msg, worktrees) + strata_why.sh
 bash scripts/strata_why.sh <file> -L a,b # which commits/sessions wrote these lines (transcripts stay local)
+bash scripts/gen_template_history.sh     # after ANY templates/core/scripts change (auto-sync safety manifest)
+bin/strata-upgrade-all [--dry-run]       # sync every Strata project on this machine to this plugin (on PATH in sessions)
 bash scripts/diagram_check.sh main       # does a wiki/diagrams/ picture owe an update on this branch?
 
 # enable this repo's own guards once per clone
@@ -95,9 +98,11 @@ raw or risky idea             → office-hours grill
 
 - **Strata is thin glue.** Do not reimplement memory (claude-mem), token-proxying (RTK), or testing. Compose them.
 - **Skills never hand-edit a target project's `raw/`** — it is a mirror of `docs/`.
-- **The plugin ships NO global hooks.** Every hook (PostToolUse mirror, SessionStart injection, Stop gate, PreToolUse guard) and every pre-commit guard is a *template* installed into the target project by `init`/`adopt`, so the plugin stays inert in unrelated repos.
+- **The plugin ships NO global hooks.** Every hook (PostToolUse mirror, SessionStart injection, Stop gate, PreToolUse guard) and every pre-commit guard is a *template* installed into the target project by `init`/`adopt`, so the plugin stays inert in unrelated repos. Updates still reach every project: the installed SessionStart hook auto-syncs `scripts/**` from a newer plugin (`--apply-safe`: never a locally edited file), and `bin/strata-upgrade-all` does all projects at once.
 - **Changing a skill description changes the routing surface.** Descriptions are the whole routing signal, and other installed plugins compete for the same words — check the change by saying the trigger phrase in a fresh session, not by reading the file.
 - **One marker rule, one implementation.** Anything asking "does the wiki owe an ingest?" sources `scripts/lib/pending_ingest.sh`. Gates that disagree about what pending means are worse than no gates.
 - **Gates must be escapable and self-limiting.** The Stop gate blocks at most once per session and fails open when unsure; the commit gate honours `STRATA_SKIP_WIKI=1`.
 - **Skill/command names are namespaced** `/strata:<name>` — do not prefix skill dirs with `strata-` (the namespace already adds it). Subagents in `agents/` DO keep the `strata-` prefix to avoid collisions in target projects.
+- **A verify you ran but did not record did not happen.** Put its result in `wiki/log.md` or the commit message — the branch review reads git, not the session. (Second occurrence: P4 red run, P5 routing check.)
+- **Every template change regenerates `templates/core/scripts.history`** (`bash scripts/gen_template_history.sh`; validate.sh §2d fails otherwise) — auto-sync trusts only versions listed there.
 - **CLAUDE.md ≤ 200 lines** here and in every template.

@@ -35,6 +35,27 @@ Spec: `docs/superpowers/specs/2026-09-26-p5-provenance.md`.
   (the trailer is visible in public history; a no is kept in `git config strata.trailer`), wire
   into the repo's existing hook mechanism, chain never replace, verify with the real session.
 - `validate.sh` §14 runs `test_p5_provenance.sh`.
+- **Updates reach every project.** The installed SessionStart hook auto-syncs `scripts/**` when
+  the plugin on the machine is newer than `.strata/version` — only files whose copy cannot lose
+  a local line (missing, or identical to a shipped version listed in the new
+  `templates/core/scripts.history`); locally edited files are named and left for
+  `/strata:upgrade`. `STRATA_NO_AUTOSYNC=1` opts out. `strata_upgrade_check.sh --apply-safe` is the
+  mechanism; `bin/strata-upgrade-all` (on PATH in sessions) runs it over every Strata project on
+  the machine, skipping linked worktrees, never committing. validate.sh §2d keeps the manifest
+  current.
+
+### Fixed
+- **Stop gate trigger (b) billed a session for uncommitted work that predates it** (whole-tree
+  `git diff HEAD`). SessionStart now snapshots the already-dirty files (`lib/tree_snapshot.sh`);
+  (b) counts only what the session itself touched.
+- **Stop gate trigger (d) counted a quoted interrupt marker** (reading or grepping the gate's code)
+  as a user interrupt; it now anchors on the unescaped JSON value start.
+- **The upgrade nudge never fired from project hooks** — it relied on `$CLAUDE_PLUGIN_ROOT`; the
+  plugin is now resolved from Claude Code's install registry too.
+
+### Changed
+- `CLAUDE.md` Hard rules: a verify you ran but did not record did not happen (second occurrence);
+  every template change regenerates `scripts.history`.
 
 ## [0.8.1] — 2026-09-13
 

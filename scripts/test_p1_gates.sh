@@ -27,6 +27,7 @@ git config user.email test@strata.local
 git config user.name "Strata Test"
 mkdir -p docs raw wiki src scripts/lib scripts/hooks scripts/pre-commit
 cp "$TPL/lib/pending_ingest.sh"                 scripts/lib/
+cp "$TPL/lib/tree_snapshot.sh" scripts/lib/
 cp "$TPL/hooks/strata_session_start.sh"         scripts/hooks/
 cp "$TPL/hooks/strata_stop_gate.sh"             scripts/hooks/
 cp "$TPL/pre-commit/check_wiki_fresh.sh"        scripts/pre-commit/
@@ -117,6 +118,24 @@ check "STRATA_STOP_GATE_LINES=0 disables the trigger" \
   "$(echo '{"session_id":"s6"}' | STRATA_STOP_GATE_LINES=0 bash "$GATE" 2>/dev/null | grep -c . | tr -d ' ')" "0"
 rm -f src/big.py; new_session s7
 check "small changes stay below the threshold" "$(verdict s7)" "clear"
+
+# (b) is about THIS session's code. Uncommitted work that was already in the tree
+# when the session started is not this session's change (seen in P5: a fresh
+# headless session was blocked for a ~36k-line diff it never touched).
+: > wiki/log.md
+python3 -c "print('y = 2\n' * 120, end='')" > src/old.py
+new_session s9
+check "pre-existing uncommitted code → not this session's (clear)" "$(verdict s9)" "clear"
+new_session s10
+python3 -c "print('y = 2\n' * 180, end='')" > src/old.py
+check "a pre-existing file edited again this session → counted (blocked)" "$(verdict s10)" "blocked"
+new_session s11
+python3 -c "print('z = 3\n' * 120, end='')" > src/new.py
+check "pre-existing dirt + a new big file this session → blocked" "$(verdict s11)" "blocked"
+rm -f src/new.py; new_session s12
+rm -f .strata/sessions/s12.dirty
+check "no start snapshot (older SessionStart) → whole-tree fallback (blocked)" "$(verdict s12)" "blocked"
+rm -f src/old.py
 
 echo "== A1 Stop gate — performance =="
 : > wiki/log.md; new_session s8
