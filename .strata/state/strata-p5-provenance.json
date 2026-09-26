@@ -2,7 +2,7 @@
   "goal": "Borrow from devdotfast/whiteboard: Agent-Session commit trailer + 'why does this code exist' provenance query; file lenses + unplanned-decision pass in strata-diff-review",
   "status": "active",
   "branch": "strata/p5-provenance",
-  "updated": "2026-09-26T20:22:46Z",
+  "updated": "2026-09-26T20:23:23Z",
   "verify": "bash scripts/test_p5_provenance.sh && bash scripts/validate.sh",
   "decisions": [
     {

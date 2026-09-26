@@ -488,3 +488,4 @@ Post-review suites: P4 diagrams 17/17, P4 friction 25/25, P2 28/28.
 - gotcha (first occurrence): archify compare writes architecture-delta.html + .receipt.json into the cwd — the repo root — unless an output path is given.
 - gotcha (SECOND occurrence — P4 close had it as "git holds no evidence of the red run"): a verify step run in-session but recorded nowhere is, to the branch review, a verify that did not happen.
 - open question: Stop-gate trigger (b) in a brand-new session counted the pre-existing uncommitted diff (≈36k lines) as that session's code change — is (b) scoped to the session stamp or to the tree?
+[2026-09-26T20:23:44Z] diagram system → re-pinned to 7e26ee3 after the strata_why.sh review fix; compare: provenance only (0 semantic changes, no history snapshot); deliver 9/9, visual-check pass.
