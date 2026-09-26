@@ -35,6 +35,8 @@ ours after it.
 
   ```yaml
   default_install_hook_types: [pre-commit, prepare-commit-msg]
+  default_stages: [pre-commit]   # REQUIRED: without it every hook that has no `stages`
+                                 # (gitleaks, ruff, …) ALSO runs at prepare-commit-msg — twice per commit
   repos:
     - repo: local
       hooks:
@@ -46,7 +48,10 @@ ours after it.
           always_run: true
   ```
 
-  then `pre-commit install --hook-type prepare-commit-msg`.
+  then `pre-commit install --hook-type prepare-commit-msg` — only that type: if the repo's own
+  pre-commit gates were never installed, installing them now changes its behaviour; say so, don't.
+  If the config already sets `default_stages`, keep it and make sure it does not include
+  `prepare-commit-msg`.
 - **husky** (`.husky/`) → `.husky/prepare-commit-msg` with the wrapper body.
 - **Nothing** → `.git/hooks/prepare-commit-msg` with the wrapper (per clone, untracked — say so).
 
