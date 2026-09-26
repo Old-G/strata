@@ -11,7 +11,7 @@
 #
 # Sources: git history of templates/core/scripts/ (every blob on this branch)
 # plus the working tree, so a commit that changes a template carries its own
-# new hash. validate.sh §2d regenerates and fails when the committed file differs.
+# new hash. validate.sh §2d fails when a version visible here is missing from it.
 #
 # Usage: bash scripts/gen_template_history.sh [--check]   (--check: exit 1 if stale)
 
@@ -33,7 +33,13 @@ gen() {
 }
 
 if [ "${1:-}" = "--check" ]; then
-  if diff -q <(gen) "$OUT" >/dev/null 2>&1; then exit 0; fi
+  # Subset, not equality: a shallow CI clone (fetch-depth 1) sees only HEAD's blobs,
+  # so it can regenerate FEWER lines than the committed manifest, never more. What
+  # must hold everywhere: every version visible here — above all the working tree's
+  # current templates — is listed. That is exactly the "forgot to regenerate" case.
+  missing="$(LC_ALL=C comm -23 <(gen) <(LC_ALL=C sort -u "$OUT" 2>/dev/null))"
+  if [ -z "$missing" ]; then exit 0; fi
+  printf '%s\n' "$missing" | sed 's/^/  not in scripts.history: /' >&2
   echo "templates/core/scripts.history is stale — run: bash scripts/gen_template_history.sh" >&2
   exit 1
 fi

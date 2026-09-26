@@ -530,3 +530,5 @@ Post-review suites: P4 diagrams 17/17, P4 friction 25/25, P2 28/28.
 - Agent-Session trailer hook copied everywhere, NOT wired (asked per repo — owner decision pending).
 - final: strata-upgrade-all --dry-run → 7/7 at 0.9.1, 0 files to sync.
 - found during rollout and fixed as 0.9.1: UNWIRED exact-string false positive (app-c); test fixtures leaking the real installed plugin. Process slip: one push of 3fc4ea1 went out with a validate run that had failed only its timing assertion (109 ms > 100 ms at load avg 8; 3/3 green on rerun) — a '&&' chain after grep; later pushes gated on validate's exit code.
+[2026-09-26T21:27:21Z] ci fix → validate §2d failed on GitHub since 3fc4ea1: actions/checkout is depth 1, so gen_template_history.sh saw only HEAD's blobs and never equalled the committed manifest. --check is now 'every version visible here is listed' (subset) — verified: depth-1 clone passes, depth-1 clone with a drifted template fails (rc 1).
+- gotcha (first occurrence): a check that regenerates from git history is only as deep as the clone — CI checkouts are shallow.
