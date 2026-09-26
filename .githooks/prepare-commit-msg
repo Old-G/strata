@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Strata P5 — Agent-Session trailer. Fails OPEN on every path: git does not skip
+# prepare-commit-msg under --no-verify, so a hook that can abort would leave no
+# escape short of deleting it. A missing or broken script must never stop a commit.
+s="$(git rev-parse --show-toplevel 2>/dev/null)/scripts/git-hooks/strata_commit_trailer.sh"
+[ -f "$s" ] && bash "$s" "$@" || true
+exit 0

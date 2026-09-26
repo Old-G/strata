@@ -30,6 +30,17 @@ Base = the merge-base with the default branch: `git merge-base HEAD "$(git rev-p
 map and `git diff <base>...HEAD -- <file>` per file as you go. Uncommitted work counts too:
 `git diff HEAD --stat` — if it is non-empty, say so; the human may be closing before committing.
 
+**Read it in lenses, not in `--stat` order.** Before any pass, bucket every changed file —
+nothing left uncategorised: first sweep out what is not implementation (tests · docs and
+wiki · generated files and lockfiles · config and build · fixtures and snapshots · pure
+renames/moves · formatting-only), then split the implementation by the part of the design
+each file serves (the data model, an API, a hook, a UI surface), ordered the way a reader
+should take them — entry point first. Don't split a file across lenses unless it holds two
+unrelated changes. Run the passes below lens by lens, implementation first; the swept-out
+buckets get a lighter look (tests: do they assert the planned behaviour; docs: do they match
+the code). (After devdotfast/whiteboard's file lenses — see
+`docs/superpowers/specs/2026-09-26-p5-provenance.md`.)
+
 ## Step 2 — Pass 1: COMPLIANCE (the pass only you run)
 
 Read the plan's task list / "files that change" / "verify" lines. For each, answer with a
@@ -46,6 +57,14 @@ citation (`plan §<task>` ↔ `file:line`):
   changes behaviour the tests don't cover; a comment or a test is a Nit.
 - **Verify line honoured?** — the plan's `verify:` commands: were they run, is there evidence
   (test file, log line, CI)? "It should work" is a finding.
+- **Decided, not asked** — choices the agent made on its own that neither the plan nor the
+  user's request settled: a default, a threshold, a fallback, a dependency, a format, what
+  happens on error. Sources: the branch state's `decisions` (`trust: session` = made in-session,
+  never reviewed — `python3 scripts/lib/state_tools.py path <branch>`), commit messages, and
+  design choices visible in the diff. For each: where it is recorded (plan, spec, state
+  `decisions`, commit message) or `unrecorded`. Unrecorded and behaviour-changing is
+  Important — the human is about to merge a decision nobody showed them. This is not a
+  judgement of the choice; it is making it visible.
 
 ## Step 3 — Pass 2: BUGS
 
@@ -79,7 +98,21 @@ DIFF: <base>...HEAD, <n> files, +<a>/-<d>
 
 Nits not shown: <n>
 Verify lines honoured: <k>/<total> — <which ones lack evidence>
+
+LENSES:
+  1. <lens name> — <file>, <file>
+  2. …
+  swept: tests — <files> · docs — <files> · config — <files> · …
+
+Decided, not asked:
+| Decision                          | Location        | Recorded in              |
+|-----------------------------------|-----------------|--------------------------|
+| retry 3× then fail open           | src/a.py:88     | unrecorded               |
 ```
+
+The `VERDICT:`/`PLAN:`/`DIFF:` header lines come first and keep their exact shape — they are
+what `light-finish` parses; `LENSES:` and the decisions table always come after them. Write
+`Decided, not asked: none found` rather than omitting the table.
 
 Every row has a citation. No row without one. You may disagree with the plan author and with
 the human — `light-finish` surfaces that, it does not smooth it over.

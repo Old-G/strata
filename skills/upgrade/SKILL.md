@@ -79,6 +79,12 @@ SessionStart notice drift on its own next time.
    `templates/core/gitignore.tmpl`) — merge, never overwrite; older adoptions may still have the
    blanket `.strata/` line, which also works but stops `.strata/state/` from ever being tracked,
    silently disabling the branch-state layer. Fix it if found.
+5. The git hook is not covered by the settings merge above — it is wired into git, not Claude
+   Code. If `scripts/git-hooks/strata_commit_trailer.sh` is present (just copied, or already
+   there) but nothing calls it — `grep -rl strata_commit_trailer "$(git config core.hooksPath ||
+   echo .git/hooks)" .husky .pre-commit-config.yaml 2>/dev/null` is empty — ask the one question
+   in `${CLAUDE_PLUGIN_ROOT}/reference/agent-session-trailer.md` §1 and, on yes, wire it per §3.
+   Skip the question when `git config strata.trailer` says `declined`.
 
 ## Step 4 — Stamp the version
 
@@ -93,8 +99,10 @@ what lets SessionStart notice a *future* drift without anyone running this skill
 3. `grep -c strata_stop_gate .claude/settings.json` and the same for
    `strata_session_start` and `sync_raw_mirror` — each present exactly once per event, not
    duplicated.
-4. Report a one-line summary: files re-synced (count), settings.json merged (yes/no — it's fine
-   if it was already current), version stamped, diagram layer (offered / seeded / declined / archify absent).
+4. If the trailer was wired in Step 3.5: the §4 verify in `reference/agent-session-trailer.md`.
+5. Report a one-line summary: files re-synced (count), settings.json merged (yes/no — it's fine
+   if it was already current), version stamped, trailer (wired / already wired / declined /
+   inert — id not exported), diagram layer (offered / seeded / declined / archify absent).
 
 ## Step 6 — Offer the first diagram (P4 diagram layer; never force)
 

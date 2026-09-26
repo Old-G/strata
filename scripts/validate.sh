@@ -217,6 +217,18 @@ else
   err "scripts/test_p4_diagrams.sh is missing"
 fi
 
+echo "== 14. P5 provenance — Agent-Session trailer hook, strata_why.sh =="
+if [ -f scripts/test_p5_provenance.sh ]; then
+  if out="$(bash scripts/test_p5_provenance.sh 2>&1)"; then
+    ok "$(printf '%s' "$out" | tail -n 1)"
+  else
+    printf '%s\n' "$out" | grep '✗' >&2
+    err "P5 provenance tests failed (run: bash scripts/test_p5_provenance.sh)"
+  fi
+else
+  err "scripts/test_p5_provenance.sh is missing"
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then echo "✅ Strata plugin validation PASSED"; else echo "❌ validation FAILED"; fi
 exit "$fail"

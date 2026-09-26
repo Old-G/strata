@@ -1,0 +1,50 @@
+{
+  "goal": "Borrow from devdotfast/whiteboard: Agent-Session commit trailer + 'why does this code exist' provenance query; file lenses + unplanned-decision pass in strata-diff-review",
+  "status": "active",
+  "branch": "strata/p5-provenance",
+  "updated": "2026-09-26T20:03:16Z",
+  "verify": "bash scripts/test_p5_provenance.sh && bash scripts/validate.sh",
+  "decisions": [
+    {
+      "what": "Trailer id comes from CLAUDE_CODE_SESSION_ID, no active-sessions file",
+      "why": "Claude Code exports it to every Bash call; git hooks inherit it — exact attribution, human commits get nothing",
+      "evidence": "env in this session + fresh claude -p run from /tmp; transcript filename matches",
+      "trust": "reviewed"
+    },
+    {
+      "what": "Skip trailer during rebase/cherry-pick; not on sequencer/",
+      "why": "git runs prepare-commit-msg per replayed pick; sequencer/ also exists for multi-revert, which is new work",
+      "evidence": "probe on git 2.48; test_p5 rebase/multi-pick/worktree/revert cases",
+      "trust": "reviewed"
+    },
+    {
+      "what": "Transcript offered only when its recorded cwd is under a worktree of this repo",
+      "why": "project-dir slug cannot tell repo/sub from sibling repo-sub; forged trailers must not open other projects' transcripts (cso #3)",
+      "evidence": "test_p5 'another project … not opened' with a -sibling cwd",
+      "trust": "reviewed"
+    },
+    {
+      "what": "Trailer wiring asked once at init/adopt/upgrade; decline stored in git config strata.trailer",
+      "why": "trailer reveals agent-made commits in public history (cso #7); per-clone like the hook itself",
+      "evidence": "reference/agent-session-trailer.md",
+      "trust": "session"
+    },
+    {
+      "what": "File lenses kept in diff-review despite eng #10",
+      "why": "owner asked for both; one paragraph of prompt",
+      "evidence": "spec D8",
+      "trust": "session"
+    }
+  ],
+  "open_questions": [],
+  "gotchas": [
+    "git runs prepare-commit-msg for every rebase/cherry-pick pick — a trailer hook without a replay guard stamps the wrong session",
+    "git does not skip prepare-commit-msg under --no-verify: the wrapper must fail open or a missing script blocks every commit",
+    "a trailer makes an emptied editor message non-empty, so git commits it instead of aborting — check stripspace first",
+    "bash 3.2 + set -u: \"${arr[@]}\" on an empty array is 'unbound variable' and silently kills a piped while-loop — use ${arr[@]+\"${arr[@]}\"}"
+  ],
+  "wiki_debt": [
+    "wiki: new entity agent-session-trailer + provenance; diff-review entity gains lenses/decided-not-asked; glossary terms"
+  ],
+  "files_touched": []
+}

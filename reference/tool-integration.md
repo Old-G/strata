@@ -143,6 +143,23 @@ prints one skip line; the render waits for a machine that has it.
 
 ---
 
+## Whiteboard (dev.fast) — optional viewer, not a dependency
+
+**What it is.** [devdotfast/whiteboard](https://github.com/devdotfast/whiteboard) — an MIT
+desktop app (a Code-OSS fork) where an agent draws an RFC-style review of a branch on a canvas:
+prose, sequence/flow diagrams, call-stack diffs, code peeks, every node linked to the code at a
+pinned revision; plus a semantic AST diff and a trace store for agent sessions.
+
+**What Strata took, and what it did not.** P5 borrowed two of its ideas and none of its code:
+the `Agent-Session:` commit trailer that ties a commit to the session that made it
+(`reference/agent-session-trailer.md`, local transcripts only — Strata uploads nothing), and
+file lenses + "decided, not asked" in `strata-diff-review`. Its hosted/S3 trace store and the
+app itself stay out: Strata is glue. If a developer has Whiteboard installed, its MCP tools are
+simply another way to *look* at a branch that Strata already reviewed — nothing in Strata calls
+it, detects it, or depends on it.
+
+---
+
 ## Summary
 
 | Tool | Layer role | Savings | Strata's stance | Bundled? |
@@ -152,6 +169,7 @@ prints one skip line; the render waits for a machine that has it.
 | Superpowers | PROCESS skills | n/a (workflow) | wrap, don't replace | no — global |
 | Caveman | prose compression | ~4–10% | optional, low priority | no — global |
 | Archify | diagram layer renderer + pin verifier | n/a (human artifact) | rely-if-present; never a gate, never from a hook | no — global skill |
+| Whiteboard | branch-review canvas (optional viewer) | n/a (human artifact) | ideas borrowed (P5); never called or detected | no — desktop app |
 
 All four are **install-once, machine-global**. Strata composes them; it does not
 ship them.

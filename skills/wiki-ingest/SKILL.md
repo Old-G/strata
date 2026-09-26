@@ -1,6 +1,6 @@
 ---
 name: wiki-ingest
-description: Use for anything about project KNOWLEDGE — ingesting a changed doc, answering a question about the project, or linting the wiki. 'ingest raw/X', 'how does X work', 'where does Y live', 'why did we decide Z', «проингестим X», «как у нас работает X», «где лежит Y», «почему решили Z», «прогони линт вики». Runs the docs→raw→wiki protocol from WIKI.md — answers come from wiki/ first, never a fresh grep.
+description: Use for anything about project KNOWLEDGE — ingesting a changed doc, answering a question about the project, or linting the wiki. 'ingest raw/X', 'how does X work', 'where does Y live', 'why did we decide Z', 'why is this code here', «проингестим X», «как у нас работает X», «где лежит Y», «почему решили Z», «откуда этот код», «прогони линт вики». Runs the docs→raw→wiki protocol from WIKI.md — answers come from wiki/ first, never a fresh grep.
 ---
 
 # Wiki Ingest / Query / Lint
@@ -73,6 +73,12 @@ name, not from a fresh repo grep.
 4. **Fallback rule**: only if the wiki genuinely lacks the detail, read the specific
    `raw/<file>.md`. When you do, **flag that ingest is incomplete** for that source and
    suggest re-ingesting it — a query fallback is a signal the wiki has a gap.
+   **4b. "Why is this code here?"** — when the question is about the reason behind specific
+   code and the wiki has no page for it, follow the trail to the agent session that wrote the
+   lines: `bash scripts/strata_why.sh <file> -L <a>,<b>` (blame → commit → `Agent-Session:`
+   trailer → local transcript), then read narrowly and re-check against current code under
+   the evidence rules in `${CLAUDE_PLUGIN_ROOT}/skills/wiki-ingest/sections/provenance.md`.
+   Read that file before opening a transcript.
 5. Optional (ask the user first): save a substantial answer as
    `wiki/entities/analysis-<slug>.md` (`type: analysis`) and add it to `index.md`.
 
