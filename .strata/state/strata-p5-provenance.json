@@ -2,7 +2,7 @@
   "goal": "Borrow from devdotfast/whiteboard: Agent-Session commit trailer + 'why does this code exist' provenance query; file lenses + unplanned-decision pass in strata-diff-review",
   "status": "active",
   "branch": "strata/p5-provenance",
-  "updated": "2026-09-26T20:10:06Z",
+  "updated": "2026-09-26T20:22:46Z",
   "verify": "bash scripts/test_p5_provenance.sh && bash scripts/validate.sh",
   "decisions": [
     {
@@ -36,13 +36,18 @@
       "trust": "session"
     }
   ],
-  "open_questions": [],
+  "open_questions": [
+    "Stop-gate trigger (b): does it count pre-existing uncommitted diff in a brand-new session? (seen in P5 routing runs)"
+  ],
   "gotchas": [
     "git runs prepare-commit-msg for every rebase/cherry-pick pick — a trailer hook without a replay guard stamps the wrong session",
     "git does not skip prepare-commit-msg under --no-verify: the wrapper must fail open or a missing script blocks every commit",
     "a trailer makes an emptied editor message non-empty, so git commits it instead of aborting — check stripspace first",
     "bash 3.2 + set -u: \"${arr[@]}\" on an empty array is 'unbound variable' and silently kills a piped while-loop — use ${arr[@]+\"${arr[@]}\"}",
-    "archify deliver that fails keeps the previous HTML — a visual-check right after a failed deliver inspects the stale artifact and passes"
+    "archify deliver that fails keeps the previous HTML — a visual-check right after a failed deliver inspects the stale artifact and passes",
+    "headless routing checks with hooks on in a dirty tree get pushed by the Stop gate into writing wiki/log.md — disable hooks + write tools for them",
+    "archify compare writes architecture-delta.* into the cwd (repo root)",
+    "SECOND occurrence: verify run in-session but not recorded = no evidence at branch review"
   ],
   "wiki_debt": [],
   "files_touched": []

@@ -476,3 +476,15 @@ Post-review suites: P4 diagrams 17/17, P4 friction 25/25, P2 28/28.
 ## 2026-09-26T20:09:59Z lint
 
 - errors: 0, warnings: 0
+
+## 2026-09-26T20:22:46Z auto-mirror
+
+- pending_ingest: docs/superpowers/plans/2026-09-26-p5-provenance-plan.md (mirrored docs/ -> raw/, ingest still owed)
+
+[2026-09-26T20:22:46Z] review P5 (strata-diff-review, branch version with lenses) → VERDICT FINDINGS: 3 Important, 5 Nit shown, 2 more. Fixed on the branch: (I) archify compare had written architecture-delta.html (2.2 MB) + receipt to the repo root and they were committed — removed, ignored in .gitignore + templates/core/gitignore.tmpl; (I) routing verify had no recorded evidence — run and recorded below; (I) plan T4 named a claude-settings-hook.json note that was dropped — plan now says why (git hook, eng #9), plan text reconciled with git-hooks/ + fail-open wrapper + blame -w -M + one git log; (N) strata_why.sh reported nothing for a human commit that mentions "Agent-Session:" in prose — red test first, fixed (50/50); (N) upgrade's wiring probe used a literal .git/hooks — now git rev-parse --git-path hooks; (N) --history now says on stderr that -L is ignored; (N) «почему код такой» added to wiki-ingest triggers. Accepted: a tool_result that STARTS with the interrupt marker still counts (plan T6). Nits left: symlinked repo path may read as "another project".
+[2026-09-26T20:22:46Z] ingest raw/superpowers/plans/2026-09-26-p5-provenance-plan.md → plan reconciliation only; sources/p5-provenance.md unchanged in substance.
+- routing evidence (fresh headless sessions, --plugin-dir ., sonnet, hooks disabled, write tools disallowed): «почему в …strata_stop_gate.sh трюк с isSidechain? откуда этот код?» → strata:wiki-ingest; 'why is this code here: the replay guard in …strata_commit_trailer.sh?' → strata:wiki-ingest; «почему код такой в scripts/strata_why.sh…» → strata:wiki-ingest ×2.
+- gotcha (first occurrence): a headless routing check run with hooks ON in a dirty tree is not read-only — the Stop gate's trigger (b) saw the pre-existing uncommitted diff and made the test sessions write wiki/log.md entries (reverted). Run routing checks with --settings '{"disableAllHooks":true}' and write tools disallowed.
+- gotcha (first occurrence): archify compare writes architecture-delta.html + .receipt.json into the cwd — the repo root — unless an output path is given.
+- gotcha (SECOND occurrence — P4 close had it as "git holds no evidence of the red run"): a verify step run in-session but recorded nowhere is, to the branch review, a verify that did not happen.
+- open question: Stop-gate trigger (b) in a brand-new session counted the pre-existing uncommitted diff (≈36k lines) as that session's code change — is (b) scoped to the session stamp or to the tree?

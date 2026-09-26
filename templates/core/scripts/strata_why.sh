@@ -17,7 +17,8 @@
 # Usage: strata_why.sh <file> [-L <start>,<end>] [--history]
 #   default     the commits that last touched those lines (blame -w -M)
 #   --history   up to 20 commits that ever touched the file (git log --follow) —
-#               for when the last touch was a move or a reformat, not the reason
+#               for when the last touch was a move or a reformat, not the reason;
+#               whole-file, so -L is ignored (said on stderr)
 # Exit: 0 printed a report · 2 usage error (no file, file not found, bad -L)
 #
 # Transcripts: ${CLAUDE_CONFIG_DIR:-~/.claude}/projects/<dir>/<id>.jsonl, plus
@@ -84,6 +85,7 @@ transcript_line() { # <id> → one "session …" line
 # --- the commits -------------------------------------------------------------
 uncommitted=0
 if [ "$history" -eq 1 ]; then
+  [ -n "$range" ] && echo "strata_why.sh: --history is whole-file; -L $range ignored" >&2
   shas="$(git log --follow -n 20 --format=%H -- "$file" 2>/dev/null)"
 else
   blame="$(git blame -w -M --porcelain ${range:+-L "$range"} -- "$file" 2>/dev/null)" \
@@ -119,14 +121,15 @@ if [ -n "$shas" ]; then
         else echo "  invalid Agent-Session value (not used): $(printf '%s' "$v" | cut -c1-60 | tr -cd '[:print:]')"; fi
       done
       # Body lines that look like trailers but are not in the trailer block.
-      printf '%s\n' "$body" | sed -n 's/^[[:space:]*-]*Agent-Session:[[:space:]]*\([^[:space:]]*\).*/\1/p' | awk '!seen[$0]++' \
-      | while IFS= read -r v; do
-          case "$(printf '\x1d%s\x1d' "$trailer_vals")" in *$'\x1d'"$v"$'\x1d'*) continue ;; esac
-          if valid_id "$v"; then transcript_line "$v" | sed 's/^  session /  session (from message body — squashed?) /'
-          else echo "  invalid Agent-Session value (not used): $(printf '%s' "$v" | cut -c1-60 | tr -cd '[:print:]')"; fi
-        done
-      [ "$found" -eq 1 ] || printf '%s\n' "$body" | grep -q 'Agent-Session:' \
-        || echo "  no Agent-Session trailer (a human commit, or made before the trailer hook)"
+      body_vals="$(printf '%s\n' "$body" | sed -n 's/^[[:space:]*-]*Agent-Session:[[:space:]]*\([^[:space:]]*\).*/\1/p' | awk '!seen[$0]++')"
+      while IFS= read -r v; do
+        [ -n "$v" ] || continue
+        case "$(printf '\x1d%s\x1d' "$trailer_vals")" in *$'\x1d'"$v"$'\x1d'*) continue ;; esac
+        found=1
+        if valid_id "$v"; then transcript_line "$v" | sed 's/^  session /  session (from message body — squashed?) /'
+        else echo "  invalid Agent-Session value (not used): $(printf '%s' "$v" | cut -c1-60 | tr -cd '[:print:]')"; fi
+      done <<< "$body_vals"
+      [ "$found" -eq 1 ] || echo "  no Agent-Session trailer (a human commit, or made before the trailer hook)"
     done
 fi
 

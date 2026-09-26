@@ -82,7 +82,8 @@ SessionStart notice drift on its own next time.
 5. The git hook is not covered by the settings merge above — it is wired into git, not Claude
    Code. If `scripts/git-hooks/strata_commit_trailer.sh` is present (just copied, or already
    there) but nothing calls it — `grep -rl strata_commit_trailer "$(git config core.hooksPath ||
-   echo .git/hooks)" .husky .pre-commit-config.yaml 2>/dev/null` is empty — ask the one question
+   git rev-parse --git-path hooks)" .husky .pre-commit-config.yaml 2>/dev/null` is empty
+   (`--git-path`, not a literal `.git/hooks`: in a linked worktree `.git` is a file) — ask the one question
    in `${CLAUDE_PLUGIN_ROOT}/reference/agent-session-trailer.md` §1 and, on yes, wire it per §3.
    Skip the question when `git config strata.trailer` says `declined`.
 

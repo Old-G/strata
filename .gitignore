@@ -27,3 +27,6 @@ __pycache__/
 wiki/diagrams/history/*.html
 # archify visual-check sidecars (screenshots + receipt) — local evidence, regenerated on demand
 wiki/diagrams/*.visual-check.*
+# `archify compare` writes its delta HTML + receipt to the cwd (the repo root) — never commit it
+architecture-delta.html
+architecture-delta.receipt.json

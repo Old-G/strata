@@ -1,6 +1,6 @@
 ---
 name: wiki-ingest
-description: Use for anything about project KNOWLEDGE — ingesting a changed doc, answering a question about the project, or linting the wiki. 'ingest raw/X', 'how does X work', 'where does Y live', 'why did we decide Z', 'why is this code here', «проингестим X», «как у нас работает X», «где лежит Y», «почему решили Z», «откуда этот код», «прогони линт вики». Runs the docs→raw→wiki protocol from WIKI.md — answers come from wiki/ first, never a fresh grep.
+description: Use for anything about project KNOWLEDGE — ingesting a changed doc, answering a question about the project, or linting the wiki. 'ingest raw/X', 'how does X work', 'where does Y live', 'why did we decide Z', 'why is this code here', «проингестим X», «как у нас работает X», «где лежит Y», «почему решили Z», «откуда этот код», «почему код такой», «прогони линт вики». Runs the docs→raw→wiki protocol from WIKI.md — answers come from wiki/ first, never a fresh grep.
 ---
 
 # Wiki Ingest / Query / Lint

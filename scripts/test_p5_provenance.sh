@@ -226,6 +226,11 @@ out="$(bash "$WHY" sq.txt 2>&1)"
 check "squash merge by a human: A found in the body"    "$(printf '%s' "$out" | grep -c "session (from message body — squashed?) $A · transcript ")" "1"
 check "…and not called a human commit"                  "$(printf '%s' "$out" | grep -c 'no Agent-Session trailer')" "0"
 
+printf 'y\n' > prose.txt; git add prose.txt
+git commit -qm "docs: explain the Agent-Session: trailer in prose"
+out="$(bash "$WHY" prose.txt 2>&1)"
+check "prose mention of 'Agent-Session:' mid-line → still reported as no trailer" "$(printf '%s' "$out" | grep -c 'no Agent-Session trailer')" "1"
+
 bash "$WHY" nope.txt >/dev/null 2>&1; check "missing file → exit 2" "$?" "2"
 bash "$WHY" >/dev/null 2>&1;          check "no args → exit 2"      "$?" "2"
 check "read-only: the work tree is untouched"           "$(git status --porcelain | grep -c .)" "0"

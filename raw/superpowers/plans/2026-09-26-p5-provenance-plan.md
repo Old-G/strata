@@ -8,7 +8,8 @@ are settled there; this plan orders the work and names the verify for each step.
 
 ## T1 — Agent-Session trailer
 
-Files: `templates/core/scripts/hooks/strata_commit_trailer.sh` (new, + mirror to `scripts/hooks/`),
+Files: `templates/core/scripts/git-hooks/strata_commit_trailer.sh` (new, + mirror to `scripts/git-hooks/`
+— moved out of `hooks/` per eng #9, spec D2),
 `.githooks/prepare-commit-msg` (new — Strata dogfoods it), `scripts/test_p5_provenance.sh` (new).
 
 1. **Tests first** — throwaway repo, real script wired as `prepare-commit-msg` via
@@ -23,7 +24,8 @@ Files: `templates/core/scripts/hooks/strata_commit_trailer.sh` (new, + mirror to
 2. **Script** — `$1` message file; guard order: skip env → id present and valid (D3) → not a
    replay (D4) → `git interpret-trailers --in-place --if-exists addIfDifferent`. Exit 0 always.
    `verify`: the T1 cases green.
-3. **Dogfood** — `.githooks/prepare-commit-msg` → `exec bash scripts/hooks/strata_commit_trailer.sh "$@"`.
+3. **Dogfood** — `.githooks/prepare-commit-msg` → the fail-open wrapper (`[ -f "$s" ] && bash "$s" "$@" || true;
+   exit 0` — not `exec`: cso #2, a missing script must not block commits `--no-verify` cannot bypass).
    `verify`: the next commit on this branch shows the trailer in `git log -1 --format=%B`.
 
 ## T2 — `strata_why.sh` + the provenance QUERY fallback
@@ -37,8 +39,10 @@ provenance.md` (new), `skills/wiki-ingest/SKILL.md` (QUERY step pointing at it),
    `no Agent-Session` for the second; a trailer whose transcript does not exist → `not on this
    machine`; an uncommitted line → `not committed yet`; `--history` lists older commits that
    touched the file; a missing file → exit 2 with usage on stderr.
-2. **Script** — `strata_why.sh <file> [-L a,b] [--history]`; `git blame --porcelain` for the
-   lines, `%(trailers:key=Agent-Session,valueonly)` per sha, transcript lookup
+2. **Script** — `strata_why.sh <file> [-L a,b] [--history]`; `git blame -w -M --porcelain` (eng #7: the
+   commit that *moved* code is not the reason) for the
+   lines, `%(trailers:key=Agent-Session,valueonly)` in one `git log` for all shas (eng #6), `--history`
+   capped at 20 commits and whole-file (eng #7), transcript lookup
    `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects/*/<id>.jsonl`. Read-only.
 3. **Skill** — QUERY gains step 4b: the wiki has no reason for this code → run the helper → read
    the few transcript events around the file/symbol → re-check against current code → answer
@@ -67,7 +71,9 @@ Files: `agents/strata-diff-review.md`.
 ## T4 — Install paths, upgrade, release
 
 Files: `skills/adopt/SKILL.md`, `skills/init/SKILL.md`, `skills/upgrade/SKILL.md`,
-`templates/core/claude-settings-hook.json` note, `scripts/validate.sh` §14, `reference/
+`reference/agent-session-trailer.md` (one install procedure the three skills point at),
+~~`templates/core/claude-settings-hook.json` note~~ (dropped: the trailer is a *git* hook — a note in the
+Claude Code settings template is exactly the confusion eng #9 moved the script to avoid), `scripts/validate.sh` §14, `reference/
 tool-integration.md`, manifests + stamps → `0.9.0`, `CLAUDE.md` status row.
 
 1. adopt/init: copy the two scripts; wire `strata_commit_trailer.sh` as `prepare-commit-msg` into
@@ -97,7 +103,9 @@ unescaped JSON value start (`"text":"[…` / `"content":"[…`); quoted text ins
 is always escaped. Files: `templates/core/scripts/hooks/strata_stop_gate.sh` (+ mirror),
 `scripts/test_p4_friction.sh` (cases 11b/11c).
 `verify`: `bash scripts/test_p4_friction.sh` red on 11b before the fix, 27/27 after; the real
-transcript counts 0.
+transcript counts 0. Accepted residual: a tool result whose content *starts* with the marker (a
+`grep -o` of it, a file beginning with it) still counts — far narrower than before, and the gate
+blocks at most once per session.
 
 The same run also found `wiki/diagrams/system` pinned at `2d41399` while `395edc0`/`5781576`
 changed pinned files — folded into T5 (re-pin while drawing P5 in).
