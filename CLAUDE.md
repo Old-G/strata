@@ -2,11 +2,12 @@
 
 Claude Code plugin that packages a reusable way to run AI-assisted projects: AI-navigable wiki,
 architecture canon, spec→plan→TDD feature flow, a parallel review council, and drift detection with
-staged refactor. **State:** v0.8.1 — deterministic wiki freshness (hook + commit gates), native
+staged refactor. **State:** v0.9.0 — deterministic wiki freshness (hook + commit gates), native
 command-free invocation, an episodic branch-state layer with a hook-driven upgrade path, a
 PreToolUse guard (raw/ mirror · tests read-only mid-fix), a diff-vs-plan review at branch close,
-a Stop gate that asks for the lesson when a session hurt, and a diagram layer (`wiki/diagrams/`,
-Archify JSON with commit-pinned sources). This repo dogfoods its own patterns, including its own
+a Stop gate that asks for the lesson when a session hurt, a diagram layer (`wiki/diagrams/`,
+Archify JSON with commit-pinned sources), and provenance (`Agent-Session:` commit trailers →
+`strata_why.sh` → the session that wrote the code). This repo dogfoods its own patterns, including its own
 `wiki/` and gates.
 
 ## Phase / status
@@ -28,6 +29,7 @@ Archify JSON with commit-pinned sources). This repo dogfoods its own patterns, i
 | Right side of the loop — A5 PreToolUse guard · R1 diff-vs-plan review | ✅ `test_p3_guards.sh` green · `strata-diff-review` wired into light-finish |
 | Friction — Stop-gate trigger (d) asks for the gotcha when a session hurt | ✅ `test_p4_friction.sh` green |
 | Diagram layer — `wiki/diagrams/` (Archify JSON, commit-pinned sources) + `diagram_check.sh` | ✅ `test_p4_diagrams.sh` green · Strata's own `system` diagram |
+| Provenance — `Agent-Session:` trailer (prepare-commit-msg) + `strata_why.sh` + diff-review lenses / "decided, not asked" | ✅ `test_p5_provenance.sh` green · dogfooded via `.githooks/prepare-commit-msg` |
 | Verified by adopting a real external project | ⬜ pending (user will test elsewhere) |
 
 ## Stack
@@ -42,7 +44,7 @@ Claude Code plugin · Markdown skills + subagents · bundled shell/python templa
 - `templates/core/` — portable assets: `PROJECT_PATTERN.md`, `WIKI.md`, `wiki/` skeleton, `scripts/`, CLAUDE/ADR templates.
 - `templates/stacks/<stack>/` — per-stack architecture canon (`SCALABLE_ARCHITECTURE_REFERENCE.md`) + scaffold generator.
 - `reference/` — council personas, Diataxis doc-map, tool-integration (RTK / claude-mem / Caveman).
-- `templates/core/scripts/` — installed per target project: `sync_raw_mirror.sh`, `lib/pending_ingest.sh` (the one marker rule), `lib/state_tools.py` (the episodic-state schema/validator), `hooks/` (SessionStart + Stop + PreToolUse guard), `pre-commit/` guards, `strata_upgrade_check.sh` (re-sync diff reporter, backs `/strata:upgrade`), `diagram_check.sh` (P4 — pinned-source drift check for `wiki/diagrams/`; run by light-finish/audit, never a hook).
+- `templates/core/scripts/` — installed per target project: `sync_raw_mirror.sh`, `lib/pending_ingest.sh` (the one marker rule), `lib/state_tools.py` (the episodic-state schema/validator), `hooks/` (SessionStart + Stop + PreToolUse guard), `pre-commit/` guards, `strata_upgrade_check.sh` (re-sync diff reporter, backs `/strata:upgrade`), `diagram_check.sh` (P4 — pinned-source drift check for `wiki/diagrams/`; run by light-finish/audit, never a hook), `git-hooks/strata_commit_trailer.sh` + `strata_why.sh` (P5 provenance — a *git* hook, never registered in settings.json; install: `reference/agent-session-trailer.md`).
 - `wiki/diagrams/` — this repo's own diagram layer: `system.architecture.json` (canonical, Archify JSON, sources pinned to a commit) + `system.html` (open it to see the whole plugin); `history/*.json` only when the semantics changed.
 - `docs/superpowers/{specs,plans}/` — Strata's own design specs & plans (dated).
 - `raw/`, `wiki/` — this repo's own knowledge layer; `.githooks/` — its own pre-commit guards.
@@ -61,6 +63,8 @@ bash scripts/test_p2_state.sh            # state schema/validator, Stop-gate tri
 bash scripts/test_p3_guards.sh           # PreToolUse guard: raw/ mirror, tests read-only mid-fix, stale-toggle warning
 bash scripts/test_p4_friction.sh         # Stop-gate trigger (d): friction counted from the session transcript
 bash scripts/test_p4_diagrams.sh         # diagram layer: state_tools add-debt, diagram_check.sh (archify half runs where installed)
+bash scripts/test_p5_provenance.sh       # Agent-Session trailer hook (replays, empty msg, worktrees) + strata_why.sh
+bash scripts/strata_why.sh <file> -L a,b # which commits/sessions wrote these lines (transcripts stay local)
 bash scripts/diagram_check.sh main       # does a wiki/diagrams/ picture owe an update on this branch?
 
 # enable this repo's own guards once per clone

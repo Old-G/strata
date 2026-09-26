@@ -162,6 +162,20 @@ mk_transcript "$TR/side.jsonl" 3 3 20 true
 new_session s11
 check "friction only on isSidechain:true lines → silent" "$(stop_gate s11 "$TR/side.jsonl")" ""
 
+# 11b. the marker QUOTED inside a tool result is not an interrupt. Reading or grepping
+# the gate's own code puts "[Request interrupted by user" into a "type":"user"
+# tool_result line — escaped, because it is inside a JSON string. Found by the P5
+# diff review on this repo's own transcript (1 false interrupt, 0 real ones).
+mk_transcript "$TR/quoted.jsonl" 0 0 0
+echo '{"type":"user","isSidechain":false,"message":{"role":"user","content":[{"type":"tool_result","content":"193:  n_int=\"$(grep -cF '"'"'[Request interrupted by user'"'"')\"\n{\"type\":\"text\",\"text\":\"[Request interrupted by user]\"}","tool_use_id":"r1"}]}}' >> "$TR/quoted.jsonl"
+new_session s11b
+check "marker quoted inside a tool_result → silent (not an interrupt)" "$(stop_gate s11b "$TR/quoted.jsonl")" ""
+# …while the real shape (a text block, as current Claude Code writes it) still counts.
+mk_transcript "$TR/realint.jsonl" 0 0 0
+echo '{"type":"user","isSidechain":false,"message":{"role":"user","content":[{"type":"text","text":"[Request interrupted by user for tool use]"}]}}' >> "$TR/realint.jsonl"
+new_session s11c
+check "a text-block interrupt ('for tool use') → block" "$(has "$(stop_gate s11c "$TR/realint.jsonl")" '"decision":"block"')" yes
+
 # 12. nowhere to record (no wiki/log.md, no branch state) → silent
 rm -f wiki/log.md
 new_session s12

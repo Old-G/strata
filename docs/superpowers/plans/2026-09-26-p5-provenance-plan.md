@@ -86,3 +86,18 @@ tool-integration.md`, manifests + stamps → `0.9.0`, `CLAUDE.md` status row.
 (Agent-Session trailer, provenance, lens, autonomous decision), index, overview, log;
 `diagram_check.sh main` → update `wiki/diagrams/system` if it owes one.
 `verify`: `uv run --python 3.12 --with pyyaml python wiki/scripts/lint.py` green; commit gate passes.
+
+## T6 — Found by T3's own verify run (added 2026-09-26)
+
+Running the new `strata-diff-review` over the P4 range surfaced a real P4 bug: Stop-gate
+trigger (d) counted `[Request interrupted by user` anywhere in a `"type":"user"` line, so a
+session that merely *read or grepped* the gate's code (a tool_result) had a false interrupt —
+this session's own transcript showed 1 false, 0 real, at threshold 1. Fix: anchor on the
+unescaped JSON value start (`"text":"[…` / `"content":"[…`); quoted text inside a tool result
+is always escaped. Files: `templates/core/scripts/hooks/strata_stop_gate.sh` (+ mirror),
+`scripts/test_p4_friction.sh` (cases 11b/11c).
+`verify`: `bash scripts/test_p4_friction.sh` red on 11b before the fix, 27/27 after; the real
+transcript counts 0.
+
+The same run also found `wiki/diagrams/system` pinned at `2d41399` while `395edc0`/`5781576`
+changed pinned files — folded into T5 (re-pin while drawing P5 in).

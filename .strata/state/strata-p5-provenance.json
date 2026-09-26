@@ -2,7 +2,7 @@
   "goal": "Borrow from devdotfast/whiteboard: Agent-Session commit trailer + 'why does this code exist' provenance query; file lenses + unplanned-decision pass in strata-diff-review",
   "status": "active",
   "branch": "strata/p5-provenance",
-  "updated": "2026-09-26T20:03:16Z",
+  "updated": "2026-09-26T20:06:07Z",
   "verify": "bash scripts/test_p5_provenance.sh && bash scripts/validate.sh",
   "decisions": [
     {
@@ -44,7 +44,8 @@
     "bash 3.2 + set -u: \"${arr[@]}\" on an empty array is 'unbound variable' and silently kills a piped while-loop — use ${arr[@]+\"${arr[@]}\"}"
   ],
   "wiki_debt": [
-    "wiki: new entity agent-session-trailer + provenance; diff-review entity gains lenses/decided-not-asked; glossary terms"
+    "wiki: new entity agent-session-trailer + provenance; diff-review entity gains lenses/decided-not-asked; glossary terms",
+    "diagram system: pinned file changed since the diagram was pinned: agents/strata-diff-review.md, skills/using-strata/SKILL.md, templates/core/scripts/diagram_check.sh, templates/core/scripts/hooks/strata_stop_gate.sh, templates/core/scripts/lib/state_tools.py — update the changed area of wiki/diagrams/system.architecture.json, re-pin revision to HEAD, validate → deliver (archify skill)"
   ],
   "files_touched": []
 }

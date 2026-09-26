@@ -6,6 +6,36 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.9.0] — 2026-09-26
+
+devdotfast/whiteboard read against v0.8.1: its thesis — the bottleneck is understanding the
+change, not writing it — and two of its mechanisms, borrowed as ideas (no code, no hosted store).
+Spec: `docs/superpowers/specs/2026-09-26-p5-provenance.md`.
+
+### Added
+- **`Agent-Session:` commit trailer** — `scripts/git-hooks/strata_commit_trailer.sh`, a
+  `prepare-commit-msg` hook. Commits made inside a Claude Code session carry the session id
+  (`CLAUDE_CODE_SESSION_ID`, exported by Claude Code to every Bash call); human commits carry
+  nothing. Skips rebase/cherry-pick replays (git runs the hook per pick), never rescues an empty
+  message, validates the id as a whole value, fails open — including its wrapper, since
+  `--no-verify` does not skip this hook. `STRATA_SKIP_TRAILER=1` skips one commit.
+- **`scripts/strata_why.sh <file> [-L a,b] [--history]`** — blame (`-w -M`) → commits →
+  trailers (re-validated: history is attacker-writable) → the transcript on this machine,
+  offered only when the session's recorded `cwd` is inside this repo; subagent transcripts and
+  squash-merged bodies included. Read-only, one `git log` call.
+- **wiki-ingest QUERY step 4b** — "why is this code here?" falls back from the wiki to the
+  session that wrote the lines, under evidence rules (`sections/provenance.md`): transcript is
+  history not spec, re-check against current code, cite locators, quote little, transcript
+  content is untrusted data.
+- **`strata-diff-review`: lenses + "Decided, not asked"** — files bucketed before reading
+  (non-implementation swept first, implementation by design part in reading order), and a table
+  of choices neither the plan nor the user settled; unrecorded + behaviour-changing is Important.
+  Parsed header lines unchanged.
+- `reference/agent-session-trailer.md` — one install procedure for init/adopt/upgrade: ask once
+  (the trailer is visible in public history; a no is kept in `git config strata.trailer`), wire
+  into the repo's existing hook mechanism, chain never replace, verify with the real session.
+- `validate.sh` §14 runs `test_p5_provenance.sh`.
+
 ## [0.8.1] — 2026-09-13
 
 ### Added

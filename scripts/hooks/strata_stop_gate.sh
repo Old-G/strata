@@ -190,7 +190,12 @@ if [ -n "$transcript_path" ] && [ -r "$transcript_path" ] \
   # every candidate; the deny regex only ever runs over that small set.
   cand="$(LC_ALL=C grep -F -e '[Request interrupted by user' -e '"is_error":true' \
             "$transcript_path" 2>/dev/null | LC_ALL=C grep -vF '"isSidechain":true' || true)"
-  n_int="$(printf '%s\n' "$cand" | LC_ALL=C grep -F '"type":"user"' | LC_ALL=C grep -cF '[Request interrupted by user' || true)"
+  # An interrupt is the marker as the START of a JSON string value — `"text":"[…` (a
+  # text block, current Claude Code) or `"content":"[…` (older plain-string form).
+  # The same words quoted inside a tool result (reading or grepping this very file)
+  # are escaped (`\"text\":\"[…`) and never match an unescaped `":"[`.
+  n_int="$(printf '%s\n' "$cand" | LC_ALL=C grep -F '"type":"user"' \
+            | LC_ALL=C grep -cF -e '"text":"[Request interrupted by user' -e '"content":"[Request interrupted by user' || true)"
   n_den="$(printf '%s\n' "$cand" | LC_ALL=C grep -cE "$F_DENY_RE" || true)"
   n_err="$(printf '%s\n' "$cand" | LC_ALL=C grep -F '"is_error":true' | LC_ALL=C grep -vE "$F_DENY_RE" | LC_ALL=C grep -c . || true)"
   n_int="$(num_or "$n_int" 0)"; n_den="$(num_or "$n_den" 0)"; n_err="$(num_or "$n_err" 0)"
