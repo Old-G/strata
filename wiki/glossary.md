@@ -2,7 +2,7 @@
 title: Glossary
 type: entity
 created: 2026-08-15
-updated: 2026-09-13
+updated: 2026-09-26
 links: [overview]
 ---
 
@@ -30,6 +30,11 @@ finds a page contradicting the glossary, the glossary wins — fix the page.
 | promotion ladder | observation → branch-state `gotchas` → `wiki/log.md` (once) → `CLAUDE.md` "Things Claude gets wrong" (second occurrence) → a hook (when the line says always/never). | [[p4-field-patterns]] D6 |
 | Archify | MIT agent skill + dependency-free Node CLI (`node bin/archify.mjs`) compiling typed JSON IR into validated, self-contained HTML diagrams; declared by Strata, never bundled. | [[diagram-layer]] |
 | diagram_check.sh | `scripts/diagram_check.sh [base]` — pinned paths ∩ files changed since the pinned revision, plus a re-pin-to-HEAD archify validate; findings → `wiki_debt`; exit 0 always, never a hook. | [[diagram-layer]] |
+| Agent-Session trailer | `Agent-Session: <id>` on every commit made inside a Claude Code session (`prepare-commit-msg`, id from `CLAUDE_CODE_SESSION_ID`); human commits carry none. `STRATA_SKIP_TRAILER=1` skips one. | [[agent-session-trailer]] |
+| strata_why.sh | `scripts/strata_why.sh <file> [-L a,b] [--history]` — blame → commits → trailers → the local transcript, offered only if the session ran inside this repo. Read-only. | [[agent-session-trailer]] |
+| provenance | The trail from a line of code to the session that wrote it; history, not specification — every claim re-checked against current code. | [[agent-session-trailer]] |
+| lens | A reading bucket for a diff: non-implementation swept first, then implementation by design part in reading order. | [[diff-review]] |
+| decided, not asked | A choice the agent made that neither the plan nor the user settled; unrecorded + behaviour-changing is Important at branch close. | [[diff-review]] |
 | commit gate | Pre-commit guard that fails the commit while any `pending_ingest` marker is outstanding. Escape hatch: `STRATA_SKIP_WIKI=1`. | [[commit-gate]] |
 | SessionStart injection | Hook whose stdout becomes model context; opens every session with branch, pending list, and wiki index head. Budget ~30–50 lines. | [[session-start-injection]] |
 | advisory vs deterministic | Skill prose is probabilistic; hooks are deterministic. Rule: if you write "the agent must always…", that is a hook, not a paragraph. | [ADR #1](decisions/adr-1-deterministic-enforcement.md) |

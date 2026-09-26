@@ -2,7 +2,7 @@
 title: Diff-vs-plan review (R1)
 type: entity
 created: 2026-09-01
-updated: 2026-09-01
+updated: 2026-09-26
 links: [branch-state, session-reflector, enforcement-layer]
 ---
 
@@ -41,10 +41,24 @@ the same commit.
   This is the zero-infrastructure predecessor of [[session-reflector]]: if it changes plans, the
   reflector has a reason to exist.
 
+**v0.9.0 — lenses and "Decided, not asked"** ([[p5-provenance]], after devdotfast/whiteboard):
+
+- **Lenses:** before any pass, every changed file is bucketed — non-implementation swept out first
+  (tests · docs/wiki · generated/lockfiles · config/build · fixtures · renames · formatting), then
+  the implementation split by the part of the design each file serves, in reading order. Passes
+  run lens by lens; output gains a `LENSES:` block.
+- **Decided, not asked:** choices neither the plan nor the user settled (a default, a threshold,
+  a fallback, a format, error behaviour), sourced from branch-state `decisions`
+  (`trust: session`), commit messages and the diff, each with where it is recorded or
+  `unrecorded`. Unrecorded + behaviour-changing is Important. Header lines
+  (`VERDICT`/`PLAN`/`DIFF`) keep their exact shape — `light-finish` parses them.
+- **First run paid for itself:** over the P4 range it found a real Stop-gate false-interrupt bug
+  and a stale diagram pin, both fixed in P5 T6.
+
 ## Related
 
 [[branch-state]] · [[session-reflector]] · [[enforcement-layer]] · [[pre-tool-guard]]
 
 ## Sources
 
-[[sdlc-right-side]] D3
+[[sdlc-right-side]] D3 · [[p5-provenance]] D8

@@ -2,7 +2,7 @@
 title: Friction capture (Stop-gate trigger d)
 type: entity
 created: 2026-09-12
-updated: 2026-09-13
+updated: 2026-09-26
 links: [stop-gate, branch-state, session-reflector, diff-review]
 ---
 
@@ -29,7 +29,8 @@ see [[stop-gate]] for the mechanics as built. `scripts/test_p4_friction.sh`, 24 
 `validate.sh` §12. Shape:
 
 - **Signals**, each a `grep -c` over `transcript_path` with `"isSidechain":true` lines dropped:
-  `interrupts` = "Request interrupted by user"; `denials` = the user declined a tool call
+  `interrupts` = "Request interrupted by user" as an unescaped JSON value start (v0.9.0 fix: a
+  quoted marker inside a tool_result is not an interrupt — [[p5-provenance]] T6); `denials` = the user declined a tool call
   ("doesn't want to proceed" and the CLI's equivalents, one pattern variable); `tool_errors` =
   `"is_error":true`. Baseline on this repo's four transcripts: 5 / 10 / 21 in total.
 - **Thresholds** `STRATA_FRICTION_INTERRUPTS=1`, `STRATA_FRICTION_DENIALS=2`,

@@ -2,7 +2,7 @@
 title: Project Overview
 type: entity
 created: 2026-08-15
-updated: 2026-09-13
+updated: 2026-09-26
 links: [enforcement-layer, native-invocation, hq-mode, branch-state, upgrade-path, friction-capture, diagram-layer]
 ---
 
@@ -40,6 +40,12 @@ Archify, OpenAI Agents API) confirmed Strata's bets and contributed three mechan
 HTML per story, `diagram_check.sh` turns a changed pin into `wiki_debt`; text-diagram DSLs leave
 the canon), and the promotion ladder written once in `WIKI.md`. This repo's own picture:
 `wiki/diagrams/system.html`.
+
+**v0.9.0 — P5, provenance** ([[p5-provenance]]): devdotfast/whiteboard's thesis — understanding
+the change is the bottleneck, not writing it — and two of its ideas, no code: the
+[[agent-session-trailer]] ties every agent commit to its session so "why is this code here?"
+can end at the transcript that wrote it (local only), and [[diff-review]] reads the diff in
+lenses and names the decisions nobody asked for.
 
 **Still in planning**, driven by [[vnext-brief]]: [[hq-mode]], then [[ablate]],
 [[session-reflector]], [[gardener]] (now carrying the playbook's `bands.yaml` σ-tier pattern as

@@ -1,0 +1,355 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "compare",
+  "type": "architecture",
+  "comparatorVersion": 1,
+  "canonicalVersion": 1,
+  "completeness": "complete",
+  "proofLevel": "revision-pinned",
+  "base": {
+    "title": "Strata — how the plugin holds a repo together",
+    "rawSha256": "6e7870bc54fbeb99411d73f97cf30edc21d43f8b4a38d3c362bfa5669c0e4d61",
+    "semanticSha256": "c9aed8f306a62b481beea20d88e541487388216bf6475f3665f65839a84a6e52",
+    "bytes": 8799,
+    "revision": "2d4139990658a40055d2206c8c4bd354de5a6dc6"
+  },
+  "head": {
+    "title": "Strata — how the plugin holds a repo together",
+    "rawSha256": "2a3e00aa1df0a1f298f7b1e2469ee0df2bef97ca2e7b4119400f5b0deadbba90",
+    "semanticSha256": "ac2516f63c30be94b8426e1dece1a8eceb56bae895aab892a2a9ec196beef49c",
+    "bytes": 9645,
+    "revision": "526b4eaca6ecad56d32d01fad5275db39d481b29"
+  },
+  "summary": {
+    "components": {
+      "added": 1,
+      "changed": 0,
+      "evidenceChanged": 0,
+      "removed": 0,
+      "moved": 12
+    },
+    "connections": {
+      "added": 1,
+      "changed": 0,
+      "removed": 0,
+      "rerouted": 5
+    },
+    "boundaries": {
+      "added": 0,
+      "changed": 1,
+      "removed": 0,
+      "geometryChanged": 0
+    },
+    "presentationChanged": true,
+    "provenanceChanged": true
+  },
+  "changes": {
+    "components": [
+      {
+        "id": "commitgate",
+        "baseLabel": "Commit gate",
+        "headLabel": "Commit gate",
+        "status": "moved",
+        "classifications": [
+          "geometry"
+        ],
+        "changedFields": [
+          "/pos"
+        ]
+      },
+      {
+        "id": "council",
+        "baseLabel": "review council",
+        "headLabel": "review council",
+        "status": "moved",
+        "classifications": [
+          "geometry"
+        ],
+        "changedFields": [
+          "/pos"
+        ]
+      },
+      {
+        "id": "docs",
+        "baseLabel": "docs/",
+        "headLabel": "docs/",
+        "status": "moved",
+        "classifications": [
+          "geometry"
+        ],
+        "changedFields": [
+          "/pos"
+        ]
+      },
+      {
+        "id": "guard",
+        "baseLabel": "PreToolUse guard",
+        "headLabel": "PreToolUse guard",
+        "status": "moved",
+        "classifications": [
+          "geometry"
+        ],
+        "changedFields": [
+          "/pos"
+        ]
+      },
+      {
+        "id": "marker",
+        "baseLabel": "pending_ingest.sh",
+        "headLabel": "pending_ingest.sh",
+        "status": "moved",
+        "classifications": [
+          "geometry"
+        ],
+        "changedFields": [
+          "/pos"
+        ]
+      },
+      {
+        "id": "mirror",
+        "baseLabel": "sync_raw_mirror.sh",
+        "headLabel": "sync_raw_mirror.sh",
+        "status": "moved",
+        "classifications": [
+          "geometry"
+        ],
+        "changedFields": [
+          "/pos"
+        ]
+      },
+      {
+        "id": "provenance",
+        "headLabel": "Agent-Session trailer",
+        "status": "added",
+        "classifications": [
+          "semantic"
+        ],
+        "changedFields": []
+      },
+      {
+        "id": "raw",
+        "baseLabel": "raw/",
+        "headLabel": "raw/",
+        "status": "moved",
+        "classifications": [
+          "geometry"
+        ],
+        "changedFields": [
+          "/pos"
+        ]
+      },
+      {
+        "id": "session",
+        "baseLabel": "SessionStart inject",
+        "headLabel": "SessionStart inject",
+        "status": "moved",
+        "classifications": [
+          "geometry"
+        ],
+        "changedFields": [
+          "/pos"
+        ]
+      },
+      {
+        "id": "skills",
+        "baseLabel": "skills/*",
+        "headLabel": "skills/*",
+        "status": "moved",
+        "classifications": [
+          "geometry"
+        ],
+        "changedFields": [
+          "/pos"
+        ]
+      },
+      {
+        "id": "state",
+        "baseLabel": ".strata/state/",
+        "headLabel": ".strata/state/",
+        "status": "moved",
+        "classifications": [
+          "geometry"
+        ],
+        "changedFields": [
+          "/pos"
+        ]
+      },
+      {
+        "id": "stopgate",
+        "baseLabel": "Stop gate",
+        "headLabel": "Stop gate",
+        "status": "moved",
+        "classifications": [
+          "geometry"
+        ],
+        "changedFields": [
+          "/pos"
+        ]
+      },
+      {
+        "id": "wiki",
+        "baseLabel": "wiki/",
+        "headLabel": "wiki/",
+        "status": "moved",
+        "classifications": [
+          "geometry"
+        ],
+        "changedFields": [
+          "/pos"
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "id": "all",
+        "base": {
+          "from": "marker",
+          "to": "commitgate",
+          "label": "all markers"
+        },
+        "head": {
+          "from": "marker",
+          "to": "commitgate",
+          "label": "all markers"
+        },
+        "status": "rerouted",
+        "classifications": [
+          "geometry"
+        ],
+        "changedFields": [
+          "/labelAt"
+        ]
+      },
+      {
+        "id": "carry",
+        "base": {
+          "from": "skills",
+          "to": "state",
+          "label": "goal · decisions · wiki_debt"
+        },
+        "head": {
+          "from": "skills",
+          "to": "state",
+          "label": "goal · decisions · wiki_debt"
+        },
+        "status": "rerouted",
+        "classifications": [
+          "geometry"
+        ],
+        "changedFields": [
+          "/labelAt"
+        ]
+      },
+      {
+        "id": "mark",
+        "base": {
+          "from": "mirror",
+          "to": "marker",
+          "label": "pending_ingest marker"
+        },
+        "head": {
+          "from": "mirror",
+          "to": "marker",
+          "label": "pending_ingest marker"
+        },
+        "status": "rerouted",
+        "classifications": [
+          "geometry"
+        ],
+        "changedFields": [
+          "/labelAt"
+        ]
+      },
+      {
+        "id": "query",
+        "base": {
+          "from": "skills",
+          "to": "wiki",
+          "label": "query first"
+        },
+        "head": {
+          "from": "skills",
+          "to": "wiki",
+          "label": "query first"
+        },
+        "status": "rerouted",
+        "classifications": [
+          "geometry"
+        ],
+        "changedFields": [
+          "/labelAt"
+        ]
+      },
+      {
+        "id": "review",
+        "base": {
+          "from": "skills",
+          "to": "council",
+          "label": "risky tier"
+        },
+        "head": {
+          "from": "skills",
+          "to": "council",
+          "label": "risky tier"
+        },
+        "status": "rerouted",
+        "classifications": [
+          "geometry"
+        ],
+        "changedFields": [
+          "/labelAt"
+        ]
+      },
+      {
+        "id": "why",
+        "head": {
+          "from": "skills",
+          "to": "provenance",
+          "label": "why is this here?"
+        },
+        "status": "added",
+        "classifications": [
+          "topology"
+        ],
+        "changedFields": []
+      }
+    ],
+    "boundaries": [
+      {
+        "key": "region:Process layer",
+        "kind": "region",
+        "label": "Process layer",
+        "status": "changed",
+        "classifications": [
+          "scope"
+        ],
+        "changedFields": [
+          "/wraps"
+        ]
+      }
+    ]
+  },
+  "identity": {
+    "components": "components[].id",
+    "connections": "connections[].id (required)",
+    "boundaries": "boundaries[].kind + boundaries[].label (derived)"
+  },
+  "view": {
+    "visualPreset": "classic"
+  },
+  "limitations": [
+    "Authored Architecture IR only; no runtime impact, causality, risk, or mergeability is inferred.",
+    "Boundary identity is conservatively derived from kind + label."
+  ],
+  "artifact": {
+    "sha256": "24c5b96eeeedaa5feca11a00bebfed11a5f2ab900b1211208413b5efd1ab1b50",
+    "bytes": 2282358
+  },
+  "validation": {
+    "checksPassed": 28,
+    "checkCount": 28,
+    "baseComposition": "pass",
+    "headComposition": "pass"
+  }
+}

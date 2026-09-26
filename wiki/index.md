@@ -2,7 +2,7 @@
 title: Wiki Index
 type: index
 created: 2026-08-15
-updated: 2026-09-13
+updated: 2026-09-26
 ---
 
 # Wiki Index — start here
@@ -41,9 +41,10 @@ One page per file in `raw/`, holding a 3–7 paragraph summary (never a copy).
 | [[ai-led-onboarding-plan]] | The six tasks that shipped v0.2.0, and the release rule they taught (bump both manifests or the marketplace serves the old build). |
 | [[episodic-state-layer]] | P2 (2026-09-01): the episodic branch-state layer + the `/strata:upgrade` re-sync path, and the four decisions that shaped them. |
 | [[sdlc-right-side]] | P3 spec + plan (2026-09-01): the AI-Native SDLC playbook read against v0.6.1 — routing evals, PreToolUse guards, diff-vs-plan review; decisions D1–D4 settled. |
+| [[p5-provenance]] | P5 spec + plan (2026-09-26): devdotfast/whiteboard read against v0.8.1 — Agent-Session trailer, `strata_why.sh`, diff-review lenses + "decided, not asked"; D1–D9; shipping as v0.9.0. |
 | [[p4-field-patterns]] | P4 spec + plan (2026-09-12/13): TeamAI-CLI, Archify and the Agents API read against v0.7.0 — friction trigger, evidence-pinned diagram layer, promotion ladder; D1–D7; shipped as v0.8.0. |
 
-_All files in `raw/` are ingested as of 2026-09-12._
+_All files in `raw/` are ingested as of 2026-09-26._
 
 ---
 
@@ -73,7 +74,8 @@ solutions / Related / Sources.
 | [[upgrade-path]] | P2 — `/strata:upgrade` re-syncs `scripts/**` into repos adopted before the current plugin version. |
 | [[version-stamp]] | Which plugin build a session loaded — stamped in `using-strata`'s description, held true by `validate.sh` §2c. |
 | [[pre-tool-guard]] | A5 — `PreToolUse` hook refusing writes under `raw/` and to test files mid-fix; exit 2 with reason, fails open. |
-| [[diff-review]] | R1 — fifth read-only agent at branch close: diff vs plan, bugs, security-lite; second occurrence → `CLAUDE.md`. |
+| [[diff-review]] | R1 — fifth read-only agent at branch close: diff vs plan (read in lenses), "decided, not asked", bugs, security-lite; second occurrence → `CLAUDE.md`. |
+| [[agent-session-trailer]] | P5 — every agent commit carries its session id; `strata_why.sh` + QUERY step 4b trace code back to the session that wrote it (transcripts stay local). |
 | [[friction-capture]] | P4 — Stop-gate trigger (d): interrupts, denials and tool errors counted from the session transcript; a painful session must record a `gotcha` or a `no-gotcha:` line. |
 | [[diagram-layer]] | P4 — `wiki/diagrams/`: Archify JSON with commit-pinned sources rendered to one self-contained HTML; `diagram_check.sh` turns changed pins into `wiki_debt`. |
 

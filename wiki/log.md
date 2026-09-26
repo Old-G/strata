@@ -465,3 +465,14 @@ Post-review suites: P4 diagrams 17/17, P4 friction 25/25, P2 28/28.
 ## 2026-09-26T19:55:56Z auto-mirror
 
 - pending_ingest: docs/superpowers/plans/2026-09-26-p5-provenance-plan.md (mirrored docs/ -> raw/, ingest still owed)
+
+[2026-09-26T20:09:58Z] ingest raw/superpowers/specs/2026-09-26-p5-provenance.md → created: sources/p5-provenance.md, entities/agent-session-trailer.md; updated: entities/diff-review.md (lenses, decided-not-asked), entities/stop-gate.md + entities/friction-capture.md (T6 interrupt anchor), glossary (5 terms), index, overview (v0.9.0).
+[2026-09-26T20:09:58Z] ingest raw/superpowers/plans/2026-09-26-p5-provenance-plan.md → folded into sources/p5-provenance.md (T1–T6; T6 found by T3's own verify run over the P4 range).
+[2026-09-26T20:09:58Z] diagram system → P5 provenance component + "why is this here?" edge, re-pinned to 526b4ea, viewBox 1280×860 → 1280×688 (Y rhythm ×0.8): fixes the viewport overflow visual-check had reported since P4 (1097 px at 1440×900). archify deliver 9/9, 0 errors / 0 warnings, evidence verified; visual-check pass. compare vs main: components +1 / moved 12, connections +1 / rerouted 5, boundaries changed 1 → history/2026-09-26-system.architecture.json.
+- gotcha (first occurrence): git runs prepare-commit-msg for every rebase / cherry-pick pick, and does not skip it under --no-verify — a trailer hook needs a replay guard and a fail-open wrapper.
+- gotcha (first occurrence): a failed archify deliver keeps the previous HTML, so a visual-check right after it inspects the stale artifact and passes.
+- gotcha (first occurrence): bash 3.2 + set -u treats "${arr[@]}" on an empty array as unbound — inside a piped while-loop the loop dies silently.
+
+## 2026-09-26T20:09:59Z lint
+
+- errors: 0, warnings: 0

@@ -2,7 +2,7 @@
 title: Stop gate (A1)
 type: entity
 created: 2026-08-15
-updated: 2026-09-13
+updated: 2026-09-26
 links: [enforcement-layer, pending-ingest-marker, commit-gate, branch-state, friction-capture]
 ---
 
@@ -52,7 +52,9 @@ file actually exists, so the clean/no-layer path pays nothing extra.
 
 **Trigger (d), shipped in v0.8.0 — [[friction-capture]]:** the gate reads the session's own transcript
 (`transcript_path` in the Stop payload) and counts three signals: user interrupts
-(`[Request interrupted by user` on `"type":"user"` lines), denied tool calls (an `is_error`
+(`[Request interrupted by user` as the *start of a JSON string value* — `"text":"[…` or
+`"content":"[…` — on `"type":"user"` lines; since v0.9.0, because the same words quoted inside a
+tool result, e.g. from reading this gate's code, are escaped and used to count as a false interrupt), denied tool calls (an `is_error`
 tool_result matching `STRATA_FRICTION_DENY_RE`, default `doesn't want to proceed`) and other tool errors
 (`"is_error":true`). Subagent sidechains are dropped. Thresholds `STRATA_FRICTION_INTERRUPTS=1`,
 `_DENIALS=2`, `_ERRORS=8`; `0` disables a signal, all three `0` the trigger. It fires only when (a)–(c)

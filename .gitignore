@@ -25,3 +25,5 @@ __pycache__/
 # ARE committed. History keeps only the small JSON snapshots; any historic HTML or a
 # compare delta (≈2 MB) is regenerated on demand from the JSON — never committed.
 wiki/diagrams/history/*.html
+# archify visual-check sidecars (screenshots + receipt) — local evidence, regenerated on demand
+wiki/diagrams/*.visual-check.*
