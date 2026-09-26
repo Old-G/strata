@@ -239,6 +239,18 @@ else
   err "scripts/test_p5_provenance.sh is missing"
 fi
 
+echo "== 15. pre-commit secret guard — patterns always run, no false alarms on ordinary code =="
+if [ -f scripts/test_secrets.sh ]; then
+  if out="$(bash scripts/test_secrets.sh 2>&1)"; then
+    ok "$(printf '%s' "$out" | tail -n 1)"
+  else
+    printf '%s\n' "$out" | grep '✗' >&2
+    err "secret guard tests failed (run: bash scripts/test_secrets.sh)"
+  fi
+else
+  err "scripts/test_secrets.sh is missing"
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then echo "✅ Strata plugin validation PASSED"; else echo "❌ validation FAILED"; fi
 exit "$fail"

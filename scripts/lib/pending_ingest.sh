@@ -19,6 +19,13 @@
 # tripping the gates — but never write the literal `- pending_ingest: <path>`
 # in a hand-authored log line unless you mean it.
 #
+# The marker value must also LOOK like a doc: `docs/<...>.md`. sync_raw_mirror.sh
+# mirrors nothing else (its `case` accepts only `docs/*.md`), so anything else on
+# a marker line is prose, not a path. Without this a bootstrap line such as
+# `- pending_ingest: all 28 raw/*.md await ...` parsed as a path named `all`,
+# which no ingest can ever retire — a permanent phantom in every gate's count.
+# (Found in app-b 2026-09-05: 32 reported outstanding, 31 real; upstreamed 0.9.2.)
+#
 # Usage:
 #   source scripts/lib/pending_ingest.sh
 #   strata_pending_ingest [MIN_LINE]      # only markers below line MIN_LINE
@@ -57,7 +64,8 @@ strata_pending_ingest() {
       line = $0
       sub(/^[[:space:]]*-[[:space:]]+pending_ingest:[[:space:]]*/, "", line)
       sub(/[[:space:]].*$/, "", line)          # drop the "(mirrored ...)" tail
-      if (line != "") marker[line] = NR        # keep the LAST marker per path
+      # Only a real doc path counts — see the note above.
+      if (line ~ /^docs\/.+\.md$/) marker[line] = NR   # keep the LAST marker per path
     }
 
     # Retirement: any mention of `ingest raw/<path>`, anywhere in the line.

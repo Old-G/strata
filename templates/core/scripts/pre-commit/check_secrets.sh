@@ -2,8 +2,7 @@
 # check_secrets.sh — Strata pre-commit secret guard.
 #
 # Blocks a commit if staged content looks like a leaked secret or a committed .env.
-# Prefers `gitleaks` when present (authoritative); otherwise falls back to portable
-# grep patterns. POSIX sh, no hard dependencies beyond git + grep.
+# Runs `gitleaks` when present IN ADDITION TO the portable grep patterns. POSIX sh, no hard dependencies beyond git + grep.
 #
 # Wired by .pre-commit-config.yaml as a local hook, or callable directly:
 #   sh scripts/pre-commit/check_secrets.sh
@@ -34,18 +33,22 @@ for f in $STAGED; do
   esac
 done
 
-# --- Prefer gitleaks if installed (scans staged changes). ---
+# --- gitleaks when installed: it ADDS to the built-in patterns, never replaces them. ---
+# This used to `exit 0` after gitleaks, so installing the stronger tool switched the
+# patterns below off — a guard weakened by an upgrade. The two catch different things:
+# gitleaks knows real provider key formats; the patterns catch a plain hardcoded
+# password that looks like no provider's key and is invisible to gitleaks.
+# (Found in app-b 2026-09-06 when gitleaks 8.30 appeared on the machine; upstreamed 0.9.2.)
 if command -v gitleaks >/dev/null 2>&1; then
   if ! gitleaks protect --staged --redact --no-banner >/dev/null 2>&1; then
     fail "gitleaks flagged staged content — run 'gitleaks protect --staged --verbose' to inspect"
     HITS=$((HITS+1))
   fi
-  [ "$HITS" -gt 0 ] && exit 1
-  exit 0
+else
+  warn "gitleaks not found — using built-in grep patterns only (install gitleaks for stronger coverage)"
 fi
 
-# --- Fallback: grep patterns over the staged diff (added lines only). ---
-warn "gitleaks not found — using built-in grep patterns (install gitleaks for stronger coverage)"
+# --- Built-in patterns over the staged diff (added lines only). They ALWAYS run. ---
 
 # Collect only added lines (leading '+', excluding the '+++' file header).
 ADDED="$(git diff --cached --unified=0 --diff-filter=ACM 2>/dev/null \
@@ -65,11 +68,24 @@ sk-[A-Za-z0-9]{20,}|OpenAI-style API key
 sk-ant-[A-Za-z0-9_-]{20,}|Anthropic API key
 AIza[0-9A-Za-z_-]{35}|Google API key
 eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}|JWT
-password[\"' ]*[:=][\"' ]*[A-Za-z0-9/+=_.-]{8,}|hardcoded password
-passwd[\"' ]*[:=][\"' ]*[A-Za-z0-9/+=_.-]{8,}|hardcoded passwd
-secret[\"' ]*[:=][\"' ]*[A-Za-z0-9/+=_.-]{12,}|hardcoded secret
-api[_-]?key[\"' ]*[:=][\"' ]*[A-Za-z0-9/+=_.-]{12,}|hardcoded api key
+password[\"' ]*[:=][[:space:]]*[\"'][A-Za-z0-9/+=_.-]{8,}|hardcoded password
+passwd[\"' ]*[:=][[:space:]]*[\"'][A-Za-z0-9/+=_.-]{8,}|hardcoded passwd
+secret[\"' ]*[:=][[:space:]]*[\"'][A-Za-z0-9/+=_.-]{12,}|hardcoded secret
+api[_-]?key[\"' ]*[:=][[:space:]]*[\"'][A-Za-z0-9/+=_.-]{12,}|hardcoded api key
+password[[:space:]]*=[[:space:]]*[A-Za-z0-9/+=_-]{8,}([[:space:];,].*)?$|hardcoded password
+passwd[[:space:]]*=[[:space:]]*[A-Za-z0-9/+=_-]{8,}([[:space:];,].*)?$|hardcoded passwd
+secret[[:space:]]*=[[:space:]]*[A-Za-z0-9/+=_-]{12,}([[:space:];,].*)?$|hardcoded secret
+api[_-]?key[[:space:]]*=[[:space:]]*[A-Za-z0-9/+=_-]{12,}([[:space:];,].*)?$|hardcoded api key
 "
+
+# Why the keyword rules come in pairs. One loose rule ("keyword, then 12+ characters")
+# also matched ordinary code — `slackSigningSecret: env.SLACK_SIGNING_SECRET` — and a
+# guard that cries wolf on normal code teaches everyone to reach for --no-verify, which
+# is how a real key eventually slips through. So a hardcoded value is either a QUOTED
+# literal (any assignment style) or an UNQUOTED one after `=` (shell/compose/env style);
+# the unquoted class excludes `.` and must END the value (space, `;`, `,`, end of line —
+# written without `|`, which separates pattern from label in the list below),
+# so property access (`env.FOO`, `settings.db_password`) is not a "value". (From app-b; upstreamed 0.9.2 — scripts/test_secrets.sh.)
 
 # Use `grep -e "$pat"` so patterns that start with '-' (e.g. PEM headers) are
 # treated as patterns, not options. The loop runs in a subshell, so signal a

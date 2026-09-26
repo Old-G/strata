@@ -68,6 +68,10 @@ printf -- '- pending_ingest: docs/a.md (mirrored)\n' >> wiki/log.md
 check "re-edit after ingest reopens it" "$(bash scripts/lib/pending_ingest.sh | wc -l | tr -d ' ')" "1"
 printf 'prose mentioning pending_ingest: docs/b.md mid-sentence\n' >> wiki/log.md
 check "prose mentioning the token is ignored" "$(bash scripts/lib/pending_ingest.sh | wc -l | tr -d ' ')" "1"
+# Upstreamed from app-b (found 2026-09-05: 32 reported outstanding, 31 real):
+# a marker whose value is not a docs/*.md path is prose, and nothing could ever retire it.
+printf -- '- pending_ingest: all 28 raw/*.md await the first ingest\n' >> wiki/log.md
+check "a non-doc marker value is not a path (no phantom)" "$(bash scripts/lib/pending_ingest.sh | wc -l | tr -d ' ')" "1"
 
 : > wiki/log.md
 printf -- '- pending_ingest: docs/c.md (mirrored)\n- pending_ingest: docs/d.md (mirrored)\n' > wiki/log.md

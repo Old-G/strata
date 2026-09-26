@@ -6,6 +6,23 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.9.2] — 2026-09-27
+
+Field fixes made inside adopted projects, brought back into the templates so every project gets
+them (auto-sync delivers them on the next session).
+
+### Fixed
+- **Phantom pending-ingest markers** (from app-b): a marker line whose value is not a
+  `docs/*.md` path (`- pending_ingest: all 28 raw/*.md await …`) was parsed as a doc named `all`
+  that no ingest could ever retire — every gate over-reported by one, forever.
+- **Installing gitleaks switched the secret patterns off** (from app-b): the guard exited
+  right after gitleaks, so a plain hardcoded password — invisible to gitleaks — passed once gitleaks
+  was on the machine. gitleaks now adds to the patterns.
+- **Secret-guard false alarms on ordinary code** (from app-b, tightened): keyword rules now
+  need a quoted literal, or an unquoted value after `=` that ends the value — `env.SLACK_SECRET`,
+  `settings.db_password` no longer trip it. First behavioural suite for the guard:
+  `scripts/test_secrets.sh` (validate §15).
+
 ## [0.9.1] — 2026-09-27
 
 Found by the 0.9.0 rollout itself, on the first repos.
