@@ -128,6 +128,17 @@ diff review reports its lenses and a table of unrecorded autonomous decisions.
   named and left to `/strata:upgrade`; the version is stamped only when none are left.
   `bin/strata-upgrade-all` (plugin `bin/` → on PATH) does the same for every project at once,
   skips linked worktrees, never commits. Escape: `STRATA_NO_AUTOSYNC=1`.
+  **Review round 2 (branch-close diff review of this delta) tightened it:** only MISSING or
+  shipped-version files are ever replaced — a one-sided diff may be a line the owner deleted;
+  `scripts/.strata-keep` ("<template blob>  <path>") records "reviewed, keep ours" against one
+  template version (KEPT; a new template version reopens it); symlinked scripts are LINKED, never
+  replaced; a template hook command missing from `.claude/settings.json` is UNWIRED and blocks the
+  stamp; versions compare numerically with prereleases below their release (`sort -V` had it
+  backwards) — no auto-sync, nudge or upgrade-all ever downgrades; SessionStart skips linked
+  worktrees like upgrade-all. D10 likewise: the snapshot stores each file's diff size, so a file
+  already dirty at start is billed |Δ|, not its whole diff; paths are raw UTF-8
+  (`core.quotePath=off`); one awk pass instead of BSD `grep -f` (quadratic: 9 s at 5k files → 0.3 s
+  at 3k); past `STRATA_SNAPSHOT_MAX` (5000) dirty files (b) fails open for the session.
 
 ## Out of scope
 

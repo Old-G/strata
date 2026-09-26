@@ -88,7 +88,10 @@ Files are replaced via temp + `mv` because SessionStart syncs itself while bash 
 edited files → `CONFLICT`, named in the session context, left for this skill; the version is stamped
 only when none remain. `bin/strata-upgrade-all` (on PATH in every session) does it for all projects
 at once — registry + scan, linked worktrees skipped, never commits. `STRATA_NO_AUTOSYNC=1` opts out.
-A repo adopted before 0.9.0 still has the old SessionStart: one `upgrade` (or `strata-upgrade-all`)
+Hardened by the branch-close review: only MISSING or shipped-version files are replaced (never
+"the diff looks one-sided"); `scripts/.strata-keep` pins "keep ours" to one template version
+(KEPT); symlinks are LINKED; a template hook missing from `settings.json` is UNWIRED and blocks the
+stamp; nothing downgrades. A repo adopted before 0.9.0 still has the old SessionStart: one `upgrade` (or `strata-upgrade-all`)
 installs the auto-syncing one, and every later release arrives on its own.
 
 ## Related

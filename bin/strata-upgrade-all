@@ -28,6 +28,21 @@ CHECK="$TPL/strata_upgrade_check.sh"
 VERSION="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$PLUGIN/.claude-plugin/plugin.json" | head -1)"
 [ -f "$CHECK" ] && [ -n "$VERSION" ] || { echo "strata-upgrade-all: plugin templates not found under $PLUGIN" >&2; exit 2; }
 
+# a > b as release versions: numeric parts, and a prerelease (-rc1) sorts BELOW its
+# release — `sort -V` gets that backwards (0.9.0-rc1 > 0.9.0 on macOS).
+strata_version_gt() {
+  python3 -c '
+import re, sys
+def key(v):
+    m = re.match(r"\s*v?(\d+(?:\.\d+)*)(?:-(\S+))?\s*$", v)
+    if not m:
+        return None
+    return (tuple(int(x) for x in m.group(1).split(".")), 0 if m.group(2) else 1, m.group(2) or "")
+a, b = key(sys.argv[1]), key(sys.argv[2])
+sys.exit(0 if a is not None and b is not None and a > b else 1)
+' "$1" "$2" 2>/dev/null
+}
+
 dry=0; scans=()
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -70,6 +85,10 @@ while IFS= read -r repo; do
     continue
   fi
   have="$(tr -d '[:space:]' < "$repo/.strata/version")"
+  if strata_version_gt "$have" "$VERSION"; then
+    echo "· $repo — at ${have}, newer than this plugin (${VERSION}); skipped, never downgraded"
+    continue
+  fi
   if [ "$dry" -eq 1 ]; then
     tmp="$(mktemp -d)"; cp -Rp "$repo/scripts" "$tmp/scripts"
     out="$(cd "$tmp" && bash "$CHECK" --apply-safe "$TPL" scripts)"; rc=$?

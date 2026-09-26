@@ -508,3 +508,11 @@ Post-review suites: P4 diagrams 17/17, P4 friction 25/25, P2 28/28.
 
 - errors: 0, warnings: 0
 [2026-09-26T20:47:19Z] diagram system → re-pinned to 9a8e451; SessionStart node sublabel 'branch · debt · index' → 'context · auto-sync' (compare: 1 component changed) → history/2026-09-26 snapshot refreshed; deliver 9/9, visual-check pass.
+
+## 2026-09-26T21:15:43Z auto-mirror
+
+- pending_ingest: docs/superpowers/specs/2026-09-26-p5-provenance.md (mirrored docs/ -> raw/, ingest still owed)
+
+[2026-09-26T21:15:43Z] review P5 delta b3f1194..9a8e451 (strata-diff-review, lenses) → 6 Important, 5 Nit. Fixed, red tests first (P1 38/38, P2 64/64): one-sided STALE no longer synced without the manifest; UNWIRED settings hooks block the version stamp; strata-upgrade-all and the nudge never downgrade (numeric compare, prerelease < release); tree_snapshot linear awk (3000 dirty files: 3.9 s → 0.3 s), bills |Δ| for pre-dirty files, raw UTF-8 paths, STRATA_SNAPSHOT_MAX fails open; SessionStart skips linked worktrees; symlinks LINKED; scripts/.strata-keep → KEPT. Clean-state Stop path held under budget (best of 7: 91–94 ms). The rollout Important is closed by the rollout itself (logged below).
+[2026-09-26T21:15:43Z] ingest raw/superpowers/specs/2026-09-26-p5-provenance.md → D10/D11 review-round-2 paragraph; entities/upgrade-path.md updated.
+- dry run (bin/strata-upgrade-all --dry-run --scan ~/Desktop/Projects): 5 repos clean (6–9 files), app-a + app-b: 6 synced, lib/pending_ingest.sh + pre-commit/check_secrets.sh edited locally — genuine improvements (app-b fixes a phantom-marker bug and a gitleaks short-circuit that weakened the guard) → candidates to upstream into the templates.

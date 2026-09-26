@@ -76,17 +76,38 @@ if user:
 }
 plugin_version() { sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$1/.claude-plugin/plugin.json" 2>/dev/null | head -1; }
 
+# a > b as release versions: numeric parts, and a prerelease (-rc1) sorts BELOW its
+# release — `sort -V` gets that backwards (0.9.0-rc1 > 0.9.0 on macOS).
+strata_version_gt() {
+  python3 -c '
+import re, sys
+def key(v):
+    m = re.match(r"\s*v?(\d+(?:\.\d+)*)(?:-(\S+))?\s*$", v)
+    if not m:
+        return None
+    return (tuple(int(x) for x in m.group(1).split(".")), 0 if m.group(2) else 1, m.group(2) or "")
+a, b = key(sys.argv[1]), key(sys.argv[2])
+sys.exit(0 if a is not None and b is not None and a > b else 1)
+' "$1" "$2" 2>/dev/null
+}
+
+# A linked worktree is another branch's checkout: it gets the scripts when that
+# branch merges (same rule as bin/strata-upgrade-all).
+in_linked_worktree() {
+  [ "$(git rev-parse --path-format=absolute --git-dir 2>/dev/null)" != "$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" ]
+}
+
 autosync_msg=""
 PLUGIN_ROOT=""
 if [ -f .strata/version ] && [ -d scripts ]; then
   PLUGIN_ROOT="$(strata_plugin_root)"
 fi
-if [ -n "$PLUGIN_ROOT" ] && [ "${STRATA_NO_AUTOSYNC:-}" != "1" ]; then
+if [ -n "$PLUGIN_ROOT" ] && [ "${STRATA_NO_AUTOSYNC:-}" != "1" ] && ! in_linked_worktree; then
   have_v="$(tr -d '[:space:]' < .strata/version 2>/dev/null)"
   plug_v="$(plugin_version "$PLUGIN_ROOT")"
   tpl="$PLUGIN_ROOT/templates/core/scripts"
-  if [ -n "$have_v" ] && [ -n "$plug_v" ] && [ "$have_v" != "$plug_v" ] && [ -f "$tpl/strata_upgrade_check.sh" ] \
-     && [ "$(printf '%s\n%s\n' "$have_v" "$plug_v" | sort -V | tail -1)" = "$plug_v" ]; then
+  if [ -n "$have_v" ] && [ -n "$plug_v" ] && [ -f "$tpl/strata_upgrade_check.sh" ] \
+     && strata_version_gt "$plug_v" "$have_v"; then
     sync_out="$(bash "$tpl/strata_upgrade_check.sh" --apply-safe "$tpl" scripts 2>/dev/null)"; sync_rc=$?
     n_synced="$(printf '%s\n' "$sync_out" | grep -c '^SYNCED' || true)"
     left="$(printf '%s\n' "$sync_out" | grep -E '^(CONFLICT|MISSING|STALE) ' | awk '{print $2}' | tr '\n' ' ')"
@@ -165,7 +186,7 @@ fi
 if [ -f .strata/version ] && [ -n "$PLUGIN_ROOT" ]; then
   installed_v="$(cat .strata/version 2>/dev/null | tr -d '[:space:]')"
   running_v="$(plugin_version "$PLUGIN_ROOT")"
-  if [ -n "$installed_v" ] && [ -n "$running_v" ] && [ "$installed_v" != "$running_v" ]; then
+  if [ -n "$installed_v" ] && [ -n "$running_v" ] && strata_version_gt "$running_v" "$installed_v"; then
     echo "Strata plugin is v${running_v}; installed hooks are v${installed_v} — run /strata:upgrade."
   fi
 fi

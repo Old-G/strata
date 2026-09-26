@@ -42,12 +42,15 @@ Spec: `docs/superpowers/specs/2026-09-26-p5-provenance.md`.
   `/strata:upgrade`. `STRATA_NO_AUTOSYNC=1` opts out. `strata_upgrade_check.sh --apply-safe` is the
   mechanism; `bin/strata-upgrade-all` (on PATH in sessions) runs it over every Strata project on
   the machine, skipping linked worktrees, never committing. validate.sh §2d keeps the manifest
-  current.
+  current. `scripts/.strata-keep` records "keep ours" against one template version (KEPT);
+  symlinked scripts are LINKED; unwired settings hooks are UNWIRED and block the version stamp;
+  nothing ever downgrades (numeric version compare, prerelease below release).
 
 ### Fixed
 - **Stop gate trigger (b) billed a session for uncommitted work that predates it** (whole-tree
   `git diff HEAD`). SessionStart now snapshots the already-dirty files (`lib/tree_snapshot.sh`);
-  (b) counts only what the session itself touched.
+  (b) counts only what the session itself touched — a pre-dirty file for the change in its diff
+  size. Linear (awk) comparison; non-ASCII paths; `STRATA_SNAPSHOT_MAX` fails open.
 - **Stop gate trigger (d) counted a quoted interrupt marker** (reading or grepping the gate's code)
   as a user interrupt; it now anchors on the unescaped JSON value start.
 - **The upgrade nudge never fired from project hooks** — it relied on `$CLAUDE_PLUGIN_ROOT`; the

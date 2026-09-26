@@ -228,6 +228,44 @@ check "apply-safe: an unknown local edit is a CONFLICT, untouched" \
   "$(bash "$TPL/strata_upgrade_check.sh" --apply-safe tpl_fixture installed_fixture | grep -c '^CONFLICT hooks/a.sh$'):$(cat installed_fixture/hooks/a.sh)" "1:echo edited by hand"
 rm -rf tpl_fixture installed_fixture tpl_fixture.history
 
+# Review round 2: a one-sided STALE (template has a line the copy lacks, the copy
+# adds none) is NOT proof the copy is an old version — the user may have deleted
+# that line on purpose. Only the manifest may say "shipped before".
+mkdir -p tpl_fixture/hooks installed_fixture/hooks
+printf 'a\nguard\nb\n' > tpl_fixture/hooks/x.sh; printf 'a\nb\n' > installed_fixture/hooks/x.sh
+: > tpl_fixture.history
+check "apply-safe: one-sided STALE not in history → CONFLICT, line stays deleted" \
+  "$(bash "$TPL/strata_upgrade_check.sh" --apply-safe tpl_fixture installed_fixture | grep -c '^CONFLICT hooks/x.sh$'):$(grep -c guard installed_fixture/hooks/x.sh)" "1:0"
+
+# "Keep ours": scripts/.strata-keep pins a decision to the template version it was
+# made against — KEPT while that template is unchanged, CONFLICT again once it moves.
+printf '%s  hooks/x.sh\n' "$(git hash-object tpl_fixture/hooks/x.sh)" > installed_fixture/.strata-keep
+out="$(bash "$TPL/strata_upgrade_check.sh" --apply-safe tpl_fixture installed_fixture)"; rc=$?
+check "keep-list: reviewed conflict is KEPT, exit 0"  "$(printf '%s' "$out" | grep -c '^KEPT     hooks/x.sh$'):$rc" "1:0"
+printf 'a\nguard2\nb\n' > tpl_fixture/hooks/x.sh
+check "keep-list: template moved → CONFLICT again"   "$(bash "$TPL/strata_upgrade_check.sh" --apply-safe tpl_fixture installed_fixture | grep -c '^CONFLICT hooks/x.sh$')" "1"
+printf 'new\n' > tpl_fixture/hooks/gone.sh
+printf '%s  hooks/gone.sh\n' "$(git hash-object tpl_fixture/hooks/gone.sh)" >> installed_fixture/.strata-keep
+bash "$TPL/strata_upgrade_check.sh" --apply-safe tpl_fixture installed_fixture >/dev/null
+check "keep-list: a deliberately absent file is not re-added" "$([ -e installed_fixture/hooks/gone.sh ] && echo y || echo n)" "n"
+
+# A symlinked installed script is managed elsewhere — never replaced by a copy.
+printf 'shared\n' > "$WORK/shared.sh"; ln -s "$WORK/shared.sh" installed_fixture/hooks/linked.sh
+printf 'tpl\n' > tpl_fixture/hooks/linked.sh
+out="$(bash "$TPL/strata_upgrade_check.sh" --apply-safe tpl_fixture installed_fixture)"
+check "symlinked script: LINKED, still a symlink"    "$(printf '%s' "$out" | grep -c '^LINKED   hooks/linked.sh$'):$([ -L installed_fixture/hooks/linked.sh ] && echo L)" "1:L"
+rm -rf tpl_fixture installed_fixture tpl_fixture.history "$WORK/shared.sh"
+
+# The settings.json hook block is part of an install: a synced hook script nobody
+# wired is not "up to date", so it must block the version stamp.
+mkdir -p setfx/core/scripts/hooks setfx/repo/scripts/hooks setfx/repo/.claude
+printf 'x\n' > setfx/core/scripts/hooks/h.sh; cp setfx/core/scripts/hooks/h.sh setfx/repo/scripts/hooks/h.sh
+printf '{"hooks":{"Stop":[{"hooks":[{"type":"command","command":"bash scripts/hooks/h.sh"}]}],"SessionStart":[{"hooks":[{"type":"command","command":"bash scripts/hooks/new.sh"}]}]}}\n' > setfx/core/claude-settings-hook.json
+printf '{"hooks":{"Stop":[{"hooks":[{"type":"command","command":"bash scripts/hooks/h.sh"}]}]}}\n' > setfx/repo/.claude/settings.json
+out="$(cd setfx/repo && bash "$TPL/strata_upgrade_check.sh" --apply-safe "$WORK/setfx/core/scripts" scripts)"; rc=$?
+check "unwired template hook → UNWIRED, exit 1"      "$(printf '%s' "$out" | grep -c 'UNWIRED  .claude/settings.json: bash scripts/hooks/new.sh'):$rc" "1:1"
+rm -rf setfx
+
 echo "== SessionStart auto-sync — a newer plugin reaches this repo on its own =="
 # fake plugin: its templates carry one extra lib file the repo lacks
 FAKE="$WORK/fake_plugin"; mkdir -p "$FAKE/.claude-plugin" "$FAKE/templates/core"
@@ -263,6 +301,24 @@ echo "9.9.10" > .strata/version
 new_session s8
 CLAUDE_PLUGIN_ROOT="$FAKE" bash -c "echo '{\"session_id\":\"s8\"}' | bash '$START'" >/dev/null
 check "older plugin than the repo: never downgrades" "$([ -f scripts/lib/brand_new.sh ] && echo y || echo n):$(cat .strata/version)" "n:9.9.10"
+out="$(CLAUDE_PLUGIN_ROOT="$FAKE" bash -c "echo '{\"session_id\":\"s8\"}' | bash '$START'")"
+check "repo newer than plugin: no nudge toward a downgrade" "$(printf '%s' "$out" | grep -c '/strata:upgrade')" "0"
+
+echo "0.0.1-rc1" > .strata/version
+echo '{"version":"0.0.1"}' > "$FAKE/.claude-plugin/plugin.json"
+new_session s8b
+CLAUDE_PLUGIN_ROOT="$FAKE" bash -c "echo '{\"session_id\":\"s8b\"}' | bash '$START'" >/dev/null
+check "prerelease → release counts as newer (auto-sync runs)" "$([ -f scripts/lib/brand_new.sh ] && echo y):$(cat .strata/version)" "y:0.0.1"
+rm -f scripts/lib/brand_new.sh
+echo '{"version":"9.9.9"}' > "$FAKE/.claude-plugin/plugin.json"
+
+# Linked worktrees are other branches' checkouts: same rule as strata-upgrade-all.
+git add -A >/dev/null 2>&1; git commit -qm "fixture state" >/dev/null 2>&1
+git worktree add -q "$WORK/wt2" -b wt2 >/dev/null 2>&1
+mkdir -p "$WORK/wt2/.strata" && echo "0.0.1" > "$WORK/wt2/.strata/version"
+(cd "$WORK/wt2" && CLAUDE_PLUGIN_ROOT="$FAKE" bash -c "echo '{\"session_id\":\"s8c\"}' | bash scripts/hooks/strata_session_start.sh" >/dev/null)
+check "linked worktree: no auto-sync"                "$([ -f "$WORK/wt2/scripts/lib/brand_new.sh" ] && echo y || echo n):$(cat "$WORK/wt2/.strata/version")" "n:0.0.1"
+git worktree remove --force "$WORK/wt2" >/dev/null 2>&1
 
 # No CLAUDE_PLUGIN_ROOT (project hooks may not get it): resolve the plugin from
 # Claude Code's own install registry.
@@ -300,6 +356,9 @@ check "edited repo: named, version not stamped"      "$(printf '%s' "$out" | gre
 check "a file left over → exit 1"                    "$rc" "1"
 check "linked worktree skipped, untouched"           "$(printf '%s' "$out" | grep -c 'clean-wt — linked worktree'):$(cat "$WORK/fleet/clean-wt/.strata/version")" "1:0.0.1"
 check "never commits"                                "$(git -C "$WORK/fleet/clean" log --oneline | wc -l | tr -d ' ')" "1"
+mkrepo "$WORK/fleet/newer"; echo "99.0.0" > "$WORK/fleet/newer/.strata/version"
+out="$(CLAUDE_CONFIG_DIR="$WORK/cfg2" bash "$UPALL" --scan "$WORK/fleet/newer")"
+check "repo newer than the plugin: skipped, never downgraded" "$(printf '%s' "$out" | grep -c 'newer than this plugin'):$(cat "$WORK/fleet/newer/.strata/version"):$([ -f "$WORK/fleet/newer/scripts/strata_why.sh" ] && echo y || echo n)" "1:99.0.0:n"
 rm -rf "$WORK/fleet" "$WORK/cfg2"
 
 echo "== .gitignore carve-out =="

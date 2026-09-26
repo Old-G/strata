@@ -3,6 +3,7 @@
 197311f4919de0ad79504047d3e5523bfe2db198  lib/tree_snapshot.sh
 1a26257f9e63e1165609acc26712b0717cf39487  sync_raw_mirror.sh
 1b185d1e022e69aa2d4c60085c5c21b9104586b9  sync_raw_mirror.sh
+1c123197aceb166755e347a306d74063f9154508  lib/tree_snapshot.sh
 23cbd85d316d3621a1b1e78432537f75fedf7ac7  strata_upgrade_check.sh
 32b7b7673f1e5a9c04014feeed66f9c8075cb7e0  hooks/strata_stop_gate.sh
 3f2d03f074a4948dbea7fb86700c8bc2786e2af7  pre-commit/check_secrets.sh
@@ -20,6 +21,7 @@
 984b6682e2fed17678470a65876e84e05a9e4a7b  pre-commit/check_wiki_fresh.sh
 9c4f366e57095960a132e38dc788a46e36f0e556  sync_raw_mirror.sh
 a1fc5b3c37480112691fb676da7b5d41386932ab  strata_why.sh
+ab949599697817ec58355d94177ae432d929b67c  hooks/strata_session_start.sh
 ab954a76bb585d1f3424ea7575dd713582b3d311  hooks/strata_session_start.sh
 ad2e4b9f7ac6b69860a8c282cad1d410cb052385  strata_why.sh
 b32c1c7265a48790259a04d0db02f677ba1500f2  lib/state_tools.py
@@ -28,4 +30,5 @@ be08ba3d1ae57059602e5e4f34da3c725bc4d941  hooks/strata_stop_gate.sh
 bf355c30608d1cc3b1637c0ade537fd38397830d  lib/pending_ingest.sh
 d773c238fcfe44527e20b91a09542d8075983ab3  lib/state_tools.py
 ed1a466c1a994395fed94e37440e37f9d399f675  diagram_check.sh
+faa3557c67ba0014d6cfb8343f3c67affe2ae248  strata_upgrade_check.sh
 faa6179c0a0cb9cf2b05e053d8e2678d115501be  hooks/strata_stop_gate.sh

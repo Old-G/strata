@@ -25,6 +25,20 @@
 #   always. Files are REPLACED (temp + mv, new inode), never rewritten in place: a
 #   running bash script — SessionStart syncing itself — reads its file as it goes.
 #   Exit 0 when nothing is left to do, 1 while a CONFLICT remains.
+#
+#   Only a MISSING file, or a file byte-identical to a shipped version, is ever
+#   replaced — never "the diff looks one-sided": a template line the copy lacks
+#   may be a line the owner deleted on purpose (P5 review round 2).
+#
+# Also reported in both modes:
+#   KEPT     <path>   scripts/.strata-keep holds "<template blob>  <path>": the owner
+#                     reviewed THIS template version and keeps their copy (or its
+#                     absence). A new template version makes it CONFLICT again.
+#   LINKED   <path>   the installed script is a symlink — managed elsewhere, untouched.
+#   UNWIRED  .claude/settings.json: <command>
+#                     a hook command from templates/core/claude-settings-hook.json is
+#                     not in the project's settings — a synced script nobody runs is
+#                     not an up-to-date install (exit 1; /strata:upgrade merges it).
 #   <templates-scripts-dir>   e.g. $CLAUDE_PLUGIN_ROOT/templates/core/scripts
 #   <installed-scripts-dir>   default: ./scripts (repo root, from cwd)
 #
@@ -48,6 +62,13 @@ TEMPLATES_DIR="${1:-}"
 INSTALLED_DIR="${2:-scripts}"
 
 HISTORY="${TEMPLATES_DIR%/}.history"
+KEEP="${INSTALLED_DIR%/}/.strata-keep"
+# Did the owner keep their copy against exactly this template version?
+kept() { # <template-file> <rel>
+  [ -f "$KEEP" ] || return 1
+  local h; h="$(git hash-object -- "$1" 2>/dev/null)" || return 1
+  grep -qxF "$h  $2" "$KEEP"
+}
 # Was this installed file a version the plugin once shipped (= never edited here)?
 shipped_before() { # <installed-file> <rel>
   [ -f "$HISTORY" ] || return 1
@@ -77,7 +98,11 @@ while IFS= read -r -d '' tpl_file; do
   rel="${tpl_file#"$TEMPLATES_DIR"/}"
   installed_file="${INSTALLED_DIR%/}/${rel}"
 
-  if [ ! -f "$installed_file" ]; then
+  if [ -L "$installed_file" ]; then
+    echo "LINKED   $rel"
+  elif [ ! -f "$installed_file" ] && kept "$tpl_file" "$rel"; then
+    echo "KEPT     $rel"
+  elif [ ! -f "$installed_file" ]; then
     if [ "$APPLY" -eq 1 ] && replace_file "$tpl_file" "$installed_file"; then
       echo "SYNCED   $rel"
     else
@@ -101,12 +126,14 @@ while IFS= read -r -d '' tpl_file; do
     # status regardless of what grep found.
     file_diff="$(diff "$tpl_file" "$installed_file" || true)"
     if printf '%s\n' "$file_diff" | grep -q '^<'; then
-      if [ "$APPLY" -eq 0 ]; then
+      if kept "$tpl_file" "$rel"; then
+        echo "KEPT     $rel"
+      elif [ "$APPLY" -eq 0 ]; then
         echo "STALE    $rel"
         status=1
-      elif printf '%s\n' "$file_diff" | grep -q '^>' && ! shipped_before "$installed_file" "$rel"; then
-        # Both sides carry lines the other lacks and the installed copy is not a
-        # version we ever shipped — a copy would delete local work.
+      elif ! shipped_before "$installed_file" "$rel"; then
+        # Not a version we ever shipped: the owner changed it (added OR removed
+        # lines). A copy would undo their work.
         echo "CONFLICT $rel"
         status=1
       elif replace_file "$tpl_file" "$installed_file"; then
@@ -124,5 +151,30 @@ while IFS= read -r -d '' tpl_file; do
     echo "OK       $rel"
   fi
 done < <(find "$TEMPLATES_DIR" -type f -print0 | sort -z)
+
+# The hook block: every command the template registers must be in the project's
+# settings (Stop gate, SessionStart, …). Only checked when both files exist.
+SETTINGS_TPL="$(dirname "${TEMPLATES_DIR%/}")/claude-settings-hook.json"
+SETTINGS="$(dirname "${INSTALLED_DIR%/}")/.claude/settings.json"
+if [ -f "$SETTINGS_TPL" ] && [ -f "$SETTINGS" ]; then
+  unwired="$(python3 -c '
+import json, sys
+def cmds(path):
+    try:
+        hooks = json.load(open(path)).get("hooks") or {}
+    except Exception:
+        return None
+    return {h.get("command") for groups in hooks.values() for g in groups for h in g.get("hooks", []) if h.get("command")}
+want, have = cmds(sys.argv[1]), cmds(sys.argv[2])
+if want is None or have is None:
+    sys.exit(0)
+for c in sorted(want - have):
+    print(c)
+' "$SETTINGS_TPL" "$SETTINGS" 2>/dev/null)"
+  if [ -n "$unwired" ]; then
+    while IFS= read -r c; do echo "UNWIRED  .claude/settings.json: $c"; done <<< "$unwired"
+    status=1
+  fi
+fi
 
 exit "$status"

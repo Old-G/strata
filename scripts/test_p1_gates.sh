@@ -137,6 +137,38 @@ rm -f .strata/sessions/s12.dirty
 check "no start snapshot (older SessionStart) → whole-tree fallback (blocked)" "$(verdict s12)" "blocked"
 rm -f src/old.py
 
+# Review round 2. A file dirty before the session and touched again is billed for
+# the CHANGE to its diff, not the whole diff (else the 36k-line case comes back
+# the moment the session edits one of those files).
+python3 -c "print('w = 4\n' * 3000, end='')" > src/old.py   # 3000 lines, pre-existing, uncommitted
+new_session s13
+python3 -c "print('w = 4\n' * 2999 + 'w = 5\n', end='')" > src/old.py
+check "pre-dirty file, 1-line re-edit → billed the delta (clear)" "$(verdict s13)" "clear"
+rm -f src/old.py
+
+# Non-ASCII paths (git quotes them by default — core.quotePath).
+python3 -c "print('u = 1\n' * 120, end='')" > "src/ünï file.py"
+new_session s14
+check "pre-existing non-ASCII file → clear"            "$(verdict s14)" "clear"
+new_session s15
+python3 -c "print('u = 1\n' * 240, end='')" > "src/ünï file.py"
+check "non-ASCII file grown this session → blocked"    "$(verdict s15)" "blocked"
+rm -f "src/ünï file.py"
+
+# Thousands of pre-existing untracked files: the Stop gate must stay fast
+# (BSD grep -f is quadratic — measured 9 s at 5k lines).
+mkdir -p src/many && for i in $(seq 1 3000); do echo "$i" > "src/many/f$i.txt"; done
+new_session s16
+t0=$(date +%s%N); v="$(verdict s16)"; t1=$(date +%s%N)
+check "3000 pre-existing dirty files: clear, Stop < 1500 ms ($(( (t1 - t0) / 1000000 )) ms)" \
+  "$v:$([ $(( (t1 - t0) / 1000000 )) -lt 1500 ] && echo fast || echo slow)" "clear:fast"
+# Past STRATA_SNAPSHOT_MAX dirty files the snapshot is skipped and (b) fails OPEN
+# for that session rather than billing it for the whole tree.
+: > wiki/log.md
+STRATA_SNAPSHOT_MAX=100 bash -c "rm -rf .strata; echo '{\"session_id\":\"s17\"}' | bash '$START'" >/dev/null 2>&1
+check "over STRATA_SNAPSHOT_MAX → (b) fails open (clear)" "$(verdict s17)" "clear"
+rm -rf src/many
+
 echo "== A1 Stop gate — performance =="
 : > wiki/log.md; new_session s8
 # Best-of-N, not the mean: the question is whether this code path CAN clear

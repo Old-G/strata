@@ -23,7 +23,10 @@ adopted before auto-sync existed (their SessionStart is the old one — one run 
 (it is on PATH — the plugin's `bin/`), show the list, then `strata-upgrade-all`. It applies the same
 safe sync to every Strata repo on the machine (Claude Code's install registry + a scan), skips
 linked worktrees, never commits or pushes, and names every repo with a locally edited file —
-for those, continue with Step 3 below inside that repo. Then offer to commit per repo (on the
+for those, continue with Step 3 below inside that repo. When the owner decides to keep a locally
+edited file (often it is an improvement — then also propose upstreaming it into Strata), record it
+in `scripts/.strata-keep` as `<git hash-object of the TEMPLATE file>  <path>`: the check reports it
+KEPT until the template changes again. `UNWIRED` lines are the Step 3.3 settings merge. Then offer to commit per repo (on the
 repo's current branch, only `scripts/` + `.strata/version`, never mixing in the owner's WIP).
 
 This skill NEVER touches `wiki/`, `CLAUDE.md`, or application code. It only re-syncs the
