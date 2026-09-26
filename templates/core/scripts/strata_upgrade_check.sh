@@ -36,8 +36,9 @@
 #                     absence). A new template version makes it CONFLICT again.
 #   LINKED   <path>   the installed script is a symlink — managed elsewhere, untouched.
 #   UNWIRED  .claude/settings.json: <command>
-#                     a hook command from templates/core/claude-settings-hook.json is
-#                     not in the project's settings — a synced script nobody runs is
+#                     no command in the project's settings runs the script a hook
+#                     command from templates/core/claude-settings-hook.json runs
+#                     (matched by script file name, any path) — a synced script nobody runs is
 #                     not an up-to-date install (exit 1; /strata:upgrade merges it).
 #   <templates-scripts-dir>   e.g. $CLAUDE_PLUGIN_ROOT/templates/core/scripts
 #   <installed-scripts-dir>   default: ./scripts (repo root, from cwd)
@@ -168,8 +169,16 @@ def cmds(path):
 want, have = cmds(sys.argv[1]), cmds(sys.argv[2])
 if want is None or have is None:
     sys.exit(0)
-for c in sorted(want - have):
-    print(c)
+def script(cmd):
+    # the file a hook command runs: its last token that looks like a script path
+    toks = [t for t in cmd.split() if "/" in t or t.endswith((".sh", ".py"))]
+    return toks[-1].rsplit("/", 1)[-1] if toks else cmd
+# Wired = some installed command runs a script of the same name, by any path
+# ("$CLAUDE_PROJECT_DIR/scripts/wiki/sync_raw_mirror.sh" wires "bash scripts/sync_raw_mirror.sh").
+for c in sorted(want):
+    name = script(c)
+    if not any(name in h for h in have):
+        print(c)
 ' "$SETTINGS_TPL" "$SETTINGS" 2>/dev/null)"
   if [ -n "$unwired" ]; then
     while IFS= read -r c; do echo "UNWIRED  .claude/settings.json: $c"; done <<< "$unwired"

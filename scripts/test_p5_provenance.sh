@@ -22,6 +22,11 @@ check(){ if [ "$2" = "$3" ]; then ok "$1"; else bad "$1 (got '$2', want '$3')"; 
 
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
+# Isolation from THIS machine's Claude Code: since v0.9.0 SessionStart resolves the
+# installed Strata plugin from ~/.claude/plugins and auto-syncs from it — a test
+# fixture must never see the real plugin (it did, the day 0.9.0 was installed).
+export CLAUDE_CONFIG_DIR="$WORK/.no-claude-config"
+unset CLAUDE_PLUGIN_ROOT
 cd "$WORK" || exit 1
 
 # The test must not inherit the session it runs in — every case sets its own id.

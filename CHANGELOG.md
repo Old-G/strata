@@ -6,6 +6,19 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.9.1] — 2026-09-27
+
+Found by the 0.9.0 rollout itself, on the first repos.
+
+### Fixed
+- `UNWIRED` false positive: a hook wired by another path to the same script
+  (`$CLAUDE_PROJECT_DIR/scripts/wiki/sync_raw_mirror.sh` for `bash scripts/sync_raw_mirror.sh`)
+  counted as missing, so auto-sync would have retried and re-announced itself every session.
+  Wiring is now matched by script file name.
+- Test isolation: every suite now points `CLAUDE_CONFIG_DIR` at an empty temp dir. Once 0.9.0
+  was installed, SessionStart inside the fixtures found the real plugin through
+  `~/.claude/plugins` and auto-synced from it.
+
 ## [0.9.0] — 2026-09-26
 
 devdotfast/whiteboard read against v0.8.1: its thesis — the bottleneck is understanding the

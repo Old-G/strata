@@ -27,6 +27,11 @@ WORK="$(mktemp -d)"
 # files and trigger (b) would count them as code.
 TR="$(mktemp -d)"
 trap 'rm -rf "$WORK" "$TR"' EXIT
+# Isolation from THIS machine's Claude Code: since v0.9.0 SessionStart resolves the
+# installed Strata plugin from ~/.claude/plugins and auto-syncs from it — a test
+# fixture must never see the real plugin (it did, the day 0.9.0 was installed).
+export CLAUDE_CONFIG_DIR="$WORK/.no-claude-config"
+unset CLAUDE_PLUGIN_ROOT
 cd "$WORK" || exit 1
 
 git init -q .

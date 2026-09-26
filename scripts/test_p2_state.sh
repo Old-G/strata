@@ -22,6 +22,11 @@ check(){ if [ "$2" = "$3" ]; then ok "$1"; else bad "$1 (got '$2', want '$3')"; 
 
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
+# Isolation from THIS machine's Claude Code: since v0.9.0 SessionStart resolves the
+# installed Strata plugin from ~/.claude/plugins and auto-syncs from it — a test
+# fixture must never see the real plugin (it did, the day 0.9.0 was installed).
+export CLAUDE_CONFIG_DIR="$WORK/.no-claude-config"
+unset CLAUDE_PLUGIN_ROOT
 cd "$WORK" || exit 1
 
 git init -q .
@@ -264,6 +269,11 @@ printf '{"hooks":{"Stop":[{"hooks":[{"type":"command","command":"bash scripts/ho
 printf '{"hooks":{"Stop":[{"hooks":[{"type":"command","command":"bash scripts/hooks/h.sh"}]}]}}\n' > setfx/repo/.claude/settings.json
 out="$(cd setfx/repo && bash "$TPL/strata_upgrade_check.sh" --apply-safe "$WORK/setfx/core/scripts" scripts)"; rc=$?
 check "unwired template hook → UNWIRED, exit 1"      "$(printf '%s' "$out" | grep -c 'UNWIRED  .claude/settings.json: bash scripts/hooks/new.sh'):$rc" "1:1"
+# Wired by another path to the same script is wired (seen on a real repo:
+# "$CLAUDE_PROJECT_DIR/scripts/wiki/sync_raw_mirror.sh" for "bash scripts/sync_raw_mirror.sh").
+printf '{"hooks":{"Stop":[{"hooks":[{"type":"command","command":"bash scripts/hooks/h.sh"}]}],"SessionStart":[{"hooks":[{"type":"command","command":"$CLAUDE_PROJECT_DIR/tools/hooks/new.sh --quiet"}]}]}}\n' > setfx/repo/.claude/settings.json
+out="$(cd setfx/repo && bash "$TPL/strata_upgrade_check.sh" --apply-safe "$WORK/setfx/core/scripts" scripts)"; rc=$?
+check "same script by another path → wired, exit 0"  "$(printf '%s' "$out" | grep -c UNWIRED):$rc" "0:0"
 rm -rf setfx
 
 echo "== SessionStart auto-sync — a newer plugin reaches this repo on its own =="
