@@ -6,6 +6,11 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Fixed
+- `reference/agent-session-trailer.md`: the pre-commit-framework wiring now sets
+  `default_stages: [pre-commit]`. Without it every hook lacking an explicit `stages` also ran at
+  `prepare-commit-msg` — twice per commit (measured on pre-commit 4.6 while wiring six projects).
+
 ## [0.9.2] — 2026-09-27
 
 Field fixes made inside adopted projects, brought back into the templates so every project gets
