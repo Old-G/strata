@@ -2,7 +2,7 @@
 title: Project Overview
 type: entity
 created: 2026-08-15
-updated: 2026-09-26
+updated: 2026-09-27
 links: [enforcement-layer, native-invocation, hq-mode, branch-state, upgrade-path, friction-capture, diagram-layer]
 ---
 
@@ -47,6 +47,10 @@ the change is the bottleneck, not writing it — and two of its ideas, no code: 
 can end at the transcript that wrote it (local only), and [[diff-review]] reads the diff in
 lenses and names the decisions nobody asked for.
 
+**v0.10.0 — session handoff** ([[session-handoff]]): `/strata:handoff` saves a session whose
+context is filling up into `.claude/handoff/handoff-<session>.md` (drift-close, verified commit,
+a ready first prompt) and stops, so work continues in a fresh session instead of a compacted one.
+
 **Still in planning**, driven by [[vnext-brief]]: [[hq-mode]], then [[ablate]],
 [[session-reflector]], [[gardener]] (now carrying the playbook's `bands.yaml` σ-tier pattern as
 its reference design), [[executable-wiki]], [[career-ledger]], [[agent-teams]], [[wiki-emit]].
@@ -72,7 +76,7 @@ pipeline as a template without running it on itself.
 - **Enforcement** — [[raw-mirror-hook]] on the write side; [[stop-gate]], [[commit-gate]],
   [[session-start-injection]] on the guarantee side.
 - **Process** — skills: `init` / `adopt` / `onboard` (setup), `office-hours` / `lean-plan` /
-  `feature` / `light-finish` (build), `audit` / `refactor` (correct), `wiki-ingest`
+  `feature` / `light-finish` / `handoff` (build), `audit` / `refactor` (correct), `wiki-ingest`
   (knowledge), `autoplan` (council), `using-strata` (router).
 - **Review** — four council subagents in `agents/`: ceo, eng, design, cso; lens-selected by
   risk tier.

@@ -1,6 +1,6 @@
 ---
 name: using-strata
-description: Use at the START of work in a Strata repo, or when the user mentions Strata without naming an operation — 'what is this repo', 'how do we work here', «страта», «с чего начать», «что тут вообще есть», «как у нас устроен процесс». Orients on the four-layer model and routes to the one skill that fits — it never does the work itself. Also answers which build is loaded — 'which Strata version is running', 'did the plugin update', «какая версия страты», «страта обновилась?» — this build is v0.9.2.
+description: Use at the START of work in a Strata repo, or when the user mentions Strata without naming an operation — 'what is this repo', 'how do we work here', «страта», «с чего начать», «что тут вообще есть», «как у нас устроен процесс». Orients on the four-layer model and routes to the one skill that fits — it never does the work itself. Also answers which build is loaded — 'which Strata version is running', 'did the plugin update', «какая версия страты», «страта обновилась?» — this build is v0.10.0.
 ---
 
 # Using Strata
@@ -13,7 +13,7 @@ it composes best-of-breed tools and owns one thing: the **structure / knowledge 
 
 ## Which build is this
 
-**Strata plugin v0.9.2.** This is the version of the *plugin* loaded into the current session —
+**Strata plugin v0.10.0.** This is the version of the *plugin* loaded into the current session —
 readable from this line alone, with no shell command, and true even in a repo that never adopted
 Strata. Say it plainly when asked whether the plugin updated.
 
@@ -66,6 +66,7 @@ every session and the `Stop` gate refuses to end a turn that left the wiki behin
 | Run the full feature flow | `/strata:feature` | Adaptive-ceremony feature flow — classifies the task (trivial/standard/risky) and runs only the ceremony that fits, behind a safety floor |
 | Write a plan without the ceremony | `/strata:lean-plan` | Complete-but-lean plan: intent, constraints, success criterion; points at real references instead of pasting code |
 | Close out a finished branch | `/strata:light-finish` | Wrap up a branch: confirm green, then merge / PR / keep / discard, and clean up |
+| Continue in a fresh session (context filling up) | `/strata:handoff` | Drift-close, commit verified work, write `.claude/handoff/handoff-<session>.md` with a ready first prompt, then stop |
 | Auto-run the review council | `/strata:autoplan` | Runs the 4 reviewer subagents, auto-decides mechanical calls, surfaces only taste/disagreement |
 | Update / query the knowledge wiki | `/strata:wiki-ingest` | The karpathy ingest / query / lint protocol over docs->raw->wiki |
 | Re-sync a repo's hooks with the plugin | `/strata:upgrade` | Fixes a repo adopted before the current version — installed `scripts/**` never auto-updates |

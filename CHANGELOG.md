@@ -6,6 +6,19 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.10.0] — 2026-09-27
+
+### Added
+- **`/strata:handoff`** — the session-level form of the pass handoff in `feature`. When the
+  context window fills up, it closes wiki drift (Strata repos only: pending ingests, a
+  `wiki/log.md` line, the branch state's decisions/gotchas/debt — no diagram refresh, no state
+  deletion), commits only verified work by the project's own rules (never pushes unless both the
+  rules and the user already allow it), writes `.claude/handoff/handoff-<session>.md` — fixed
+  frontmatter and headings, and a `## Prompt` block holding the new session's whole first
+  message — kept out of git via `info/exclude`, then stops. Works in repos without Strata.
+  Meant to be requested by a context-gate `Stop` hook installed outside the plugin (the plugin
+  still ships no global hooks).
+
 ### Fixed
 - `reference/agent-session-trailer.md`: the pre-commit-framework wiring now sets
   `default_stages: [pre-commit]`. Without it every hook lacking an explicit `stages` also ran at

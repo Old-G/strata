@@ -2,7 +2,7 @@
 title: Wiki Index
 type: index
 created: 2026-08-15
-updated: 2026-09-26
+updated: 2026-09-27
 ---
 
 # Wiki Index — start here
@@ -77,6 +77,7 @@ solutions / Related / Sources.
 | [[diff-review]] | R1 — fifth read-only agent at branch close: diff vs plan (read in lenses), "decided, not asked", bugs, security-lite; second occurrence → `CLAUDE.md`. |
 | [[agent-session-trailer]] | P5 — every agent commit carries its session id; `strata_why.sh` + QUERY step 4b trace code back to the session that wrote it (transcripts stay local). |
 | [[friction-capture]] | P4 — Stop-gate trigger (d): interrupts, denials and tool errors counted from the session transcript; a painful session must record a `gotcha` or a `no-gotcha:` line. |
+| [[session-handoff]] | v0.10 — `/strata:handoff`: drift-close + verified commit + `.claude/handoff/handoff-<session>.md` with a ready first prompt, then stop; works without Strata. |
 | [[diagram-layer]] | P4 — `wiki/diagrams/`: Archify JSON with commit-pinned sources rendered to one self-contained HTML; `diagram_check.sh` turns changed pins into `wiki_debt`. |
 
 ---
