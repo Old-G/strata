@@ -507,3 +507,4 @@ Post-review suites: P4 diagrams 17/17, P4 friction 25/25, P2 28/28.
 ## 2026-09-26T20:46:48Z lint
 
 - errors: 0, warnings: 0
+[2026-09-26T20:47:19Z] diagram system → re-pinned to 9a8e451; SessionStart node sublabel 'branch · debt · index' → 'context · auto-sync' (compare: 1 component changed) → history/2026-09-26 snapshot refreshed; deliver 9/9, visual-check pass.

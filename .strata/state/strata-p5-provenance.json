@@ -2,7 +2,7 @@
   "goal": "Borrow from devdotfast/whiteboard: Agent-Session commit trailer + 'why does this code exist' provenance query; file lenses + unplanned-decision pass in strata-diff-review",
   "status": "active",
   "branch": "strata/p5-provenance",
-  "updated": "2026-09-26T20:46:48Z",
+  "updated": "2026-09-26T20:47:19Z",
   "verify": "bash scripts/test_p5_provenance.sh && bash scripts/validate.sh",
   "decisions": [
     {
@@ -34,11 +34,15 @@
       "why": "owner asked for both; one paragraph of prompt",
       "evidence": "spec D8",
       "trust": "session"
+    },
+    {
+      "what": "Auto-sync trusts only shipped versions (scripts.history), not 'no local lines'",
+      "why": "any changed template line makes the diff two-sided; a manifest of shipped blobs separates old-version from local edit",
+      "evidence": "dry-run over real app-a/app-b/app-c copies; test_p2_state apply-safe cases",
+      "trust": "reviewed"
     }
   ],
-  "open_questions": [
-    "Stop-gate trigger (b): does it count pre-existing uncommitted diff in a brand-new session? (seen in P5 routing runs)"
-  ],
+  "open_questions": [],
   "gotchas": [
     "git runs prepare-commit-msg for every rebase/cherry-pick pick — a trailer hook without a replay guard stamps the wrong session",
     "git does not skip prepare-commit-msg under --no-verify: the wrapper must fail open or a missing script blocks every commit",
@@ -49,8 +53,6 @@
     "archify compare writes architecture-delta.* into the cwd (repo root)",
     "SECOND occurrence: verify run in-session but not recorded = no evidence at branch review"
   ],
-  "wiki_debt": [
-    "diagram system: pinned file changed since the diagram was pinned: templates/core/scripts/hooks/strata_session_start.sh, templates/core/scripts/hooks/strata_stop_gate.sh — update the changed area of wiki/diagrams/system.architecture.json, re-pin revision to HEAD, validate → deliver (archify skill)"
-  ],
+  "wiki_debt": [],
   "files_touched": []
 }

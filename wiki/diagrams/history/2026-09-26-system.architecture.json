@@ -12,7 +12,7 @@
       "url": "https://github.com/Old-G/strata",
       "provider": "github",
       "link_mode": "web",
-      "revision": "526b4eaca6ecad56d32d01fad5275db39d481b29"
+      "revision": "9a8e45162f02611b07935bd5feb31eeaed569fa8"
     },
     "views": [
       {
@@ -218,7 +218,7 @@
       "id": "session",
       "type": "backend",
       "label": "SessionStart inject",
-      "sublabel": "branch · debt · index",
+      "sublabel": "context · auto-sync",
       "pos": [
         600,
         512
