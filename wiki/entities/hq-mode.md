@@ -22,8 +22,10 @@ run. Progressive disclosure downward — the global session never bulk-reads pro
 
 ## Current solutions
 
-In progress (0.11.1): `templates/hq/` + `scripts/hq_registry.py` ship; the `hq-init` / `hq-sync` /
-`hq-report` skills do not yet. Layout ([ADR #6](../decisions/adr-6-hq-registry-by-path.md), which superseded the
+In progress (0.12.0): `templates/hq/` + `scripts/hq_registry.py` + `scripts/hq_sync.py` and the
+`hq-init` / `hq-sync` skills ship; `hq-report` does not yet. The sync owns a page's machine
+frontmatter, its `<!-- hq-sync:changes -->` block and the `wiki/index.md` block; an unchanged
+project is not written; pages whose prose may be stale are handed to the agent (`needs_summary`). Layout ([ADR #6](../decisions/adr-6-hq-registry-by-path.md), which superseded the
 nested layout of [ADR #3](../decisions/adr-3-hq-nested-layout.md)):
 
 ```

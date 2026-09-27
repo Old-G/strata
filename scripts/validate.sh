@@ -287,6 +287,18 @@ else
   err "scripts/test_hq_registry.sh is missing"
 fi
 
+echo "== 18. HQ sync — pages refreshed from the registry, unchanged ones untouched (ADR #6) =="
+if [ -f scripts/test_hq_sync.sh ]; then
+  if out="$(bash scripts/test_hq_sync.sh 2>&1)"; then
+    ok "$(printf '%s' "$out" | tail -n 1)"
+  else
+    printf '%s\n' "$out" | grep '✗' >&2
+    err "HQ sync tests failed (run: bash scripts/test_hq_sync.sh)"
+  fi
+else
+  err "scripts/test_hq_sync.sh is missing"
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then echo "✅ Strata plugin validation PASSED"; else echo "❌ validation FAILED"; fi
 exit "$fail"

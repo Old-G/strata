@@ -2,7 +2,7 @@
 
 Claude Code plugin that packages a reusable way to run AI-assisted projects: AI-navigable wiki,
 architecture canon, spec→plan→TDD feature flow, a parallel review council, and drift detection with
-staged refactor. **State:** v0.11.1 — deterministic wiki freshness (hook + commit gates), native
+staged refactor. **State:** v0.12.0 — deterministic wiki freshness (hook + commit gates), native
 command-free invocation, an episodic branch-state layer with a hook-driven upgrade path, a
 PreToolUse guard (raw/ mirror · tests read-only mid-fix), a diff-vs-plan review at branch close,
 a Stop gate that asks for the lesson when a session hurt, a diagram layer (`wiki/diagrams/`,
@@ -42,7 +42,7 @@ Claude Code plugin · Markdown skills + subagents · bundled shell/python templa
 - `skills/<name>/SKILL.md` — one skill per command; invoked as `/strata:<name>`. `using-strata` is the entry/router.
 - `agents/strata-*-review.md` — the parallel review council subagents (plan stage) + `strata-diff-review` (branch close, diff vs plan).
 - `templates/core/` — portable assets: `PROJECT_PATTERN.md`, `WIKI.md`, `wiki/` skeleton, `scripts/`, CLAUDE/ADR templates.
-- `templates/hq/` — the HQ meta-layer repo (ADR #6): `hq.yaml` names the registry's source (`paths` | `orca`), `scripts/hq_registry.py` builds `registry.yaml` from it (`test_hq_registry.sh`), `page-templates/` shape the project pages.
+- `templates/hq/` — the HQ meta-layer repo (ADR #6): `hq.yaml` names the registry's source (`paths` | `orca`), `scripts/hq_registry.py` builds `registry.yaml` from it (`test_hq_registry.sh`), `page-templates/` shape the project pages, `scripts/hq_sync.py` refreshes them (`test_hq_sync.sh`); skills `hq-init` / `hq-sync`.
 - `templates/stacks/<stack>/` — per-stack architecture canon (`SCALABLE_ARCHITECTURE_REFERENCE.md`) + scaffold generator.
 - `reference/` — council personas, Diataxis doc-map, tool-integration (RTK / claude-mem / Caveman).
 - `templates/core/scripts/` — installed per target project: `sync_raw_mirror.sh`, `lib/pending_ingest.sh` (the one marker rule), `lib/state_tools.py` (the episodic-state schema/validator), `hooks/` (SessionStart + Stop + PreToolUse guard), `pre-commit/` guards, `strata_upgrade_check.sh` (re-sync diff reporter, backs `/strata:upgrade`), `diagram_check.sh` (P4 — pinned-source drift check for `wiki/diagrams/`; run by light-finish/audit, never a hook), `git-hooks/strata_commit_trailer.sh` + `strata_why.sh` (P5 provenance — a *git* hook, never registered in settings.json; install: `reference/agent-session-trailer.md`).

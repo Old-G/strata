@@ -3,7 +3,7 @@ title: "v-next brief — Deterministic Knowledge + HQ Mode"
 type: source
 source: raw/superpowers/specs/2026-08-14-vnext-brief.md
 created: 2026-08-15
-updated: 2026-08-15
+updated: 2026-09-27
 ---
 
 # Source — v-next brief (2026-08-14)

@@ -6,6 +6,21 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.12.0] — 2026-09-27
+
+### Added
+- **`/strata:hq-sync`** + **`templates/hq/scripts/hq_sync.py`** — refresh HQ's project pages from
+  the registry. Per project it reads HEAD, branch, remote, root manifests, the Strata level and a
+  hub above it (pure read), creates a missing page from `page-templates/`, and rewrites only what
+  it owns: the machine frontmatter keys, the `<!-- hq-sync:changes -->` block (commits since the
+  last sync) and the `wiki/index.md` block. An unchanged project is not written, so a second run
+  rewrites nothing; a commit in one project changes only its page. Pages whose prose may be stale
+  (new, or README/docs/manifests moved) come back as `needs_summary` for the agent to rewrite.
+  `hq.yaml` `short:` picks the short page template. Credentials in an http(s) remote URL are stripped before
+  the URL reaches a page. `scripts/test_hq_sync.sh` (27 assertions,
+  validate §18), made-up repos.
+- **`/strata:hq-init`** — scaffold HQ from the template, ask for the registry's source, first sync.
+
 ## [0.11.1] — 2026-09-27
 
 ### Added

@@ -12,7 +12,8 @@ strata: <full — WIKI.md + wiki/index.md | claude-md — only CLAUDE.md at the 
 synced_sha: <HEAD at the last sync>
 synced_at: <UTC ISO time of the last sync>
 relations: [<slugs of registered projects this one calls or is called by>]
-# Keys you add yourself are kept by the sync.
+# The sync owns project, id, group, hub, path, remote, branch, status, strata, synced_*; every other
+# key (stack after creation, relations, your own) is yours and is kept.
 ---
 
 # <Display name> — <what it is in a few words>
@@ -34,8 +35,9 @@ from the project's wiki or hub page, never copied wholesale.>
 
 ## What changed
 
-<Since the previous synced_sha: up to 8 commits `sha date subject`, newest first; "No change since
-<date>" when nothing moved.>
+<!-- hq-sync:changes -->
+<Filled by the sync: commits since the previous synced_sha, newest first.>
+<!-- /hq-sync:end -->
 
 ## Gaps
 
