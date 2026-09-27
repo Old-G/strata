@@ -555,3 +555,4 @@ Post-review suites: P4 diagrams 17/17, P4 friction 25/25, P2 28/28.
 
 - errors: 0, warnings: 0
 [2026-09-27T19:25:16Z] diagram system → re-pinned to 5c6ae77 (0.11.1). No semantic change since 0.9.2: the handoff skill sits inside skills/*, the context gate is a user-scope hook outside the repo, HQ is above the repo. validate showcase 9/9, 0/0; deliver rc 0; diagram_check.sh clean.
+[2026-09-27T19:50:43Z] hygiene → history rewritten before a public release: private project names, paths and people replaced with neutral ones (app-a…app-f), author Old-G; commit ids quoted above predate the rewrite. validate §7 now checks every tracked file (+ local .strata/private-markers). scripts.history keeps the pre-rewrite hashes so installed copies still auto-sync. diagram system re-pinned to a951095: validate showcase 9/9, deliver rc 0, diagram_check.sh clean.
