@@ -38,9 +38,10 @@ at exactly the moment the session is cut.
 - **Trigger:** plain language (EN+RU), or the context gate `bin/strata-context-gate` — a `Stop`
   hook that blocks once per session past `STRATA_HANDOFF_PCT` (default 60%) of the window and asks
   for the skill. Not registered by the plugin ([ADR #1](../decisions/adr-1-deterministic-enforcement.md):
-  no global hooks): the user adds it to `~/.claude/settings.json` by name
-  ([reference/context-gate.md](../../reference/context-gate.md)); the plugin's `bin/` is on hooks'
-  `PATH`, so it follows the loaded version. Window: 1M for `[1m]` models or past 200k, else 200k
+  no global hooks): the user adds it to `~/.claude/settings.json`
+  ([reference/context-gate.md](../../reference/context-gate.md)). Hooks do NOT see the plugin's
+  `bin/` on `PATH` (0.10.0 assumed they did and its by-name entry never ran), so the entry runs the
+  newest copy in the plugin cache and follows updates with no settings change. Window: 1M for `[1m]` models or past 200k, else 200k
   (the hook input names no model). SDK chats report `CLAUDE_CODE_SESSION_ATTENDED=0` like
   `claude -p`, so "unattended" sessions are gated too.
 - **Not a delegation:** handing work to another agent/worktree is a different skill (routing

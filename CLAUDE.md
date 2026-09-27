@@ -2,7 +2,7 @@
 
 Claude Code plugin that packages a reusable way to run AI-assisted projects: AI-navigable wiki,
 architecture canon, spec→plan→TDD feature flow, a parallel review council, and drift detection with
-staged refactor. **State:** v0.10.0 — deterministic wiki freshness (hook + commit gates), native
+staged refactor. **State:** v0.10.1 — deterministic wiki freshness (hook + commit gates), native
 command-free invocation, an episodic branch-state layer with a hook-driven upgrade path, a
 PreToolUse guard (raw/ mirror · tests read-only mid-fix), a diff-vs-plan review at branch close,
 a Stop gate that asks for the lesson when a session hurt, a diagram layer (`wiki/diagrams/`,
@@ -46,7 +46,7 @@ Claude Code plugin · Markdown skills + subagents · bundled shell/python templa
 - `reference/` — council personas, Diataxis doc-map, tool-integration (RTK / claude-mem / Caveman).
 - `templates/core/scripts/` — installed per target project: `sync_raw_mirror.sh`, `lib/pending_ingest.sh` (the one marker rule), `lib/state_tools.py` (the episodic-state schema/validator), `hooks/` (SessionStart + Stop + PreToolUse guard), `pre-commit/` guards, `strata_upgrade_check.sh` (re-sync diff reporter, backs `/strata:upgrade`), `diagram_check.sh` (P4 — pinned-source drift check for `wiki/diagrams/`; run by light-finish/audit, never a hook), `git-hooks/strata_commit_trailer.sh` + `strata_why.sh` (P5 provenance — a *git* hook, never registered in settings.json; install: `reference/agent-session-trailer.md`).
 - `wiki/diagrams/` — this repo's own diagram layer: `system.architecture.json` (canonical, Archify JSON, sources pinned to a commit) + `system.html` (open it to see the whole plugin); `history/*.json` only when the semantics changed.
-- `bin/strata-upgrade-all` — on PATH in every Claude session (plugin `bin/`); `bin/strata-context-gate` — opt-in `Stop` hook the user adds to `~/.claude/settings.json` (asks for `/strata:handoff` past 60% context; `reference/context-gate.md`); `templates/core/scripts.history` — hash of every shipped template version (what auto-sync may safely replace).
+- `bin/strata-upgrade-all` — on PATH in every Claude session (plugin `bin/`); `bin/strata-context-gate` — opt-in `Stop` hook the user adds to `~/.claude/settings.json` (asks for `/strata:handoff` past 60% context; hooks don't see plugin `bin/` on PATH, so the entry runs the newest cached copy — `reference/context-gate.md`); `templates/core/scripts.history` — hash of every shipped template version (what auto-sync may safely replace).
 - `docs/superpowers/{specs,plans}/` — Strata's own design specs & plans (dated).
 - `raw/`, `wiki/` — this repo's own knowledge layer; `.githooks/` — its own pre-commit guards.
 

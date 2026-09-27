@@ -3,9 +3,9 @@
 # STRATA_HANDOFF_PCT (default 60) percent of its window, it blocks the stop ONCE per session and
 # asks for /strata:handoff, so the work continues in a fresh session instead of a tired one.
 #
-# Not a plugin hook — the plugin ships none (ADR #1). The plugin's bin/ is on PATH for hooks, so
-# ~/.claude/settings.json can call it by name and it follows the loaded plugin version; install:
-# reference/context-gate.md.
+# Not a plugin hook — the plugin ships none (ADR #1). Hooks do NOT get the plugin's bin/ on PATH
+# (only the Bash tool does), so ~/.claude/settings.json calls the newest installed copy from the
+# plugin cache; install: reference/context-gate.md.
 #
 # Context = input + cache_creation_input + cache_read_input tokens of the newest main-chain
 # (non-sidechain) assistant message in the transcript. Window: $STRATA_CONTEXT_WINDOW, else 1M when

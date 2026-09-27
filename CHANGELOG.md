@@ -6,6 +6,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.10.1] — 2026-09-27
+
+### Fixed
+- **Context gate install.** Hook commands do not get the plugin's `bin/` on `PATH` (only the Bash
+  tool does), so the by-name entry from 0.10.0 never ran the gate. `reference/context-gate.md` now
+  installs a command that runs the newest `strata-context-gate` from the plugin cache — verified in
+  a clean session (`env -i`): gate at 2% → the session wrote its handoff; a resumed turn was not
+  gated again; the default 60% let a fresh session end in one turn.
+
 ## [0.10.0] — 2026-09-27
 
 ### Added
@@ -21,7 +30,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   asks for `/strata:handoff`. Used = input + cache-creation + cache-read tokens of the newest
   main-chain assistant message; window = 1M for `[1m]` models or past 200k, else 200k. The plugin
   still ships no global hooks: the user adds it to `~/.claude/settings.json`
-  (`reference/context-gate.md`); being on the plugin's `bin/` it follows the loaded version.
+  (`reference/context-gate.md`).
   Tests: `scripts/test_context_gate.sh` (validate §16).
 
 ### Fixed

@@ -6,9 +6,10 @@ asks for `/strata:handoff`, which saves the session into `.claude/handoff/handof
 with a ready first prompt and stops. The work then continues in a fresh session.
 
 The plugin ships no global hooks ([ADR #1](../wiki/decisions/adr-1-deterministic-enforcement.md)),
-so this one is opt-in: the user adds it to their own settings. Claude Code puts the plugin's
-`bin/` on `PATH` for hooks, so the entry calls it by name and always runs the loaded plugin
-version; with the plugin disabled the guard makes it a no-op.
+so this one is opt-in: the user adds it to their own settings. Hook commands do **not** get the
+plugin's `bin/` on `PATH` (only the Bash tool does — measured 2026-09-27: a by-name entry ran in
+8 ms and never found the script), so the entry picks the newest installed copy from the plugin
+cache. A plugin update is picked up with no settings change; with Strata uninstalled it is a no-op.
 
 ## Install (all projects)
 
@@ -20,7 +21,7 @@ other tools own:
   "hooks": {
     "Stop": [
       { "hooks": [ { "type": "command",
-        "command": "if command -v strata-context-gate >/dev/null 2>&1; then strata-context-gate; fi" } ] }
+        "command": "g=$(ls -d \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}\"/plugins/cache/strata/strata/*/bin/strata-context-gate 2>/dev/null | sort -V | tail -1); if [ -n \"$g\" ]; then bash \"$g\"; fi" } ] }
     ]
   }
 }
