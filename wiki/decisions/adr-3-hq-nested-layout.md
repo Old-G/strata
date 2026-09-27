@@ -2,11 +2,14 @@
 title: "ADR #3 — Projects live inside HQ"
 type: decision
 created: 2026-08-15
-updated: 2026-08-15
-status: accepted
+updated: 2026-09-27
+status: superseded
 ---
 
 # ADR #3 — Projects live inside HQ
+
+> **Superseded 2026-09-27 by [ADR #6](adr-6-hq-registry-by-path.md)** — projects stay where they are; the registry
+> comes from one declared source. Kept for the reasoning.
 
 ## Context
 

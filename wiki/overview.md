@@ -64,11 +64,13 @@ pipeline as a template without running it on itself.
   advisory prose; hooks ship as templates, never as global plugin hooks.
 - [ADR #2](decisions/adr-2-native-invocation.md) — skill descriptions are the routing surface;
   EN+RU triggers inline.
-- [ADR #3](decisions/adr-3-hq-nested-layout.md) — projects live inside HQ.
+- [ADR #3](decisions/adr-3-hq-nested-layout.md) — projects live inside HQ (superseded by ADR #6).
 - [ADR #4](decisions/adr-4-stop-gate-session-scope.md) — the Stop gate blocks only on markers
   from the current session.
 - [ADR #5](decisions/adr-5-episodic-state-branch-scoped.md) — branch state is git-tracked and
   branch-scoped, not session-scoped.
+- [ADR #6](decisions/adr-6-hq-registry-by-path.md) — the HQ registry lists projects where they live, from one
+  declared source.
 
 ## Architectural layers
 

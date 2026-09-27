@@ -62,7 +62,7 @@ solutions / Related / Sources.
 | [[pending-ingest-marker]] | The `pending_ingest:` line in `wiki/log.md` — the single token every gate reads. |
 | [[raw-mirror-hook]] | `sync_raw_mirror.sh` — PostToolUse hook mirroring `docs/*.md → raw/` and emitting the marker. |
 | [[native-invocation]] | Feature C — zero slash commands; skill descriptions as the whole routing surface, EN+RU. |
-| [[hq-mode]] | Feature B — `~/hq` meta-wiki over nested projects; sync, report, connectors wired once. |
+| [[hq-mode]] | Feature B — HQ meta-wiki over projects left in place, listed from one declared source; sync, report, connectors wired once. |
 | [[gardener]] | Two-tier nightly curator with anacron-style scheduling; never pushes to main. |
 | [[executable-wiki]] | Facts carrying `verify:` commands — the wiki reports its own lies. |
 | [[career-ledger]] | Append-only ledger of shipped/decided events, compiled into review and raise-case docs. |
@@ -90,9 +90,10 @@ One page per architectural decision: `decisions/adr-<n>-<slug>.md`.
 |---|---|
 | [ADR #1](decisions/adr-1-deterministic-enforcement.md) | Deterministic enforcement over advisory prose; hooks ship as templates, never global. |
 | [ADR #2](decisions/adr-2-native-invocation.md) | Skill descriptions are the routing surface; EN+RU triggers inline (resolves OQ#5). |
-| [ADR #3](decisions/adr-3-hq-nested-layout.md) | Projects live inside HQ; registry auto-discovered (resolves OQ#2). |
+| [ADR #3](decisions/adr-3-hq-nested-layout.md) | *Superseded by ADR #6.* Projects live inside HQ; registry auto-discovered (resolves OQ#2). |
 | [ADR #4](decisions/adr-4-stop-gate-session-scope.md) | The Stop gate blocks only on current-session markers (resolves OQ#1). |
 | [ADR #5](decisions/adr-5-episodic-state-branch-scoped.md) | Branch state is git-tracked and branch-scoped, not session-scoped like the gate stamps it sits next to. |
+| [ADR #6](decisions/adr-6-hq-registry-by-path.md) | HQ registry lists projects where they live, from one declared source (`paths` default, Orca adapter); one writer; group ≠ hub. |
 
 ---
 
