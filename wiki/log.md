@@ -548,3 +548,9 @@ Post-review suites: P4 diagrams 17/17, P4 friction 25/25, P2 28/28.
 ## 2026-09-27T19:21:53Z lint
 
 - errors: 0, warnings: 0
+[2026-09-27T19:23:50Z] feature HQ template (v0.11.1) → templates/hq/ (hq.yaml, CLAUDE.md.tmpl, WIKI.md, wiki/, page-templates/, projects|groups|people|decisions|ideas) + scripts/hq_registry.py (ADR #6: sources paths | orca; stdlib YAML subset it writes and reads). test_hq_registry.sh 35/35 (validate §17), made-up fixtures, the orca source driven by a fake CLI. 0.11.0 was withdrawn: it tied HQ to one Orca build (no paths source; a CLI without `repo groups` failed the whole read).
+- gotcha (first occurrence): a script imported by a test leaves __pycache__ inside templates/ — tests set PYTHONDONTWRITEBYTECODE=1.
+
+## 2026-09-27T19:24:38Z lint
+
+- errors: 0, warnings: 0

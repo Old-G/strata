@@ -22,7 +22,8 @@ run. Progressive disclosure downward — the global session never bulk-reads pro
 
 ## Current solutions
 
-Planned for P2. Layout ([ADR #6](../decisions/adr-6-hq-registry-by-path.md), which superseded the
+In progress (0.11.1): `templates/hq/` + `scripts/hq_registry.py` ship; the `hq-init` / `hq-sync` /
+`hq-report` skills do not yet. Layout ([ADR #6](../decisions/adr-6-hq-registry-by-path.md), which superseded the
 nested layout of [ADR #3](../decisions/adr-3-hq-nested-layout.md)):
 
 ```

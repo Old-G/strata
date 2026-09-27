@@ -6,6 +6,26 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.11.1] — 2026-09-27
+
+### Added
+- **HQ template** (`templates/hq/`) — the meta-layer repo from ADR #6: `hq.yaml`,
+  `CLAUDE.md.tmpl`, `WIKI.md`, `wiki/index.md` + `log.md`, `page-templates/` (full and short project
+  page), `projects/`, `groups/`, `people/`, `decisions/`, `ideas/`. Copied by hand for now;
+  `hq-init` comes with `hq-sync`.
+- **`templates/hq/scripts/hq_registry.py`** — builds `registry.yaml` from the source declared in
+  `hq.yaml`: `paths` (an explicit list; the default, needs no other tool) or `orca` (the projects
+  added to Orca; group names from `repo groups` when the CLI has it, else kept from the previous
+  registry). Slug fixed at first sight, removal only on a successful read (page →
+  `projects/_archive/`), an unreadable source keeps the registry, an unchanged source rewrites
+  nothing. Stdlib only. `scripts/test_hq_registry.sh` (35 assertions, validate §17).
+
+### Changed
+- **ADR #6 supersedes ADR #3**: projects are not moved into HQ; the registry lists them where they
+  live.
+
+0.11.0 was published briefly and withdrawn; 0.11.1 replaces it.
+
 ## [0.10.1] — 2026-09-27
 
 ### Fixed
