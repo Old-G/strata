@@ -554,3 +554,4 @@ Post-review suites: P4 diagrams 17/17, P4 friction 25/25, P2 28/28.
 ## 2026-09-27T19:24:38Z lint
 
 - errors: 0, warnings: 0
+[2026-09-27T19:25:16Z] diagram system → re-pinned to 5c6ae77 (0.11.1). No semantic change since 0.9.2: the handoff skill sits inside skills/*, the context gate is a user-scope hook outside the repo, HQ is above the repo. validate showcase 9/9, 0/0; deliver rc 0; diagram_check.sh clean.
