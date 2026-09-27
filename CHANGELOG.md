@@ -24,6 +24,10 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **ADR #6 supersedes ADR #3**: projects are not moved into HQ; the registry lists them where they
   live.
 
+- **`validate.sh` §7** checks every tracked file, not only skills/agents/templates: a real home
+  directory always fails; your own private words go one per line into `.strata/private-markers`,
+  which is gitignored.
+
 0.11.0 was published briefly and withdrawn; 0.11.1 replaces it.
 
 ## [0.10.1] — 2026-09-27

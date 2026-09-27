@@ -20,9 +20,11 @@
 92abfb0937a750797fc514129e68b47db7d0f266  hooks/strata_stop_gate.sh
 974ce0095f012f3887c588f1222c206cf8c8727c  strata_upgrade_check.sh
 984b6682e2fed17678470a65876e84e05a9e4a7b  pre-commit/check_wiki_fresh.sh
+9a6aae60c90c1442d6853ef7c66f14210159b7bb  lib/pending_ingest.sh
 9c4f366e57095960a132e38dc788a46e36f0e556  sync_raw_mirror.sh
 a1fc5b3c37480112691fb676da7b5d41386932ab  strata_why.sh
 a52f6a1327f5d66c1bcc0ed9a8219e73e6bd996d  lib/pending_ingest.sh
+a6518a71ecf389175bd2f8b8800ea03e2aac6507  pre-commit/check_secrets.sh
 ab949599697817ec58355d94177ae432d929b67c  hooks/strata_session_start.sh
 ab954a76bb585d1f3424ea7575dd713582b3d311  hooks/strata_session_start.sh
 ad2e4b9f7ac6b69860a8c282cad1d410cb052385  strata_why.sh

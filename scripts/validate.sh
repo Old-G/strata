@@ -130,12 +130,24 @@ for f in $(find templates -name '*.py'); do
   python3 -c "import ast; ast.parse(open('$f').read())" 2>/dev/null && ok "$f" || err "$f has a syntax error"
 done
 
-echo "== 7. no private/internal markers leaked into shipped files =="
-if git grep -niE 'example\.internal|/home/someone/' \
-     -- skills agents templates 2>/dev/null | grep -q .; then
-  err "private marker found in skills/agents/templates (run the grep to see)"
+echo "== 7. no private markers in tracked files (public repo) =="
+# Built in: a real home directory. Your own words (names, hosts, projects) go one ERE per line
+# into .strata/private-markers — gitignored, so the list itself is never published.
+# (case-sensitive: /Users/USER placeholders are fine)
+hits="$(git grep -nIE '/(Users|home)/[a-z][a-z0-9_-]+/' -- . ':!wiki/diagrams/*.html' 2>/dev/null)"
+if [ -f .strata/private-markers ]; then
+  markers=""
+  while IFS= read -r m; do
+    case "$m" in ''|'#'*) continue ;; esac
+    markers="${markers:+$markers|}$m"
+  done < .strata/private-markers
+  [ -n "$markers" ] && hits="$hits$(git grep -nIiE "$markers" -- . ':!wiki/diagrams/*.html' ':!.strata/private-markers' 2>/dev/null)"
+fi
+if [ -n "$hits" ]; then
+  printf '%s\n' "$hits" | cut -c1-160 >&2
+  err "private marker found in tracked files (above)"
 else
-  ok "no private markers in skills/agents/templates"
+  ok "no private markers in tracked files"
 fi
 
 echo "== 8. skill descriptions are bilingual trigger specs (C1) =="
