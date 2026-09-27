@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+# strata-context-gate — a Claude Code `Stop` hook. Once the main conversation's context passes
+# STRATA_HANDOFF_PCT (default 60) percent of its window, it blocks the stop ONCE per session and
+# asks for /strata:handoff, so the work continues in a fresh session instead of a tired one.
+#
+# Not a plugin hook — the plugin ships none (ADR #1). The plugin's bin/ is on PATH for hooks, so
+# ~/.claude/settings.json can call it by name and it follows the loaded plugin version; install:
+# reference/context-gate.md.
+#
+# Context = input + cache_creation_input + cache_read_input tokens of the newest main-chain
+# (non-sidechain) assistant message in the transcript. Window: $STRATA_CONTEXT_WINDOW, else 1M when
+# the configured model says [1m] (ANTHROPIC_MODEL, then the project's and the user's settings), or
+# when the count already exceeds 200k; otherwise 200k.
+#
+# Env: STRATA_HANDOFF_PCT (0 disables) · STRATA_CONTEXT_WINDOW · STRATA_CONTEXT_GATE_DIR (markers;
+# default $TMPDIR/strata-context-gate). Fails open: any error lets the session stop.
+
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)"
+# Why stdin, not an env var: the input carries the whole last assistant message, which can outgrow the env limit.
+read -r -d '' GATE_PY <<'PY'
+import json, os, sys, time
+
+LEGACY_WINDOW = 200_000
+LONG_WINDOW = 1_000_000
+TAIL_BYTES = 4 * 1024 * 1024
+MARKER_TTL = 14 * 24 * 3600
+
+
+def last_main_context_tokens(path):
+    with open(path, "rb") as f:
+        f.seek(0, os.SEEK_END)
+        size = f.tell()
+        f.seek(max(0, size - TAIL_BYTES))
+        lines = f.read().splitlines()
+    for raw in reversed(lines):
+        try:
+            entry = json.loads(raw)
+        except ValueError:
+            continue
+        if entry.get("type") != "assistant" or entry.get("isSidechain"):
+            continue
+        usage = (entry.get("message") or {}).get("usage") or {}
+        used = sum(int(usage.get(k) or 0) for k in
+                   ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens"))
+        if used > 0:  # synthetic messages carry zero usage
+            return used
+    return None
+
+
+def configured_model(cwd):
+    model = os.environ.get("ANTHROPIC_MODEL", "")
+    if model:
+        return model
+    config_dir = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.expanduser("~/.claude")
+    for path in (os.path.join(cwd, ".claude", "settings.local.json"),
+                 os.path.join(cwd, ".claude", "settings.json"),
+                 os.path.join(config_dir, "settings.json")):
+        try:
+            with open(path, encoding="utf-8") as f:
+                value = json.load(f).get("model")
+        except (OSError, ValueError, AttributeError):
+            continue
+        if isinstance(value, str) and value:
+            return value
+    return ""
+
+
+def context_window(cwd, used):
+    override = os.environ.get("STRATA_CONTEXT_WINDOW", "")
+    if override.isdigit() and int(override) > 0:
+        return int(override)
+    if "[1m]" in configured_model(cwd).lower() or used > LEGACY_WINDOW:
+        return LONG_WINDOW
+    return LEGACY_WINDOW
+
+
+def prune(marker_dir):
+    cutoff = time.time() - MARKER_TTL
+    for name in os.listdir(marker_dir):
+        path = os.path.join(marker_dir, name)
+        try:
+            if os.path.getmtime(path) < cutoff:
+                os.remove(path)
+        except OSError:
+            pass
+
+
+def main():
+    data = json.load(sys.stdin)
+    if data.get("stop_hook_active"):
+        return
+    try:
+        threshold = float(os.environ.get("STRATA_HANDOFF_PCT", "60"))
+    except ValueError:
+        threshold = 60.0
+    if threshold <= 0:
+        return
+    session = str(data.get("session_id") or "")
+    transcript = data.get("transcript_path") or ""
+    cwd = data.get("cwd") or os.getcwd()
+    if not session or "/" in session or not os.path.isfile(transcript):
+        return
+    marker_dir = os.environ.get("STRATA_CONTEXT_GATE_DIR") or os.path.join(
+        os.environ.get("TMPDIR") or "/tmp", "strata-context-gate")
+    marker = os.path.join(marker_dir, session)
+    if os.path.exists(marker):
+        return
+    used = last_main_context_tokens(transcript)
+    if used is None:
+        return
+    window = context_window(cwd, used)
+    pct = used * 100.0 / window
+    if pct < threshold:
+        return
+    os.makedirs(marker_dir, exist_ok=True)
+    with open(marker, "w", encoding="utf-8") as f:
+        f.write(f"{int(time.time())} {used} {window}\n")
+    prune(marker_dir)
+    skill = os.environ.get("STRATA_GATE_SKILL", "")
+    fallback = f" If that skill is not available, follow {skill} by hand." if os.path.isfile(skill) else ""
+    reason = (f"Context is at {pct:.0f}% of the {window // 1000}k window (handoff threshold "
+              f"{threshold:g}%). Before stopping, run the strata:handoff skill now: it saves this "
+              f"session to .claude/handoff/handoff-{session}.md with a ready first prompt and stops, "
+              f"so the work continues in a fresh session.{fallback} This gate asks once per session.")
+    print(json.dumps({"decision": "block", "reason": reason}))
+
+
+try:
+    main()
+except Exception:
+    pass
+PY
+STRATA_GATE_SKILL="${here%/bin}/skills/handoff/SKILL.md" python3 -c "$GATE_PY" 2>/dev/null
+exit 0

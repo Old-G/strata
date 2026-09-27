@@ -251,6 +251,18 @@ else
   err "scripts/test_secrets.sh is missing"
 fi
 
+echo "== 16. context gate — asks for /strata:handoff once past the threshold =="
+if [ -f scripts/test_context_gate.sh ]; then
+  if out="$(bash scripts/test_context_gate.sh 2>&1)"; then
+    ok "$(printf '%s' "$out" | tail -n 1)"
+  else
+    printf '%s\n' "$out" | grep '✗' >&2
+    err "context gate tests failed (run: bash scripts/test_context_gate.sh)"
+  fi
+else
+  err "scripts/test_context_gate.sh is missing"
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then echo "✅ Strata plugin validation PASSED"; else echo "❌ validation FAILED"; fi
 exit "$fail"

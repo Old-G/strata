@@ -16,8 +16,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   rules and the user already allow it), writes `.claude/handoff/handoff-<session>.md` — fixed
   frontmatter and headings, and a `## Prompt` block holding the new session's whole first
   message — kept out of git via `info/exclude`, then stops. Works in repos without Strata.
-  Meant to be requested by a context-gate `Stop` hook installed outside the plugin (the plugin
-  still ships no global hooks).
+- **`bin/strata-context-gate`** — an opt-in `Stop` hook that blocks the stop once per session
+  when the main conversation passes `STRATA_HANDOFF_PCT` (default 60) percent of its window and
+  asks for `/strata:handoff`. Used = input + cache-creation + cache-read tokens of the newest
+  main-chain assistant message; window = 1M for `[1m]` models or past 200k, else 200k. The plugin
+  still ships no global hooks: the user adds it to `~/.claude/settings.json`
+  (`reference/context-gate.md`); being on the plugin's `bin/` it follows the loaded version.
+  Tests: `scripts/test_context_gate.sh` (validate §16).
 
 ### Fixed
 - `reference/agent-session-trailer.md`: the pre-commit-framework wiring now sets

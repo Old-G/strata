@@ -35,9 +35,14 @@ at exactly the moment the session is cut.
   frontmatter (`type: strata-handoff`, session, created, workspace, branch, head, pushed) and fixed
   `##` headings; `## Prompt` holds exactly one fenced block — the new session's whole first
   message. Tools (e.g. Orca) parse these, so they are a contract.
-- **Trigger:** plain language (EN+RU), or a context-gate `Stop` hook that asks for it. That hook is
-  NOT shipped by the plugin ([ADR #1](../decisions/adr-1-deterministic-enforcement.md): no global
-  hooks); it is installed by the host.
+- **Trigger:** plain language (EN+RU), or the context gate `bin/strata-context-gate` — a `Stop`
+  hook that blocks once per session past `STRATA_HANDOFF_PCT` (default 60%) of the window and asks
+  for the skill. Not registered by the plugin ([ADR #1](../decisions/adr-1-deterministic-enforcement.md):
+  no global hooks): the user adds it to `~/.claude/settings.json` by name
+  ([reference/context-gate.md](../../reference/context-gate.md)); the plugin's `bin/` is on hooks'
+  `PATH`, so it follows the loaded version. Window: 1M for `[1m]` models or past 200k, else 200k
+  (the hook input names no model). SDK chats report `CLAUDE_CODE_SESSION_ATTENDED=0` like
+  `claude -p`, so "unattended" sessions are gated too.
 - **Not a delegation:** handing work to another agent/worktree is a different skill (routing
   checked: «передай эту задачу другому агенту в соседнем worktree» → `orca-cli`).
 
@@ -48,4 +53,4 @@ at exactly the moment the session is cut.
 
 ## Sources
 
-- `skills/handoff/SKILL.md`; CHANGELOG `[0.10.0]`.
+- `skills/handoff/SKILL.md`, `bin/strata-context-gate`, `reference/context-gate.md`; CHANGELOG `[0.10.0]`.
