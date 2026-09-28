@@ -110,4 +110,5 @@ raw or risky idea             → office-hours grill
 - **Skill/command names are namespaced** `/strata:<name>` — do not prefix skill dirs with `strata-` (the namespace already adds it). Subagents in `agents/` DO keep the `strata-` prefix to avoid collisions in target projects.
 - **A verify you ran but did not record did not happen.** Put its result in `wiki/log.md` or the commit message — the branch review reads git, not the session. (Second occurrence: P4 red run, P5 routing check.)
 - **Every template change regenerates `templates/core/scripts.history`** (`bash scripts/gen_template_history.sh`; validate.sh §2d fails otherwise) — auto-sync trusts only versions listed there.
+- **Undo a negative control from a copy taken before the break — never `git restore`/`git checkout`.** They wipe uncommitted work in the same file. (Second occurrence: `git restore` deleted a staged log, 2026-08; `git checkout --` wiped an uncommitted Requirements section, P6.)
 - **CLAUDE.md ≤ 200 lines** here and in every template.
