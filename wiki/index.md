@@ -62,7 +62,7 @@ solutions / Related / Sources.
 | [[pending-ingest-marker]] | The `pending_ingest:` line in `wiki/log.md` — the single token every gate reads. |
 | [[raw-mirror-hook]] | `sync_raw_mirror.sh` — PostToolUse hook mirroring `docs/*.md → raw/` and emitting the marker. |
 | [[native-invocation]] | Feature C — zero slash commands; skill descriptions as the whole routing surface, EN+RU. |
-| [[hq-mode]] | Feature B — HQ meta-wiki over projects left in place, listed from one declared source; sync, report, connectors wired once. |
+| [[hq-mode]] | Feature B — HQ meta-wiki over many projects; moved to the separate plugin strata-hq (0.13.0). |
 | [[gardener]] | Two-tier nightly curator with anacron-style scheduling; never pushes to main. |
 | [[executable-wiki]] | Facts carrying `verify:` commands — the wiki reports its own lies. |
 | [[career-ledger]] | Append-only ledger of shipped/decided events, compiled into review and raise-case docs. |

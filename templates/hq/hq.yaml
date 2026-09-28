@@ -1,6 +1,0 @@
-# Where HQ's registry comes from (ADR #6). Edit this file; never registry.yaml.
-#   paths — the list below (default; needs no other tool)
-#   orca  — the projects added to Orca, with their groups (set orca_cli to your Orca CLI)
-source: paths
-orca_cli: "orca"
-paths:

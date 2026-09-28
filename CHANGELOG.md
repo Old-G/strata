@@ -6,6 +6,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.13.0] — 2026-09-28
+
+### Removed
+- **HQ moved to its own plugin, [strata-hq](https://github.com/Old-G/strata-hq).** `/strata:hq-init`, `/strata:hq-sync`,
+  `templates/hq/` and their tests leave Strata, which stays a per-project framework; HQ — the
+  meta-wiki over many projects — is now installed separately (`/plugin marketplace add
+  Old-G/strata-hq`), as `/strata-hq:init` and `/strata-hq:sync`, with group pages and hubs added
+  there. ADR #6 stays here as the record of the decision; strata-hq carries it as its ADR-1.
+
 ## [0.12.0] — 2026-09-27
 
 ### Added

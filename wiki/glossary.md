@@ -41,7 +41,7 @@ finds a page contradicting the glossary, the glossary wins — fix the page.
 | commit gate | Pre-commit guard that fails the commit while any `pending_ingest` marker is outstanding. Escape hatch: `STRATA_SKIP_WIKI=1`. | [[commit-gate]] |
 | SessionStart injection | Hook whose stdout becomes model context; opens every session with branch, pending list, and wiki index head. Budget ~30–50 lines. | [[session-start-injection]] |
 | advisory vs deterministic | Skill prose is probabilistic; hooks are deterministic. Rule: if you write "the agent must always…", that is a hook, not a paragraph. | [ADR #1](decisions/adr-1-deterministic-enforcement.md) |
-| HQ | A separate Strata repo whose wiki is a meta-index of project indexes; its registry lists projects where they already live, from one declared source (`hq.yaml`). | [[hq-mode]] |
+| HQ | (Plugin strata-hq since 0.13.0.) A separate repo whose wiki is a meta-index of project indexes; its registry lists projects where they already live, from one declared source (`hq.yaml`). | [[hq-mode]] |
 | gardener | Two-tier nightly job: deterministic fact verification (free), then one scoped `claude -p` curation session. Never pushes to main. | [[gardener]] |
 | anacron semantics | "Run at 03:33; if the machine was asleep or off, run once on wake or login — never more than once per ~20h." launchd triggers + a stamp-file check in the wrapper. | [[gardener]] |
 | ablation | Empirically deleting instructions to find which the current model still needs. Boris Cherny's 6-month purge; the enforcement layer is exempt. | [[ablate]] |

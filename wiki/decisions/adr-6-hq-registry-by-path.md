@@ -10,6 +10,9 @@ status: accepted
 
 Supersedes [ADR #3](adr-3-hq-nested-layout.md).
 
+> **2026-09-28:** HQ now lives in its own plugin, [strata-hq](https://github.com/Old-G/strata-hq), where this decision is
+> ADR-1. Kept here as the record.
+
 ## Context
 
 [ADR #3](adr-3-hq-nested-layout.md) nested every project physically under `~/hq/projects/` and
