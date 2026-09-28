@@ -103,6 +103,13 @@ Record each as `[severity | structure | file:line | rule | suggested fix]`.
    `<name>.html` is older than its JSON (`git log -1 --format=%ct`) as LOW "render behind its source". If the
    script reports archify missing, say so in `Coverage` (pins were not verified) rather than claiming they hold.
    No `wiki/diagrams/` at all is not a finding — the layer is optional, like `wiki/` itself.
+7. **Behaviour specs (P6):** `python3 scripts/lib/requirements.py check` over every entity's
+   `## Requirements`. An `ERROR … test: … does not exist` / `… not found in …` = HIGH "the wiki
+   claims a test that is not there"; no scenario, no WHEN/THEN, zero or two pointers, a duplicate
+   title = MEDIUM; the summary's `manual` count = a LOW note. Not `owed`: on a feature branch an
+   unapplied delta is correct until light-finish. Script absent (repo not upgraded) → say so in
+   `Coverage` with "run /strata:upgrade". No Requirements anywhere is not a
+   finding — the section grows as branches touch behaviour.
 
 ## Phase 3 — Doc freshness (Diataxis coverage map)
 

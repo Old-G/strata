@@ -21,6 +21,11 @@ digest.
 
 ## Current solutions
 
+**First slice shipped in v0.14.0 — [[behaviour-specs]]:** a `## Requirements` scenario carries a
+`test:` pointer, and `scripts/lib/requirements.py check` proves every pointer still resolves (the
+file exists, the `::needle` is in it) — a wiki claim that names its own check. It does not run the
+test and has no freshness window; the general `verify:` facts below are still backlog.
+
 Approved, planned for P2/P3. Shape:
 
 ```yaml
@@ -43,8 +48,8 @@ The architecture form of this idea is the [[diagram-layer]] (P4): a diagram node
 
 ## Related
 
-[[gardener]]
+[[gardener]] · [[behaviour-specs]]
 
 ## Sources
 
-[[vnext-brief]] §13.1
+[[vnext-brief]] §13.1 · [[p6-behaviour-specs]]

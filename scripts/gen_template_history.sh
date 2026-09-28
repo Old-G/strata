@@ -43,5 +43,8 @@ if [ "${1:-}" = "--check" ]; then
   echo "templates/core/scripts.history is stale — run: bash scripts/gen_template_history.sh" >&2
   exit 1
 fi
-gen > "$OUT"
+# Union with what is already listed: a version that shipped stays shipped. Git history alone
+# forgets blobs after a history rewrite (two such hashes were dropped once, found by the P6
+# diff review) — and an installed copy of a forgotten version would stop auto-syncing.
+{ gen; [ -f "$OUT" ] && cat "$OUT"; } | LC_ALL=C sort -u > "$OUT.tmp" && mv "$OUT.tmp" "$OUT"
 echo "wrote $OUT ($(wc -l < "$OUT" | tr -d ' ') versions)"

@@ -68,10 +68,14 @@ in-progress, per-file facts a human/AI wrote directly. The reflector, when built
 cross-session *lessons* (what worked, what failed) into `wiki/playbook.md` as delta bullets. Don't
 duplicate a fact across the two once both exist.
 
+**Since v0.14.0:** `state_tools.py plan <branch>` is the one plan lookup — the branch's last
+`/`-segment, exactly, as `docs/superpowers/plans/<date>-<segment>-plan.md`, newest date on ties —
+used by `requirements.py owed`, light-finish and [[diff-review]] ([[behaviour-specs]]).
+
 ## Related
 
 [[stop-gate]] · [[session-start-injection]] · [[pending-ingest-marker]] · [[session-reflector]] ·
-[[upgrade-path]]
+[[upgrade-path]] · [[behaviour-specs]]
 
 ## Sources
 

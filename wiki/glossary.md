@@ -54,4 +54,7 @@ finds a page contradicting the glossary, the glossary wins — fix the page.
 | epistemic firewall | Reporting house style: claims carry their verification status — verified-by-test / agent-claimed / assumed. | [[vnext-brief]] |
 | Career ledger | Append-only `hq/ledger/ledger.jsonl` of shipped/decided events, compiled on demand into review, raise-case, or portfolio docs. | [[career-ledger]] |
 | llms.txt / AGENTS.md | Cross-agent interop formats the wiki can compile to, so non-Claude agents read the same spine. | [[wiki-emit]] |
+| Requirements (section) | Optional, reserved `## Requirements` on an entity page: `###` title + statement + `- Scenario:` items with WHEN/THEN and one `test:`/`manual:` pointer. What the component must do. | [[behaviour-specs]] |
+| Behaviour delta | A plan's `## Behaviour delta` — `ADDED/MODIFIED/REMOVED [[entity]]` → `#### <title>`; never applied at ingest, applied by light-finish step 1b on the branch (OpenSpec's archive). | [[behaviour-specs]] |
+| evidence pointer | A code span starting `test: <path>[::<needle>]` or `manual: <reason>` in a scenario; `requirements.py check` proves it resolves, not that it passes. | [[behaviour-specs]] |
 | thin glue | Strata composes claude-mem, RTK, and the project's tests; it never reimplements memory, token proxying, or testing. | `CLAUDE.md` |

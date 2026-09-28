@@ -55,9 +55,15 @@ the same commit.
 - **First run paid for itself:** over the P4 range it found a real Stop-gate false-interrupt bug
   and a stale diagram pin, both fixed in P5 T6.
 
+**Since v0.14.0 — scenarios ([[behaviour-specs]]):** the plan is found by `state_tools.py plan
+<branch>`; when it has a `## Behaviour delta` (already applied by light-finish 1b), Pass 1 runs
+`requirements.py check` and `owed` and reports their lines as Important, then judges only what a
+script cannot — does each pointed-at test assert the scenario's THEN, and did the diff change
+specified behaviour with no delta. The output gains a `Scenarios honoured:` line.
+
 ## Related
 
-[[branch-state]] · [[session-reflector]] · [[enforcement-layer]] · [[pre-tool-guard]]
+[[branch-state]] · [[session-reflector]] · [[enforcement-layer]] · [[pre-tool-guard]] · [[behaviour-specs]]
 
 ## Sources
 

@@ -2,12 +2,13 @@
 
 Claude Code plugin that packages a reusable way to run AI-assisted projects: AI-navigable wiki,
 architecture canon, spec→plan→TDD feature flow, a parallel review council, and drift detection with
-staged refactor. **State:** v0.13.1 — deterministic wiki freshness (hook + commit gates), native
+staged refactor. **State:** v0.14.0 — deterministic wiki freshness (hook + commit gates), native
 command-free invocation, an episodic branch-state layer with a hook-driven upgrade path, a
 PreToolUse guard (raw/ mirror · tests read-only mid-fix), a diff-vs-plan review at branch close,
 a Stop gate that asks for the lesson when a session hurt, a diagram layer (`wiki/diagrams/`,
 Archify JSON with commit-pinned sources), and provenance (`Agent-Session:` commit trailers →
-`strata_why.sh` → the session that wrote the code). This repo dogfoods its own patterns, including its own
+`strata_why.sh` → the session that wrote the code), and behaviour specs (entity `## Requirements` with
+WHEN/THEN scenarios, a plan's `## Behaviour delta` applied at branch close — after OpenSpec). This repo dogfoods its own patterns, including its own
 `wiki/` and gates.
 
 ## Phase / status
@@ -30,6 +31,7 @@ Archify JSON with commit-pinned sources), and provenance (`Agent-Session:` commi
 | Friction — Stop-gate trigger (d) asks for the gotcha when a session hurt | ✅ `test_p4_friction.sh` green |
 | Diagram layer — `wiki/diagrams/` (Archify JSON, commit-pinned sources) + `diagram_check.sh` | ✅ `test_p4_diagrams.sh` green · Strata's own `system` diagram |
 | Provenance — `Agent-Session:` trailer (prepare-commit-msg) + `strata_why.sh` + diff-review lenses / "decided, not asked" | ✅ `test_p5_provenance.sh` green · dogfooded via `.githooks/prepare-commit-msg` |
+| Behaviour specs — entity `## Requirements` + plan `## Behaviour delta` applied in light-finish 1b + `requirements.py check/owed` | ✅ `test_p6_requirements.sh` green · Strata's own stop-gate/commit-gate specified |
 | Verified by adopting a real external project | ⬜ pending (user will test elsewhere) |
 
 ## Stack
@@ -44,7 +46,7 @@ Claude Code plugin · Markdown skills + subagents · bundled shell/python templa
 - `templates/core/` — portable assets: `PROJECT_PATTERN.md`, `WIKI.md`, `wiki/` skeleton, `scripts/`, CLAUDE/ADR templates.
 - `templates/stacks/<stack>/` — per-stack architecture canon (`SCALABLE_ARCHITECTURE_REFERENCE.md`) + scaffold generator.
 - `reference/` — council personas, Diataxis doc-map, tool-integration (RTK / claude-mem / Caveman).
-- `templates/core/scripts/` — installed per target project: `sync_raw_mirror.sh`, `lib/pending_ingest.sh` (the one marker rule), `lib/state_tools.py` (the episodic-state schema/validator), `hooks/` (SessionStart + Stop + PreToolUse guard), `pre-commit/` guards, `strata_upgrade_check.sh` (re-sync diff reporter, backs `/strata:upgrade`), `diagram_check.sh` (P4 — pinned-source drift check for `wiki/diagrams/`; run by light-finish/audit, never a hook), `git-hooks/strata_commit_trailer.sh` + `strata_why.sh` (P5 provenance — a *git* hook, never registered in settings.json; install: `reference/agent-session-trailer.md`).
+- `templates/core/scripts/` — installed per target project: `sync_raw_mirror.sh`, `lib/pending_ingest.sh` (the one marker rule), `lib/state_tools.py` (the episodic-state schema/validator + `plan <branch>`, the one plan lookup), `lib/requirements.py` (P6 — behaviour-spec checker `check`/`owed`; run by light-finish/audit, never a hook), `hooks/` (SessionStart + Stop + PreToolUse guard), `pre-commit/` guards, `strata_upgrade_check.sh` (re-sync diff reporter, backs `/strata:upgrade`), `diagram_check.sh` (P4 — pinned-source drift check for `wiki/diagrams/`; run by light-finish/audit, never a hook), `git-hooks/strata_commit_trailer.sh` + `strata_why.sh` (P5 provenance — a *git* hook, never registered in settings.json; install: `reference/agent-session-trailer.md`).
 - `wiki/diagrams/` — this repo's own diagram layer: `system.architecture.json` (canonical, Archify JSON, sources pinned to a commit) + `system.html` (open it to see the whole plugin); `history/*.json` only when the semantics changed.
 - `bin/strata-upgrade-all` — on PATH in every Claude session (plugin `bin/`); `bin/strata-context-gate` — opt-in `Stop` hook the user adds to `~/.claude/settings.json` (asks for `/strata:handoff` past 60% context; hooks don't see plugin `bin/` on PATH, so the entry runs the newest cached copy — `reference/context-gate.md`); `templates/core/scripts.history` — hash of every shipped template version (what auto-sync may safely replace).
 - `docs/superpowers/{specs,plans}/` — Strata's own design specs & plans (dated).
@@ -66,6 +68,8 @@ bash scripts/test_p4_friction.sh         # Stop-gate trigger (d): friction count
 bash scripts/test_p4_diagrams.sh         # diagram layer: state_tools add-debt, diagram_check.sh (archify half runs where installed)
 bash scripts/test_p5_provenance.sh       # Agent-Session trailer hook (replays, empty msg, worktrees) + strata_why.sh
 bash scripts/test_context_gate.sh        # context gate: once per session, 1M/200k window, sidechain-proof
+bash scripts/test_p6_requirements.sh     # behaviour specs: requirements.py check/owed, state_tools.py plan
+python3 scripts/lib/requirements.py check  # do this wiki's Requirements scenarios point at tests that exist?
 bash scripts/strata_why.sh <file> -L a,b # which commits/sessions wrote these lines (transcripts stay local)
 bash scripts/gen_template_history.sh     # after ANY templates/core/scripts change (auto-sync safety manifest)
 bin/strata-upgrade-all [--dry-run]       # sync every Strata project on this machine to this plugin (on PATH in sessions)

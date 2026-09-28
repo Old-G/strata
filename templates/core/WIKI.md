@@ -117,6 +117,64 @@ Output — a section in `wiki/log.md` under the date; **the AI does NOT auto-fix
 
 ---
 
+## Requirements and behaviour deltas
+
+An entity page may state what the component **must do**, not only how it works: an optional
+`## Requirements` section after `## Current solutions`. (After OpenSpec's living specs; the
+section lives in the entity page, never in a second tree that could drift from it.)
+
+```markdown
+## Requirements
+
+### Blocks at most once per session
+The Stop gate never forces more than one continuation in a session.
+
+- Scenario: second stop — WHEN the gate already blocked once in this session THEN the next
+  Stop exits 0 · `test: scripts/test_p1_gates.sh::never blocks twice in one session`
+- Scenario: … — WHEN … THEN … · `manual: needs a live Claude Code session`
+```
+
+- A requirement is a `### ` heading (unique within the page — deltas address it by title), a
+  statement, and ≥1 scenario. A scenario is a `- Scenario:` item (continuation lines indented)
+  with `WHEN` and `THEN` and exactly one **pointer** — a code span starting `test:` or `manual:`
+  (other code spans are just text): `test: <repo-relative path>[::<string in that file>]` (a
+  pytest id `tests/x.py::TestA::test_b` works — every `::` segment must be in the file), or
+  `manual: <reason>` when only a live run can show it.
+- `## Requirements` is a reserved heading in entity pages; a section without `###` headings is
+  ignored, so a prose "requirements" paragraph is not parsed.
+- **A plan that changes specified behaviour carries a `## Behaviour delta`**, and is therefore a
+  file (`docs/superpowers/plans/<date>-<branch-slug>-plan.md`):
+
+  ```markdown
+  ## Behaviour delta
+
+  ### ADDED [[stop-gate]]
+  #### <new title>
+  <full body, as above>
+
+  ### MODIFIED [[stop-gate]]
+  #### <existing title>
+  <the full new body — it replaces the old one>
+
+  ### REMOVED [[commit-gate]]
+  #### <existing title>
+  Why: <one line>
+  ```
+
+  A verb block holds one or more `####` requirements; a body runs to the next heading and is
+  compared with whitespace collapsed, so re-wrapping is fine. A rename is REMOVED + ADDED. A
+  malformed `###`, a verb block with no `####`, or the same title twice is an error — never read
+  as "no delta". The plan is found by `state_tools.py plan <branch>`: the branch's last
+  `/`-segment, exactly, as `<date>-<segment>-plan.md`.
+- **Ingest never applies a delta** — the plan is ingested early (the commit gate sees to it),
+  before the behaviour exists. `light-finish` step 1b applies it on the branch, before the
+  merge / PR / keep / discard choice.
+- `python3 scripts/lib/requirements.py owed` (on the branch) lists what the wiki does not reflect
+  yet — exit 1 while anything is owed; `python3 scripts/lib/requirements.py check` lints every
+  Requirements section and proves each `test:` pointer resolves (not that it passes).
+
+---
+
 ## What we DON'T do
 
 - **No embeddings / vector stores** until hundreds of pages. `index.md` + structural search is enough.

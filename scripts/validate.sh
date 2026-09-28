@@ -275,6 +275,25 @@ else
   err "scripts/test_context_gate.sh is missing"
 fi
 
+echo "== 17. P6 behaviour specs — requirements.py check/owed; this wiki's Requirements resolve =="
+if [ -f scripts/test_p6_requirements.sh ]; then
+  if out="$(bash scripts/test_p6_requirements.sh 2>&1)"; then
+    ok "$(printf '%s' "$out" | tail -n 1)"
+  else
+    printf '%s\n' "$out" | grep '✗' >&2
+    err "P6 requirements tests failed (run: bash scripts/test_p6_requirements.sh)"
+  fi
+else
+  err "scripts/test_p6_requirements.sh is missing"
+fi
+# Dogfood: every test: pointer in Strata's own wiki must resolve (a promise with no test is a lie).
+if out="$(python3 scripts/lib/requirements.py check --strict 2>&1)"; then
+  ok "own wiki: ${out:-no Requirements sections yet}"
+else
+  printf '%s\n' "$out" | grep '^ERROR' >&2
+  err "this repo's wiki Requirements do not check (run: python3 scripts/lib/requirements.py check)"
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then echo "✅ Strata plugin validation PASSED"; else echo "❌ validation FAILED"; fi
 exit "$fail"

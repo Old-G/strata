@@ -18,6 +18,7 @@ Usage:
   state_tools.py validate <path>                         # exit 0 valid, 1 invalid (stderr: why)
   state_tools.py debt   <path>                            # print wiki_debt entries, one per line
   state_tools.py summary <path>                           # short human summary (SessionStart)
+  state_tools.py plan   <branch>                          # the branch's plan file (the one lookup)
 
 Exit codes: 0 success, 1 validation/usage error, 2 file not found.
 No third-party dependencies — stdlib only, matching the rest of this scripts/ tree.
@@ -233,6 +234,33 @@ def cmd_add_debt(args):
     return 0
 
 
+def find_plan(root: Path, branch: str):
+    """THE plan lookup (P6 spec D5) — requirements.py owed, light-finish and strata-diff-review
+    all use this instead of re-describing a glob. The branch's last `/`-segment, matched exactly
+    as docs/superpowers/plans/<YYYY-MM-DD>-<segment>-plan.md (so `spec-it` never picks up
+    `spec-it-v2`). Several dates → the newest wins, the rest are named on stderr."""
+    seg = slug(branch.rsplit("/", 1)[-1])
+    pat = re.compile(r"\d{4}-\d{2}-\d{2}-" + re.escape(seg) + r"-plan")
+    plans = root / "docs" / "superpowers" / "plans"
+    hits = sorted(p for p in plans.glob("*.md") if pat.fullmatch(p.stem)) if plans.is_dir() else []
+    if len(hits) > 1:
+        print(f"note: several plans for '{seg}': {', '.join(p.name for p in hits)} — "
+              f"using {hits[-1].name}", file=sys.stderr)
+    return hits[-1] if hits else None
+
+
+def cmd_plan(args):
+    if len(args) != 1:
+        print("usage: state_tools.py plan <branch>", file=sys.stderr)
+        return 1
+    root = find_repo_root()
+    plan = find_plan(root, args[0])
+    if plan is None:
+        return 1
+    print(plan.relative_to(root))
+    return 0
+
+
 def cmd_summary(args):
     if not args:
         print("usage: state_tools.py summary <path>", file=sys.stderr)
@@ -275,6 +303,7 @@ def main(argv):
         "debt": cmd_debt,
         "add-debt": cmd_add_debt,
         "summary": cmd_summary,
+        "plan": cmd_plan,
     }
     fn = dispatch.get(cmd)
     if fn is None:

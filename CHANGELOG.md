@@ -6,6 +6,27 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.14.0] — 2026-09-28
+
+### Added
+- **Behaviour specs, after OpenSpec's delta → archive.** An entity page may carry a `## Requirements`
+  section — `### <title>`, a statement, `- Scenario: … WHEN … THEN …` items each with one evidence
+  pointer (`` `test: <path>[::<needle>]` `` or `` `manual: <reason>` ``). A plan that changes specified
+  behaviour carries a `## Behaviour delta` (`### ADDED|MODIFIED|REMOVED [[entity]]` → `#### <title>`),
+  and is then always a file. Ingest summarises a delta and never applies it (the plan is ingested
+  before the behaviour exists); `light-finish` step 1b applies it on the branch, before the
+  merge / PR / keep / discard choice, so a PR carries its wiki change. Format: `WIKI.md`
+  "Requirements and behaviour deltas". Spec: `docs/superpowers/specs/2026-09-28-p6-behaviour-specs.md`.
+- `scripts/lib/requirements.py` (auto-synced): `check [--strict]` lints every Requirements section
+  and proves each `test:` pointer resolves (pytest ids too); `owed` lists what the branch's delta
+  still owes the wiki — exit 1 while anything is, and on a malformed delta, so a typo never reads
+  as "no delta". It never writes `wiki_debt`.
+- `state_tools.py plan <branch>` — the one plan lookup (`<date>-<last-segment>-plan.md`, exact),
+  used by `owed`, `light-finish` and `strata-diff-review`.
+- `strata-diff-review` reads `check`/`owed` and judges whether each pointed-at test asserts its THEN;
+  `audit` Phase 2 step 7 runs `check`. `validate.sh` §17 runs the tests and `check --strict` on this
+  repo's own wiki.
+
 ## [0.13.1] — 2026-09-28
 
 ### Fixed

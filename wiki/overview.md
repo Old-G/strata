@@ -51,6 +51,12 @@ lenses and names the decisions nobody asked for.
 context is filling up into `.claude/handoff/handoff-<session>.md` (drift-close, verified commit,
 a ready first prompt) and stops, so work continues in a fresh session instead of a compacted one.
 
+**v0.14.0 — P6, behaviour specs** ([[p6-behaviour-specs]]): OpenSpec's one idea Strata lacked — a
+living statement of what the system must do, changed only by deltas merged when a change closes.
+[[behaviour-specs]]: `## Requirements` on entity pages (WHEN/THEN scenarios, each pointing at a
+test), a plan's `## Behaviour delta` applied by light-finish on the branch before integrating,
+`requirements.py` proving every pointer resolves — the first slice of [[executable-wiki]].
+
 **Still in planning**, driven by [[vnext-brief]]: [[hq-mode]], then [[ablate]],
 [[session-reflector]], [[gardener]] (now carrying the playbook's `bands.yaml` σ-tier pattern as
 its reference design), [[executable-wiki]], [[career-ledger]], [[agent-teams]], [[wiki-emit]].
@@ -99,6 +105,8 @@ pipeline as a template without running it on itself.
   for the gotcha that the second-occurrence rule in [[diff-review]] later lifts to `CLAUDE.md`.
 - [[diagram-layer]] — `wiki/diagrams/` → pins verified by Archify, drift surfaced by
   `diagram_check.sh` as [[branch-state]] `wiki_debt`; a human artifact, never a gate.
+- [[behaviour-specs]] — entity `## Requirements` → changed by a plan's delta at light-finish 1b,
+  checked by `requirements.py`, read by [[diff-review]]; proves pointers resolve, never runs tests.
 
 ## Layout
 

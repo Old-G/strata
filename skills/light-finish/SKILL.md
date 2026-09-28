@@ -6,8 +6,18 @@ description: Use when implemented work needs integrating and the branch wrapped 
 # light-finish — integrate the work, minimally
 
 1. **Green?** Run the project's test/build command. If it fails, stop and report — never integrate broken work.
+   **1b. Apply the behaviour delta — on the branch, before anything else.** If the branch's plan
+   (`python3 scripts/lib/state_tools.py plan <branch>`) has a `## Behaviour delta`, apply it to
+   `wiki/entities/`: ADDED → append the requirement verbatim under `## Requirements` (create the
+   section, or the page, if missing); MODIFIED → replace that requirement's body; REMOVED → delete
+   it. Commit on the branch, so merge, PR and keep all carry it and discard throws it away.
+   `verify`: `python3 scripts/lib/requirements.py owed` prints nothing and `python3
+   scripts/lib/requirements.py check` shows no `ERROR` on the pages the delta touched — both
+   outputs go into this branch's `wiki/log.md` entry. `scripts/lib/requirements.py` absent → the repo predates it: say "run
+   /strata:upgrade" and treat the verify as **not passed**. (OpenSpec's `archive`; format in
+   "Requirements and behaviour deltas", `${CLAUDE_PLUGIN_ROOT}/templates/core/WIKI.md`.)
 2. **Plan compliance — cannot be skipped, cannot block.** Spawn the `strata-diff-review` subagent
-   (read-only; it finds the plan itself — `docs/superpowers/plans/*<branch>*`, else the branch
+   (read-only; it finds the plan itself — `state_tools.py plan <branch>`, else the branch
    state's `goal`/`verify`, else it returns `VERDICT: no plan to check against` and that is a
    legitimate result for a trivial-tier change). Show its findings table to the human verbatim.
    Every **Important** finding is written into the branch state's `gotchas` (the P2 file — it is

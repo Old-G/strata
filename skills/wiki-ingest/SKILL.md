@@ -43,8 +43,13 @@ doc. Goal verify: every entity the source names has an `entities/` page, and `in
    - **Current solutions** — how it is implemented right now.
    - **Related** — `[[wiki-links]]` to neighbouring entities.
    - **Sources** — backlinks to the `sources/` pages that mention it.
+   - **Requirements** *(optional)* — what it must do, as checkable WHEN/THEN scenarios; format in
+     "Requirements and behaviour deltas", `${CLAUDE_PLUGIN_ROOT}/templates/core/WIKI.md`.
    If the entity exists, add/refine a section and append the new source backlink — do
    not clobber prior knowledge.
+   **A source with a `## Behaviour delta` (a plan) is summarised, never applied**: leave every
+   `## Requirements` section as it is. The plan is ingested before its behaviour exists;
+   `light-finish` merges the delta at branch close.
 4. If the source anchors a decision, create/update `wiki/decisions/adr-<n>-<slug>.md`
    (ADR number + title + context + decision + consequences).
 5. Augment `wiki/glossary.md` with any new terms (short definitions; pin facts at risk

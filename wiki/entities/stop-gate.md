@@ -2,7 +2,7 @@
 title: Stop gate (A1)
 type: entity
 created: 2026-08-15
-updated: 2026-09-26
+updated: 2026-09-28
 links: [enforcement-layer, pending-ingest-marker, commit-gate, branch-state, friction-capture]
 ---
 
@@ -72,6 +72,22 @@ Measured: a 5 MB transcript adds ≈90 ms to the gate (`test_p4_friction.sh`, be
 lessons: bash 3.2 (macOS `/bin/bash`) mis-parses a quote inside `"${var:-default}"` — keep defaults in
 their own assignment; BSD `seq 1 0` counts *down* and emits two lines — generate fixtures with
 arithmetic loops.
+
+## Requirements
+
+### Blocks at most once per session
+The Stop gate never forces more than one continuation in a session, however much wiki work is owed.
+
+- Scenario: a marker created this session — WHEN a pending-ingest marker was written in the current
+  session THEN the first Stop is blocked · `test: scripts/test_p1_gates.sh::blocks on a marker created this session`
+- Scenario: second stop — WHEN the gate already blocked once in this session THEN the next Stop
+  exits 0 · `test: scripts/test_p1_gates.sh::never blocks twice in one session`
+
+### Ignores work that predates the session
+Markers and dirty files that existed before the session started are not this session's debt.
+
+- Scenario: an old marker — WHEN the only pending marker is older than the session THEN Stop is not
+  blocked · `test: scripts/test_p1_gates.sh::ignores markers older than the session (ADR #4)`
 
 ## Related
 

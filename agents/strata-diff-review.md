@@ -15,8 +15,9 @@ but the question nobody else asks is the first one: **did we build what we said 
 ## Step 0 — Locate the plan (stop cleanly if there is none)
 
 1. Branch: `git rev-parse --abbrev-ref HEAD`. Slug: the branch with `/` → `-`.
-2. Plan file: `ls docs/superpowers/plans/*<slug>*` (also try the slug without the `strata-`
-   prefix, and the spec under `docs/superpowers/specs/`).
+2. Plan file: `python3 scripts/lib/state_tools.py plan <branch>` (the one lookup; older repos
+   without it: `ls docs/superpowers/plans/*<slug>*`, also without the `strata-` prefix), and the
+   spec under `docs/superpowers/specs/`.
 3. If none: `python3 scripts/lib/state_tools.py path <branch>` → if that file exists, its
    `goal` and `verify` fields are the plan — a one-line plan is still a plan.
 4. If neither exists: print exactly `VERDICT: no plan to check against` with one line saying
@@ -55,6 +56,14 @@ citation (`plan §<task>` ↔ `file:line`):
   itself marks it deferred.
 - **Done, not planned** — in the diff, nowhere in the plan. Scope creep is Important when it
   changes behaviour the tests don't cover; a comment or a test is a Nit.
+- **Scenarios honoured?** — if the plan has a `## Behaviour delta`, it is the plan's promise in
+  checkable form, and light-finish has applied it to `wiki/entities/` before calling you. Run
+  `python3 scripts/lib/requirements.py check` and `owed`: every `ERROR` or owed line = Important
+  (the script is the deterministic half — do not re-derive it). Your judgement covers what it
+  cannot: does each pointed-at test actually assert the scenario's THEN (a test that checks
+  something else = Important); and does the diff change behaviour a `## Requirements` section
+  states, or a test a scenario points at, with no delta saying so = Important (the wiki now
+  promises what the code no longer does). `manual:` scenarios are listed, not findings.
 - **Verify line honoured?** — the plan's `verify:` commands: were they run, is there evidence
   (test file, log line, CI)? "It should work" is a finding.
 - **Decided, not asked** — choices the agent made on its own that neither the plan nor the
@@ -98,6 +107,7 @@ DIFF: <base>...HEAD, <n> files, +<a>/-<d>
 
 Nits not shown: <n>
 Verify lines honoured: <k>/<total> — <which ones lack evidence>
+Scenarios honoured: <k>/<total> — <which fail check/owed or assert something else> (or "no behaviour delta")
 
 LENSES:
   1. <lens name> — <file>, <file>
