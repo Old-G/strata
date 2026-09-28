@@ -36,7 +36,7 @@ at exactly the moment the session is cut.
   `##` headings; `## Prompt` holds exactly one fenced block — the new session's whole first
   message. Tools (e.g. Orca) parse these, so they are a contract.
 - **Trigger:** plain language (EN+RU), or the context gate `bin/strata-context-gate` — a `Stop`
-  hook that blocks once per session past `STRATA_HANDOFF_PCT` (default 60%) of the window and asks
+  and `PostToolUse` hook (mid-turn too, since 0.13.1) that blocks once per session past `STRATA_HANDOFF_PCT` (default 60%) of the window and asks
   for the skill. Not registered by the plugin ([ADR #1](../decisions/adr-1-deterministic-enforcement.md):
   no global hooks): the user adds it to `~/.claude/settings.json`
   ([reference/context-gate.md](../../reference/context-gate.md)). Hooks do NOT see the plugin's

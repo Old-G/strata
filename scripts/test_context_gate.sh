@@ -34,6 +34,10 @@ gate() { # gate <session> <transcript> [stop_hook_active]
   printf '{"session_id":"%s","transcript_path":"%s","cwd":"%s","stop_hook_active":%s,"last_assistant_message":"x"}' \
     "$1" "$2" "$WORK/proj" "${3:-false}" | bash "$GATE"
 }
+ptu() { # ptu <session> <transcript> [extra json fields] — a PostToolUse input
+  printf '{"session_id":"%s","transcript_path":"%s","cwd":"%s","hook_event_name":"PostToolUse","tool_name":"Bash"%s}' \
+    "$1" "$2" "$WORK/proj" "${3:-}" | bash "$GATE"
+}
 decision() { local out; out="$(gate "$@")"; [ -z "$out" ] && { echo clear; return; }
   printf '%s' "$out" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("decision","?"))' 2>/dev/null || echo malformed; }
 
@@ -62,6 +66,14 @@ big="$(python3 -c 'print("y"*400000)')"
 out="$(printf '{"session_id":"s15","transcript_path":"%s","cwd":"%s","stop_hook_active":false,"last_assistant_message":"%s"}' \
   "$(transcript t15 190000)" "$WORK/proj" "$big" | bash "$GATE")"
 case "$out" in *'"block"'*) ok "a 400 KB last message still blocks (input read from stdin)" ;; *) bad "large input did not block" ;; esac
+
+echo "== mid-turn (PostToolUse) =="
+out="$(ptu p1 "$(transcript tp1 130000)")"
+case "$out" in *'"block"'*"Finish only the step in progress"*) ok "PostToolUse over the threshold → block, mid-turn wording" ;; *) bad "PostToolUse: $out" ;; esac
+check "the Stop after a mid-turn ask → clear (one marker per session)" "$(decision p1 "$WORK/tp1")" clear
+check "PostToolUse under the threshold → clear" "$( [ -z "$(ptu p2 "$(transcript tp2 100000)")" ] && echo clear || echo block)" clear
+check "a subagent's tool call (agent_id) → clear" "$( [ -z "$(ptu p3 "$(transcript tp3 190000)" ',"agent_id":"a1","agent_type":"general-purpose"')" ] && echo clear || echo block)" clear
+check "…and the main agent is still asked afterwards" "$(decision p3 "$WORK/tp3")" block
 
 echo
 echo "Context gate: $pass passed, $fail failed"

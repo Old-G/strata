@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# strata-context-gate — a Claude Code `Stop` hook. Once the main conversation's context passes
-# STRATA_HANDOFF_PCT (default 60) percent of its window, it blocks the stop ONCE per session and
-# asks for /strata:handoff, so the work continues in a fresh session instead of a tired one.
+# strata-context-gate — a Claude Code `Stop` and `PostToolUse` hook. Once the main conversation's
+# context passes STRATA_HANDOFF_PCT (default 60) percent of its window, it blocks ONCE per session
+# and asks for /strata:handoff, so the work continues in a fresh session instead of a tired one.
+# PostToolUse catches a turn that never stops: queued messages and background-agent results keep
+# one turn running past the threshold until auto-compact. Subagent tool calls are skipped.
 #
 # Not a plugin hook — the plugin ships none (ADR #1). Hooks do NOT get the plugin's bin/ on PATH
 # (only the Bash tool does), so ~/.claude/settings.json calls the newest installed copy from the
@@ -87,8 +89,10 @@ def prune(marker_dir):
 
 def main():
     data = json.load(sys.stdin)
-    if data.get("stop_hook_active"):
+    # Why agent_id: a subagent's tool call carries the MAIN transcript; the handoff is the main agent's.
+    if data.get("stop_hook_active") or data.get("agent_id"):
         return
+    mid_turn = data.get("hook_event_name") == "PostToolUse"
     try:
         threshold = float(os.environ.get("STRATA_HANDOFF_PCT", "60"))
     except ValueError:
@@ -118,10 +122,14 @@ def main():
     prune(marker_dir)
     skill = os.environ.get("STRATA_GATE_SKILL", "")
     fallback = f" If that skill is not available, follow {skill} by hand." if os.path.isfile(skill) else ""
+    when = ("Finish only the step in progress, start nothing new, and then run"
+            if mid_turn else "Before stopping, run")
     reason = (f"Context is at {pct:.0f}% of the {window // 1000}k window (handoff threshold "
-              f"{threshold:g}%). Before stopping, run the strata:handoff skill now: it saves this "
+              f"{threshold:g}%). {when} the strata:handoff skill now: it saves this "
               f"session to .claude/handoff/handoff-{session}.md with a ready first prompt and stops, "
-              f"so the work continues in a fresh session.{fallback} This gate asks once per session.")
+              f"so the work continues in a fresh session. The owner set this gate up for every session, "
+              f"however small the task; the handoff keeps this session's own rules on commits and "
+              f"pushes (told not to commit, it commits nothing).{fallback} This gate asks once per session.")
     print(json.dumps({"decision": "block", "reason": reason}))
 
 

@@ -1,8 +1,8 @@
 # Context gate — hand off before the context window tires
 
-`bin/strata-context-gate` is a Claude Code `Stop` hook. When the main conversation's context
-passes a threshold (default **60%** of its window) it blocks the stop **once per session** and
-asks for `/strata:handoff`, which saves the session into `.claude/handoff/handoff-<session>.md`
+`bin/strata-context-gate` is a Claude Code `Stop` and `PostToolUse` hook. When the main
+conversation's context passes a threshold (default **60%** of its window) it blocks **once per
+session** and asks for `/strata:handoff`, which saves the session into `.claude/handoff/handoff-<session>.md`
 with a ready first prompt and stops. The work then continues in a fresh session.
 
 The plugin ships no global hooks ([ADR #1](../wiki/decisions/adr-1-deterministic-enforcement.md)),
@@ -13,8 +13,10 @@ cache. A plugin update is picked up with no settings change; with Strata uninsta
 
 ## Install (all projects)
 
-Add a second entry to the `Stop` array in `~/.claude/settings.json` — do not replace entries
-other tools own:
+Add the same command under `Stop` **and** `PostToolUse` in `~/.claude/settings.json` — do not
+replace entries other tools own. `Stop` asks when a turn ends; `PostToolUse` asks mid-turn, for a
+turn that never ends (queued messages and background-agent results keep one turn running until
+auto-compact — seen 2026-09-28: 53% → 67% in one turn, no `Stop` between).
 
 ```json
 {
@@ -22,10 +24,16 @@ other tools own:
     "Stop": [
       { "hooks": [ { "type": "command",
         "command": "g=$(ls -d \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}\"/plugins/cache/strata/strata/*/bin/strata-context-gate 2>/dev/null | sort -V | tail -1); if [ -n \"$g\" ]; then bash \"$g\"; fi" } ] }
+    ],
+    "PostToolUse": [
+      { "matcher": "*", "hooks": [ { "type": "command",
+        "command": "g=$(ls -d \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}\"/plugins/cache/strata/strata/*/bin/strata-context-gate 2>/dev/null | sort -V | tail -1); if [ -n \"$g\" ]; then bash \"$g\"; fi" } ] }
     ]
   }
 }
 ```
+
+Use 0.13.1 or newer before adding `PostToolUse`: older copies do not skip subagent tool calls.
 
 For one project only, put the same entry in that project's `.claude/settings.json`.
 
@@ -39,7 +47,9 @@ For one project only, put the same entry in that project's `.claude/settings.jso
   `~/.claude/settings.json`), or when more than 200k is already used; otherwise 200k. The hook
   input names no model, so a mid-session `/model` switch is not seen.
 - **Once per session:** a marker in `$TMPDIR/strata-context-gate/<session>` (older than 14 days
-  pruned); `stop_hook_active` is always let through.
+  pruned), shared by both events; `stop_hook_active` is always let through.
+- **Main agent only:** a subagent's tool call carries the main transcript but also `agent_id`,
+  and is skipped. Mid-turn the reason asks to finish only the step in progress first.
 
 ## Knobs
 

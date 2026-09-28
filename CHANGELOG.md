@@ -6,6 +6,19 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.13.1] — 2026-09-28
+
+### Fixed
+- **The context gate now also asks mid-turn.** `bin/strata-context-gate` runs as a `PostToolUse`
+  hook as well as `Stop`: a turn that never stops — queued user messages and background-agent
+  results feeding the same turn — used to grow past the 60% threshold to auto-compact without one
+  `Stop` in between, so no handoff was asked. Mid-turn it asks to finish only the step in progress
+  and hand off; a subagent's tool call (`agent_id` in the input — it carries the main transcript)
+  is skipped; one marker per session covers both events. The reason now says the handoff keeps
+  the session's own commit rules, since a model refused it over a "do not commit" instruction.
+  Install: add the same command under `PostToolUse` (reference/context-gate.md).
+  `scripts/test_context_gate.sh` 23 assertions.
+
 ## [0.13.0] — 2026-09-28
 
 ### Removed
