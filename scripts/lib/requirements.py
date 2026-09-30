@@ -33,6 +33,9 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+# Importing state_tools would drop scripts/lib/__pycache__/ into the TARGET repo, which may
+# not ignore it (seen in an adopted repo after the 0.15.0 rollout).
+sys.dont_write_bytecode = True
 from state_tools import find_plan  # noqa: E402 — the one plan lookup (spec D5)
 
 VERBS = ("ADDED", "MODIFIED", "REMOVED")

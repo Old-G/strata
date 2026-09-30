@@ -6,6 +6,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.15.1] — 2026-09-30
+
+### Fixed
+- `scripts/lib/requirements.py` no longer leaves `scripts/lib/__pycache__/` in the target repo
+  (importing `state_tools` wrote bytecode; a repo that does not ignore `__pycache__` showed it as
+  untracked after the 0.15.0 rollout). `test_p6_requirements.sh` asserts it.
+
 ## [0.15.0] — 2026-09-30
 
 ### Added

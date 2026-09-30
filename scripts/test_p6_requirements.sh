@@ -196,6 +196,8 @@ check "Requirements prose with no ### is ignored"  "$(run_check)" ""
 
 page gate ''
 check "page without Requirements → nothing"    "$(printf '%s' "$(run_check)" | grep -c '^ERROR')" "0"
+rm -rf scripts/lib/__pycache__; run_check >/dev/null; python3 "$RQ" owed >/dev/null 2>&1
+check "leaves no __pycache__ in the target repo" "$([ -d scripts/lib/__pycache__ ] && echo yes || echo no)" "no"
 
 # --- plan lookup --------------------------------------------------------------
 echo "P6 / T1 — state_tools.py plan"
