@@ -6,6 +6,20 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.15.0] — 2026-09-30
+
+### Added
+- **Evidence for LLM-behaviour changes is an eval, not a run.** After Anthropic's "Automating eval
+  design and hillclimbing": `feature`'s evidence floor now asks, for a change to a prompt, skill,
+  tool description, model/effort or the harness feeding them, for the same eval before and after
+  on a held-out split (train-up/test-flat is reverted), or an explicit `no-eval: <reason>`.
+  `strata-diff-review` reports the gap as Important, and a prompt carrying a failing case verbatim.
+  Method in `reference/llm-evals.md`; tooling delegated to Claude Code's bundled
+  `/claude-api build-eval` · `hillclimb` (verified in 2.1.283) or the project's own harness —
+  Strata ships no eval harness (its routing evals were removed in 0.7.0).
+- `CLAUDE.md` rule: a misroute is fixed at its cause, never by appending the phrase that missed.
+- `wiki/entities/ablate.md` gains the measuring method its protocol lacked.
+
 ## [0.14.0] — 2026-09-28
 
 ### Added

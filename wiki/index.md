@@ -80,6 +80,7 @@ solutions / Related / Sources.
 | [[friction-capture]] | P4 — Stop-gate trigger (d): interrupts, denials and tool errors counted from the session transcript; a painful session must record a `gotcha` or a `no-gotcha:` line. |
 | [[session-handoff]] | v0.10 — `/strata:handoff`: drift-close + verified commit + `.claude/handoff/handoff-<session>.md` with a ready first prompt, then stop; works without Strata. |
 | [[behaviour-specs]] | P6 — what a component must do: entity `## Requirements` (WHEN/THEN + `test:` pointer), changed only by a plan's `## Behaviour delta`, merged in light-finish 1b; `requirements.py` checks. |
+| [[llm-eval-evidence]] | v0.15 — an LLM-behaviour change is proven by an eval before/after on a held-out split, not one run; tooling delegated to `/claude-api build-eval`·`hillclimb` or the project's harness; `reference/llm-evals.md`. |
 | [[diagram-layer]] | P4 — `wiki/diagrams/`: Archify JSON with commit-pinned sources rendered to one self-contained HTML; `diagram_check.sh` turns changed pins into `wiki_debt`. |
 
 ---

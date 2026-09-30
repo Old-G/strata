@@ -57,6 +57,11 @@ living statement of what the system must do, changed only by deltas merged when 
 test), a plan's `## Behaviour delta` applied by light-finish on the branch before integrating,
 `requirements.py` proving every pointer resolves — the first slice of [[executable-wiki]].
 
+**v0.15.0 — LLM-behaviour evidence** ([[llm-eval-evidence]]): after Anthropic's eval-design and
+hillclimbing method — a change to what a model does is proven by an eval before/after on a held-out
+split, not one run; the tooling is delegated (`/claude-api build-eval`·`hillclimb`, or the project's
+own harness), never rebuilt; [[ablate]] gains its measuring method.
+
 **Still in planning**, driven by [[vnext-brief]]: [[hq-mode]], then [[ablate]],
 [[session-reflector]], [[gardener]] (now carrying the playbook's `bands.yaml` σ-tier pattern as
 its reference design), [[executable-wiki]], [[career-ledger]], [[agent-teams]], [[wiki-emit]].

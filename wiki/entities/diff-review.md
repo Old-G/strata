@@ -61,9 +61,14 @@ the same commit.
 script cannot — does each pointed-at test assert the scenario's THEN, and did the diff change
 specified behaviour with no delta. The output gains a `Scenarios honoured:` line.
 
+**Since v0.15.0 — LLM-behaviour evidence ([[llm-eval-evidence]]):** a diff that changes a prompt,
+skill, tool description, model id/effort or the harness feeding them must show an eval before/after
+on a held-out split, or a `no-eval: <reason>`; neither = Important, and so is a prompt carrying a
+failing case or the missed phrase verbatim. This one check also runs when there is no plan.
+
 ## Related
 
-[[branch-state]] · [[session-reflector]] · [[enforcement-layer]] · [[pre-tool-guard]] · [[behaviour-specs]]
+[[branch-state]] · [[session-reflector]] · [[enforcement-layer]] · [[pre-tool-guard]] · [[behaviour-specs]] · [[llm-eval-evidence]]
 
 ## Sources
 

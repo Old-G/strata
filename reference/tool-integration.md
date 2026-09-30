@@ -143,6 +143,19 @@ prints one skip line; the render waits for a machine that has it.
 
 ---
 
+## claude-api evals — the EVIDENCE for LLM-behaviour changes
+
+Claude Code's bundled `claude-api` skill ships `/claude-api build-eval` (cases from production
+data, graders, a train/test split, a runner scaffold) and `/claude-api hillclimb` (one structural
+change per round; revert on regression or on train-up/test-flat). Results live in the target repo
+under `.claude/hillclimb/<flow>/` (`summary.json`, `trajectory/scores.tsv`, `_state.json`).
+Verified present in Claude Code 2.1.283 (the skill's subcommand list also has `prompt-audit` and
+`cost-optimize`). Strata's stance: **delegate, never rebuild** — Strata's own routing-eval
+harness (v0.7.0) was removed the day it shipped. `feature`'s evidence floor and
+`strata-diff-review` point here via `reference/llm-evals.md`; for apps on another provider the
+project's own harness is the default, since the skill steers away from non-Claude code when it
+triggers on its own.
+
 ## Whiteboard (dev.fast) — optional viewer, not a dependency
 
 **What it is.** [devdotfast/whiteboard](https://github.com/devdotfast/whiteboard) — an MIT
@@ -169,7 +182,8 @@ it, detects it, or depends on it.
 | Superpowers | PROCESS skills | n/a (workflow) | wrap, don't replace | no — global |
 | Caveman | prose compression | ~4–10% | optional, low priority | no — global |
 | Archify | diagram layer renderer + pin verifier | n/a (human artifact) | rely-if-present; never a gate, never from a hook | no — global skill |
+| claude-api evals | build-eval + hillclimb for LLM-behaviour evidence | n/a (evidence) | delegate; paid runs are the owner's call, never CI by default | no — bundled with Claude Code |
 | Whiteboard | branch-review canvas (optional viewer) | n/a (human artifact) | ideas borrowed (P5); never called or detected | no — desktop app |
 
-All four are **install-once, machine-global**. Strata composes them; it does not
+The global tools above are **install-once, machine-global** (the `claude-api` evals ship inside Claude Code itself). Strata composes them; it does not
 ship them.

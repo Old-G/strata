@@ -40,12 +40,22 @@ Design pressure it applies to Strata now: each SKILL.md should trend toward task
 exit criteria + verify, cutting step-by-step hand-holding written for 2025-era models. Shorter,
 sharper descriptions also route better — see [[native-invocation]].
 
+**How to measure it (2026-09-30)** — the protocol above says *what* to ablate, not how to trust
+the answer. Anthropic's eval-design/hillclimbing method supplies it ([[llm-eval-evidence]],
+`reference/llm-evals.md`): cases sampled from real sessions (friction-marked transcripts first),
+never chosen because today's model fails them; a split into train/test so a rule is judged on
+cases it was not tuned on; a noise floor measured first (if run-to-run noise exceeds the effect
+of one rule, a single ablation run proves nothing); infrastructure failures reported apart from
+misses — the exact failure that killed Strata's routing evals. Removal is the hillclimb run in
+reverse: keep a deletion only when test scores do not drop. The cost warning stands: machinery
+whose upkeep exceeds its yield is itself an ablation candidate.
+
 Open: cadence — fixed 6 months, or triggered on a model-version change detected at SessionStart
 (OQ#6).
 
 ## Related
 
-[[enforcement-layer]] · [[native-invocation]] · [[gardener]]
+[[enforcement-layer]] · [[native-invocation]] · [[gardener]] · [[llm-eval-evidence]]
 
 ## Sources
 

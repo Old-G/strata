@@ -21,8 +21,12 @@ but the question nobody else asks is the first one: **did we build what we said 
 3. If none: `python3 scripts/lib/state_tools.py path <branch>` → if that file exists, its
    `goal` and `verify` fields are the plan — a one-line plan is still a plan.
 4. If neither exists: print exactly `VERDICT: no plan to check against` with one line saying
-   this was a trivial-tier change and the compliance pass does not apply. **Stop.** That is a
-   legitimate outcome, not a failure — do not invent a plan from the diff.
+   this was a trivial-tier change and the compliance pass does not apply. **Stop** — with one
+   exception that needs no plan: if the diff changes LLM behaviour (a prompt, a skill, a tool
+   description, a model id or effort level, the harness feeding them), run the **LLM-behaviour
+   evidence** check from Step 2 and put its row(s) in a findings table under the VERDICT line. A
+   one-line prompt tweak is the commonest case of that rule and is usually trivial-tier. Otherwise
+   stopping is a legitimate outcome, not a failure — do not invent a plan from the diff.
 
 ## Step 1 — Get the diff
 
@@ -64,6 +68,14 @@ citation (`plan §<task>` ↔ `file:line`):
   something else = Important); and does the diff change behaviour a `## Requirements` section
   states, or a test a scenario points at, with no delta saying so = Important (the wiki now
   promises what the code no longer does). `manual:` scenarios are listed, not findings.
+- **LLM-behaviour evidence** — if the diff changes a prompt, a skill, a tool description, a model
+  id or effort level, or the harness feeding them, the evidence must be an eval run before and
+  after on a held-out split (scores in a commit message, `wiki/log.md`, or
+  `.claude/hillclimb/<flow>/summary.json`), or an explicit `no-eval: <reason>` in the branch
+  state's `decisions` or a commit message. Neither = Important. A prompt or description that now
+  contains a failing case's input, its expected answer, or the exact phrase that missed, verbatim
+  = Important (fits the case, not the class).
+  Method: `reference/llm-evals.md` in the Strata plugin.
 - **Verify line honoured?** — the plan's `verify:` commands: were they run, is there evidence
   (test file, log line, CI)? "It should work" is a finding.
 - **Decided, not asked** — choices the agent made on its own that neither the plan nor the

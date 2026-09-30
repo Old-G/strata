@@ -57,4 +57,6 @@ finds a page contradicting the glossary, the glossary wins — fix the page.
 | Requirements (section) | Optional, reserved `## Requirements` on an entity page: `###` title + statement + `- Scenario:` items with WHEN/THEN and one `test:`/`manual:` pointer. What the component must do. | [[behaviour-specs]] |
 | Behaviour delta | A plan's `## Behaviour delta` — `ADDED/MODIFIED/REMOVED [[entity]]` → `#### <title>`; never applied at ingest, applied by light-finish step 1b on the branch (OpenSpec's archive). | [[behaviour-specs]] |
 | evidence pointer | A code span starting `test: <path>[::<needle>]` or `manual: <reason>` in a scenario; `requirements.py check` proves it resolves, not that it passes. | [[behaviour-specs]] |
+| hillclimbing | Improving a prompt/skill/model setup one structural change per round against an eval, accepting only when train and test both rise; train-up/test-flat = overfit, reverted. | [[llm-eval-evidence]] |
+| no-eval | `no-eval: <reason>` — the recorded, escapable admission that an LLM-behaviour change ships without an eval; its evidence is then called what it is. | [[llm-eval-evidence]] |
 | thin glue | Strata composes claude-mem, RTK, and the project's tests; it never reimplements memory, token proxying, or testing. | `CLAUDE.md` |
