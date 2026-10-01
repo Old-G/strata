@@ -142,7 +142,9 @@ it) and **no `meta.viewBox`**: an explicitly declared canvas is held to 3.0's de
 floor (8 px labels must stay ≥ 6 px at 1440×900, i.e. ≤ 1240 px wide), while an omitted one is sized
 by the renderer and passes. For `local-only` forges `meta.repository.url` is the origin **exactly** as `git remote get-url
 origin` prints it — Archify compares it verbatim and resolves no SSH host aliases (GitHub and Gitee
-normalise `.git` and HTTPS/SSH). `meta.views` is accepted but ignored since 3.0 (guided views were removed). Strata renders
+normalise `.git` and HTTPS/SSH). `meta.views` is accepted but ignored since 3.0 (guided views were removed). Every connection carries
+a stable `id` (`<from>-<to>` is enough): 3.x `compare` refuses a side whose connections have none
+(`delta/relationship-id-required`) — two diagrams on this machine had none. Strata renders
 with `deliver` (works on 2.x and 3.x); 3.x `finalize` adds a browser check and is optional. Both
 write receipts beside the HTML (`<name>.delivery.json`, transient `*.delivery-pending.json` /
 `*-lock.json`, and with `finalize` also `*.finalize*.json`, `*.browser-check.json`): put their summary in the `wiki/log.md` line, then

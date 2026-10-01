@@ -6,6 +6,12 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.16.1] — 2026-10-01
+
+### Changed
+- The diagram JSON contract also requires a stable `id` on every connection: Archify 3.x `compare`
+  refuses a side without them (`delta/relationship-id-required`), which `light-finish` step 5 needs.
+
 ## [0.16.0] — 2026-10-01
 
 ### Changed
