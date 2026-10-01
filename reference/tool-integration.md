@@ -150,7 +150,10 @@ delete them — they are run evidence, never committed (the gitignore template l
 `diagram_check.sh` prints `pins NOT verified` when Archify fails before checking pins (a schema
 error, an unreadable result) and `pins hold, but archify's quality check failed` when only a later
 gate failed (3.0's desktop-readability) — either way the diagram owes a repair for the installed
-Archify, made by the next branch close. Checked against 3.0.1 on 2026-10-01.
+Archify, made by the next branch close. `compare` validates **both** sides on 3.x, so a base
+written before 3.0 fails it: compare against a temporary copy of the base normalised to this
+contract (add `meta.output`, drop `meta.viewBox` — delivery and presentation, not semantics;
+`semanticSha256` ignores them), never against an edited tracked file. Checked against 3.0.1 on 2026-10-01.
 
 **Declared, not bundled.** Install once per machine: `npx skills add tt-a1i/archify -g -a
 claude-code -s archify -y` (the skills CLI writes to `~/.claude/skills/archify`;

@@ -36,8 +36,8 @@ description: Use when implemented work needs integrating and the branch wrapped 
    each one through the **archify** skill: edit only the changed area of `<name>.architecture.json`, set
    `meta.repository.revision` to the branch's latest commit, `validate --repo-root .` → `deliver` to
    `<name>.html` (delete the receipt files it writes beside it once summarised; a diagram older than
-   Archify 3.0 also needs `meta.output` and no `meta.viewBox` — the diagram JSON contract in `${CLAUDE_PLUGIN_ROOT}/reference/tool-integration.md` (Archify section)), then `compare` the previous JSON (`git show <base>:wiki/diagrams/<name>.architecture.json`)
-   against the new one: if `summary.semanticSha256` differs, `mkdir -p wiki/diagrams/history` and copy the new JSON to
+   Archify 3.0 also needs `meta.output` and no `meta.viewBox` — the diagram JSON contract in `${CLAUDE_PLUGIN_ROOT}/reference/tool-integration.md` (Archify section)), then `compare` the previous JSON (`git show <base>:wiki/diagrams/<name>.architecture.json`, as a
+   temporary copy normalised to the contract when it predates Archify 3.0) against the new one: if `summary.semanticSha256` differs, `mkdir -p wiki/diagrams/history` and copy the new JSON to
    `wiki/diagrams/history/<YYYY-MM-DD>-<name>.architecture.json` and put the compare summary counts in this
    entry's `wiki/log.md` line; history HTML is never committed. Archify not installed → the debt item stays
    and the log line says so; do not hand-edit the HTML. A `pins NOT verified` or `quality check failed`
