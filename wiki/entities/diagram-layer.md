@@ -64,6 +64,13 @@ zero external references) is what proved the path.
 - **Mermaid** leaves SAR §14 and is not converted anywhere.
 - **Not a gate.** A stale diagram is a debt item and an audit finding, never a refused commit.
 
+**Since v0.16.0 — Archify 3.x** (checked against 3.0.1, 2026-10-01; 2.x still works): `meta.output`
+is required, an explicit `meta.viewBox` is dropped (a declared canvas is held to 3.0's
+desktop-readability floor — five of six diagrams on this machine failed it; without one all six pass
+on both versions), `meta.repository.url` is the origin verbatim (an SSH host alias is not resolved),
+`meta.views` is ignored. `diagram_check.sh` now prints `pins NOT verified` when Archify fails for a
+non-pin reason — before, a schema error read as "all pins hold". Contract: `reference/tool-integration.md`.
+
 ## Related
 
 [[executable-wiki]] · [[branch-state]] · [[stop-gate]] · [[upgrade-path]] · [[diff-review]] ·

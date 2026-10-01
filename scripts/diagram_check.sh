@@ -164,21 +164,36 @@ json.dump(o, open(sys.argv[2], "w"))
 PY
   out="$(node "$ARCHIFY_BIN" validate architecture "$tmp" --repo-root "$REPO_ROOT" --json 2>/dev/null || true)"
   rm -rf "$tmpd"
+  # PIN|… = a pin that fails at HEAD (this branch's debt). NOPIN|… = archify failed before the pins
+  # were checked (schema, crash, unreadable output) — silence would read as "all pins hold", found
+  # when archify 3.0 made meta.output required. QUALITY|… = pins held, a later quality gate failed.
   codes="$(printf '%s' "$out" | python3 -c '
 import json, sys
 try:
     o = json.load(sys.stdin)
 except Exception:
-    sys.exit(0)
+    o = None
+if not isinstance(o, dict):
+    print("NOPIN|archify gave no readable result"); sys.exit(0)
+pins, other = [], []
 for d in o.get("diagnostics") or []:
     code = d.get("code") or ""
-    if code.startswith("repository-evidence/"):
-        msg = (d.get("message") or "").replace("\n", " ")
-        print(f"{code}: {msg[:160]}")
+    msg = (d.get("message") or "").replace("\n", " ")
+    (pins if code.startswith("repository-evidence/") else other).append(f"{code}: {msg[:160]}")
+for p in pins:
+    print("PIN|" + p)
+if not pins and other:
+    # stage "check" runs after rendering, where repository evidence was already verified:
+    # the pins held and only a quality gate failed (the archify 3.0 desktop-readability floor).
+    print(("QUALITY|" if o.get("stage") == "check" else "NOPIN|") + other[0])
 ' 2>/dev/null)"
   while IFS= read -r line; do
     [ -z "$line" ] && continue
-    record "diagram $name: pin fails at HEAD — $line"
+    case "$line" in
+      PIN\|*)   record "diagram $name: pin fails at HEAD — ${line#PIN|}" ;;
+      NOPIN\|*) echo "diagram $name: pins NOT verified — archify validate failed for another reason: ${line#NOPIN|} (fix the diagram for the installed archify; not this branch's debt)" ;;
+      QUALITY\|*) echo "diagram $name: pins hold, but archify's quality check failed: ${line#QUALITY|} (repair it for the installed archify; not this branch's debt)" ;;
+    esac
   done <<< "$codes"
 done
 

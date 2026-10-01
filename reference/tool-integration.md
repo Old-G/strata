@@ -136,6 +136,22 @@ skill. A diagram is a human artifact and never a gate: a stale one is a debt ite
 network. `meta.repository.url` comes from `git remote get-url origin`; GitHub and Gitee
 get `link_mode: web`, any other forge `local-only` (SRC markers without hyperlinks).
 
+**Diagram JSON contract (Archify 3.x; also valid on 2.x).** Every Strata diagram carries
+`meta.output: "wiki/diagrams/<name>.html"` (required since 3.0 — `validate` fails the schema without
+it) and **no `meta.viewBox`**: an explicitly declared canvas is held to 3.0's desktop-readability
+floor (8 px labels must stay ≥ 6 px at 1440×900, i.e. ≤ 1240 px wide), while an omitted one is sized
+by the renderer and passes. For `local-only` forges `meta.repository.url` is the origin **exactly** as `git remote get-url
+origin` prints it — Archify compares it verbatim and resolves no SSH host aliases (GitHub and Gitee
+normalise `.git` and HTTPS/SSH). `meta.views` is accepted but ignored since 3.0 (guided views were removed). Strata renders
+with `deliver` (works on 2.x and 3.x); 3.x `finalize` adds a browser check and is optional. Both
+write receipts beside the HTML (`<name>.delivery.json`, transient `*.delivery-pending.json` /
+`*-lock.json`, and with `finalize` also `*.finalize*.json`, `*.browser-check.json`): put their summary in the `wiki/log.md` line, then
+delete them — they are run evidence, never committed (the gitignore template lists them).
+`diagram_check.sh` prints `pins NOT verified` when Archify fails before checking pins (a schema
+error, an unreadable result) and `pins hold, but archify's quality check failed` when only a later
+gate failed (3.0's desktop-readability) — either way the diagram owes a repair for the installed
+Archify, made by the next branch close. Checked against 3.0.1 on 2026-10-01.
+
 **Declared, not bundled.** Install once per machine: `npx skills add tt-a1i/archify -g -a
 claude-code -s archify -y` (the skills CLI writes to `~/.claude/skills/archify`;
 `ARCHIFY_BIN` overrides the path). Absent, `diagram_check.sh` still runs its git half and

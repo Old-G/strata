@@ -55,7 +55,7 @@ cat > wiki/diagrams/system.architecture.json <<EOF
   "meta": {
     "title": "Fixture system",
     "quality_profile": "standard",
-    "viewBox": [960, 480],
+    "output": "wiki/diagrams/system.html",
     "repository": { "url": "https://github.com/example/fixture", "provider": "github", "revision": "$SEED" }
   },
   "components": [
@@ -132,6 +132,35 @@ if command -v node >/dev/null 2>&1 && [ -f "$ARCH" ]; then
   out="$(ARCHIFY_BIN="$ARCH" bash "$CHECK" main 2>/dev/null)"
   check "archify present + pinned file deleted → repository-evidence/file-missing" "$(has "$out" 'repository-evidence/file-missing')" yes
   check "  no skip line when archify is present" "$(has "$out" 'pin verification skipped')" no
+  # archify fails for a reason that is NOT a pin (here: a schema error) → the pins were never
+  # checked, and the script must say so instead of reading as "all pins hold" (found on archify
+  # 3.0, which made meta.output required: every older diagram failed the schema, silently)
+  git checkout -q main
+  git checkout -q -b feature/schema-broken
+  python3 - wiki/diagrams/system.architecture.json <<'PY'
+import json,sys; o=json.load(open(sys.argv[1])); o["meta"]["no_such_field"]=1; json.dump(o,open(sys.argv[1],"w"),indent=2)
+PY
+  git commit -qam "a diagram archify rejects"
+  out="$(ARCHIFY_BIN="$ARCH" bash "$CHECK" main 2>&1)"; rc=$?
+  check "archify fails for a non-pin reason → 'pins NOT verified' with its code" "$(has "$out" 'pins NOT verified')$(has "$out" 'schema/')" yesyes
+  check "  still exit 0 and not recorded as wiki_debt (the branch did not cause it)" "$rc/$(has "$out" 'recorded as wiki_debt')" "0/no"
+  # pins verified and holding, only a later quality gate fails (3.0's desktop-readability on a
+  # declared wide canvas) → say the pins hold, not that they were never checked
+  git checkout -q main
+  git checkout -q -b feature/too-wide
+  python3 - wiki/diagrams/system.architecture.json <<'PY'
+import json,sys; o=json.load(open(sys.argv[1])); o["meta"]["viewBox"]=[3000, 480]; o["meta"]["quality_profile"]="showcase"; json.dump(o,open(sys.argv[1],"w"),indent=2)
+PY
+  git commit -qam "a declared canvas too wide to read"
+  out="$(ARCHIFY_BIN="$ARCH" bash "$CHECK" main 2>&1)"; rc=$?
+  # (showcase: on the standard profile desktop-readability is only a warning)
+  # (capture first: validate exits 1 on a failing diagram, and pipefail would hide the match)
+  v="$(ARCHIFY_UPDATE_CHECK_DISABLED=1 node "$ARCH" validate architecture wiki/diagrams/system.architecture.json --repo-root . --json 2>/dev/null || true)"
+  if printf '%s' "$v" | python3 -c 'import json,sys; r=json.load(sys.stdin); sys.exit(0 if any(d.get("code")=="composition/desktop-readability" for d in r.get("diagnostics") or []) else 1)' 2>/dev/null; then
+    check "pins hold + quality gate fails → 'pins hold, but … quality check failed'" "$(has "$out" "pins hold, but")$(has "$out" 'pins NOT verified')" yesno
+  else
+    ok "this archify has no desktop-readability gate (2.x) — quality-stage case not applicable"
+  fi
   # a diagram without meta.repository is not re-pinned, and does not error
   git checkout -q main
   git checkout -q -b feature/norepo
@@ -143,8 +172,7 @@ PY
   check "diagram without meta.repository → skipped quietly, exit 0" "$rc/$(has "$out" 'repository-evidence')" "0/no"
 else
   ok "archify not installed on this machine — evidence half skipped (asserted the skip line above)"
-  ok "(placeholder to keep the count stable)"
-  ok "(placeholder to keep the count stable)"
+  for _ in 1 2 3 4 5; do ok "(placeholder to keep the count stable)"; done
 fi
 
 # 5. no wiki/diagrams/ at all → silent, exit 0

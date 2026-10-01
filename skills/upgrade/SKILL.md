@@ -134,9 +134,11 @@ never got that offer, and nothing else will make it — `scripts/diagram_check.s
   ask ONE question: seed `wiki/diagrams/system.architecture.json` now? On yes, do exactly what
   `adopt` Phase 3 step 5 describes — the ≤ 12 components that actually exist, `meta.repository` from
   `git remote get-url origin` at `HEAD` (`link_mode: web` for GitHub/Gitee, `local-only` for any other
-  forge), one `sources[]` pin per node on a real entrypoint, `validate --repo-root .` → `deliver` to
-  `wiki/diagrams/system.html` through the archify skill — and add `wiki/diagrams/history/*.html` to
-  `.gitignore` (merge, never overwrite). On no, say that `light-finish` will not offer again until a
+  forge), one `sources[]` pin per node on a real entrypoint, `meta.output` set and no `meta.viewBox`
+  (the diagram JSON contract in `${CLAUDE_PLUGIN_ROOT}/reference/tool-integration.md` (Archify section)), `validate --repo-root .` → `deliver` to
+  `wiki/diagrams/system.html` through the archify skill, delete the receipt files beside it — and add
+  `wiki/diagrams/history/*.html` and the archify receipt patterns from `${CLAUDE_PLUGIN_ROOT}/templates/core/gitignore.tmpl` (`*.delivery*.json`, `*.finalize*.json`, `*.browser-check.json`, `.archify-delivery-lock.json`) to
+  `.gitignore` (merge, never overwrite). A repo that already has diagrams gets the same `.gitignore` lines. On no, say that `light-finish` will not offer again until a
   diagram exists, so the phrase to use later is «нарисуй системную диаграмму в wiki/diagrams».
 - If archify is absent, print one line — `npx skills add tt-a1i/archify -g -a claude-code -s archify -y`
   (Node ≥ 18, no npm dependencies) — and move on. Not a finding, not a blocker.

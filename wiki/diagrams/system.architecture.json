@@ -4,10 +4,6 @@
   "meta": {
     "title": "Strata — how the plugin holds a repo together",
     "quality_profile": "showcase",
-    "viewBox": [
-      1280,
-      688
-    ],
     "repository": {
       "url": "https://github.com/Old-G/strata",
       "provider": "github",
@@ -51,7 +47,8 @@
         ],
         "note": "Skills route plain language to a flow; risky work meets the council; state carries decisions; commits carry their session."
       }
-    ]
+    ],
+    "output": "wiki/diagrams/system.html"
   },
   "components": [
     {

@@ -6,6 +6,26 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.16.0] — 2026-10-01
+
+### Changed
+- **Archify 3.x support** (checked against 3.0.1; 2.x keeps working). Diagrams carry the now-required
+  `meta.output` and no explicit `meta.viewBox` (an omitted canvas passes 3.0's desktop-readability
+  floor; a declared one wider than ~1240 px fails it); `meta.repository.url` is the origin verbatim.
+  The contract lives once in `reference/tool-integration.md`; `adopt`, `init`, `upgrade` and
+  `light-finish` point at it. `deliver`/`finalize` receipts beside the HTML are summarised in the log
+  and never committed (gitignore template).
+
+### Fixed
+- `diagram_check.sh` no longer reads as "all pins hold" when Archify fails for another reason (a schema
+  or composition error, an unreadable result): it prints `pins NOT verified` with the code, and does
+  not record it as the branch's `wiki_debt`. Archify 3.0 made `meta.output` required, so every older
+  diagram would have passed silently. When the pins were checked and held and only a later quality
+  gate failed (3.0's desktop-readability), it says `pins hold, but archify's quality check failed`.
+  Either line makes `light-finish`'s verify fail, so the next branch close repairs the diagram for the
+  installed Archify; `audit` rates them MEDIUM / LOW. `test_p4_diagrams.sh` 20/20 on Archify 3.0.1,
+  on 2.17 and with none installed.
+
 ## [0.15.1] — 2026-09-30
 
 ### Fixed

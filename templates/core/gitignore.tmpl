@@ -64,6 +64,14 @@ Thumbs.db
 wiki/diagrams/history/*.html
 # archify visual-check sidecars (screenshots + receipt) — local evidence, regenerated on demand
 wiki/diagrams/*.visual-check.*
+# archify 3.x deliver/finalize receipts beside the HTML — run evidence, summarised in wiki/log.md
+wiki/diagrams/*.delivery.json
+wiki/diagrams/*.delivery-pending.json
+wiki/diagrams/*.delivery-lock.json
+wiki/diagrams/.archify-delivery-lock.json
+wiki/diagrams/*.finalize.json
+wiki/diagrams/*.finalize-summary.json
+wiki/diagrams/*.browser-check.json
 # `archify compare` writes its delta HTML + receipt to the cwd (the repo root) — never commit it
 architecture-delta.html
 architecture-delta.receipt.json

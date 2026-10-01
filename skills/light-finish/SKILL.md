@@ -35,11 +35,14 @@ description: Use when implemented work needs integrating and the branch wrapped 
    no longer resolve at `HEAD`); it has already been written into the branch state's `wiki_debt`. Refresh
    each one through the **archify** skill: edit only the changed area of `<name>.architecture.json`, set
    `meta.repository.revision` to the branch's latest commit, `validate --repo-root .` → `deliver` to
-   `<name>.html`, then `compare` the previous JSON (`git show <base>:wiki/diagrams/<name>.architecture.json`)
+   `<name>.html` (delete the receipt files it writes beside it once summarised; a diagram older than
+   Archify 3.0 also needs `meta.output` and no `meta.viewBox` — the diagram JSON contract in `${CLAUDE_PLUGIN_ROOT}/reference/tool-integration.md` (Archify section)), then `compare` the previous JSON (`git show <base>:wiki/diagrams/<name>.architecture.json`)
    against the new one: if `summary.semanticSha256` differs, `mkdir -p wiki/diagrams/history` and copy the new JSON to
    `wiki/diagrams/history/<YYYY-MM-DD>-<name>.architecture.json` and put the compare summary counts in this
    entry's `wiki/log.md` line; history HTML is never committed. Archify not installed → the debt item stays
-   and the log line says so; do not hand-edit the HTML.
+   and the log line says so; do not hand-edit the HTML. A `pins NOT verified` or `quality check failed`
+   line is the same repair, owed to the installed Archify rather than to this branch — the branch that
+   closes next makes it (usually the contract's one-field edit), because its verify cannot pass until then.
    `verify`: `bash scripts/lib/pending_ingest.sh` prints nothing, and `bash scripts/diagram_check.sh <base-branch>`
    prints nothing.
    If `.strata/state/<branch-slug>.json` exists (`python3 scripts/lib/state_tools.py path <branch>`),

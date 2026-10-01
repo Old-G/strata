@@ -101,7 +101,7 @@ Record each as `[severity | structure | file:line | rule | suggested fix]`.
    each `pin fails at HEAD` line (`repository-evidence/file-missing`, `line-out-of-range`) = HIGH "documented
    architecture no longer matches the code" — name the diagram and the path. Also flag a diagram whose
    `<name>.html` is older than its JSON (`git log -1 --format=%ct`) as LOW "render behind its source". If the
-   script reports archify missing, say so in `Coverage` (pins were not verified) rather than claiming they hold.
+   script reports archify missing, say so in `Coverage` (pins were not verified) rather than claiming they hold. A `pins NOT verified` line = MEDIUM "diagram does not validate on the installed archify — its pins prove nothing until repaired"; a `pins hold, but archify's quality check failed` line = LOW "diagram owes a repair for the installed archify" (name the code; the fix is the diagram JSON contract in `${CLAUDE_PLUGIN_ROOT}/reference/tool-integration.md`, Archify section).
    No `wiki/diagrams/` at all is not a finding — the layer is optional, like `wiki/` itself.
 7. **Behaviour specs (P6):** `python3 scripts/lib/requirements.py check` over every entity's
    `## Requirements`. An `ERROR … test: … does not exist` / `… not found in …` = HIGH "the wiki
