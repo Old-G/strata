@@ -60,7 +60,8 @@ zero external references) is what proved the path.
   (installed by `npx skills add tt-a1i/archify -g`; the skills CLI symlinks into
   `~/.agents/skills/`). No npm dependencies, nothing vendored; `ARCHIFY_UPDATE_CHECK_DISABLED=1`
   wherever Strata invokes it; never called from a hook. `meta.repository.url` from
-  `git remote get-url origin`; `link_mode: web` for GitHub/Gitee, `local-only` for other forges.
+  `git remote get-url origin`; `link_mode: web` for GitHub/Gitee and (Archify ≥ 3.1) GitLab with an
+  HTTPS `url`, `local-only` for other forges and SSH-alias hosts (links would point at the alias).
 - **Mermaid** leaves SAR §14 and is not converted anywhere.
 - **Not a gate.** A stale diagram is a debt item and an audit finding, never a refused commit.
 

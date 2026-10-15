@@ -6,6 +6,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.16.2] — 2026-10-16
+
+### Changed
+- Checked against Archify 3.1.0 (test_p4 20/20; Strata's own diagram validates, delivers at showcase
+  quality and compares clean). The diagram contract's forge rule now gives GitLab web source links,
+  which Archify 3.1 added: `url` as the HTTPS address, `provider: "gitlab"` for a self-managed host.
+  An origin behind an SSH host alias stays `local-only` — Archify would accept it but link to the alias.
+
 ## [0.16.1] — 2026-10-01
 
 ### Changed

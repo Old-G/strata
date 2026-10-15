@@ -133,16 +133,21 @@ Stop gate already enforces; the refresh itself is the agent's work through the a
 skill. A diagram is a human artifact and never a gate: a stale one is a debt item and an
 `audit` finding, not a refused commit. Never call archify from a hook; set
 `ARCHIFY_UPDATE_CHECK_DISABLED=1` wherever Strata invokes it so no script touches the
-network. `meta.repository.url` comes from `git remote get-url origin`; GitHub and Gitee
-get `link_mode: web`, any other forge `local-only` (SRC markers without hyperlinks).
+network. `meta.repository.url` comes from `git remote get-url origin`. **Forge rule:** GitHub,
+Gitee and — since Archify 3.1 — GitLab get `link_mode: web`, `url` written as the HTTPS address
+(`https://<host>/<group>/<repo>`; an SSH origin on the same host still matches), plus
+`provider: "gitlab"` for a self-managed GitLab host. Everything else is `local-only` (SRC markers
+without hyperlinks) — and so is an origin whose host is an SSH alias from `~/.ssh/config`
+(`git@gitlab-work:…`): Archify validates it but would link to a host no browser can open. On
+Archify < 3.1 GitLab stays `local-only` (`provider: "gitlab"` fails the schema there).
 
 **Diagram JSON contract (Archify 3.x; also valid on 2.x).** Every Strata diagram carries
 `meta.output: "wiki/diagrams/<name>.html"` (required since 3.0 — `validate` fails the schema without
 it) and **no `meta.viewBox`**: an explicitly declared canvas is held to 3.0's desktop-readability
 floor (8 px labels must stay ≥ 6 px at 1440×900, i.e. ≤ 1240 px wide), while an omitted one is sized
 by the renderer and passes. For `local-only` forges `meta.repository.url` is the origin **exactly** as `git remote get-url
-origin` prints it — Archify compares it verbatim and resolves no SSH host aliases (GitHub and Gitee
-normalise `.git` and HTTPS/SSH). `meta.views` is accepted but ignored since 3.0 (guided views were removed). Every connection carries
+origin` prints it — Archify compares it verbatim and resolves no SSH host aliases (on 3.1 GitHub, Gitee and
+GitLab normalise `.git` and HTTPS/SSH). `meta.views` is accepted but ignored since 3.0 (guided views were removed). Every connection carries
 a stable `id` (`<from>-<to>` is enough): 3.x `compare` refuses a side whose connections have none
 (`delta/relationship-id-required`) — two diagrams on this machine had none. Strata renders
 with `deliver` (works on 2.x and 3.x); 3.x `finalize` adds a browser check and is optional. Both
@@ -155,7 +160,8 @@ gate failed (3.0's desktop-readability) — either way the diagram owes a repair
 Archify, made by the next branch close. `compare` validates **both** sides on 3.x, so a base
 written before 3.0 fails it: compare against a temporary copy of the base normalised to this
 contract (add `meta.output`, drop `meta.viewBox` — delivery and presentation, not semantics;
-`semanticSha256` ignores them), never against an edited tracked file. Checked against 3.0.1 on 2026-10-01.
+`semanticSha256` ignores them), never against an edited tracked file. Checked against 3.0.1 on 2026-10-01 and 3.1.0 on 2026-10-16
+(no contract change beyond the GitLab link rule; 3.1's new diagram types are not used by the layer).
 
 **Declared, not bundled.** Install once per machine: `npx skills add tt-a1i/archify -g -a
 claude-code -s archify -y` (the skills CLI writes to `~/.claude/skills/archify`;

@@ -133,8 +133,8 @@ never got that offer, and nothing else will make it — `scripts/diagram_check.s
 - If `node` is on PATH and `${ARCHIFY_BIN:-$HOME/.claude/skills/archify/bin/archify.mjs}` exists,
   ask ONE question: seed `wiki/diagrams/system.architecture.json` now? On yes, do exactly what
   `adopt` Phase 3 step 5 describes — the ≤ 12 components that actually exist, `meta.repository` from
-  `git remote get-url origin` at `HEAD` (`link_mode: web` for GitHub/Gitee, `local-only` for any other
-  forge), one `sources[]` pin per node on a real entrypoint, `meta.output` set and no `meta.viewBox`
+  `git remote get-url origin` at `HEAD` (`link_mode` by the contract's forge rule: `web` for GitHub/Gitee/GitLab
+  with an HTTPS `url`, `local-only` for any other forge or an SSH-alias host), one `sources[]` pin per node on a real entrypoint, `meta.output` set and no `meta.viewBox`
   (the diagram JSON contract in `${CLAUDE_PLUGIN_ROOT}/reference/tool-integration.md` (Archify section)), `validate --repo-root .` → `deliver` to
   `wiki/diagrams/system.html` through the archify skill, delete the receipt files beside it — and add
   `wiki/diagrams/history/*.html` and the archify receipt patterns from `${CLAUDE_PLUGIN_ROOT}/templates/core/gitignore.tmpl` (`*.delivery*.json`, `*.finalize*.json`, `*.browser-check.json`, `.archify-delivery-lock.json`) to
