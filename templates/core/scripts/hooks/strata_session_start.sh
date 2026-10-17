@@ -11,7 +11,8 @@
 # Side effect (load-bearing for the Stop gate): records the session's starting
 # point in .strata/sessions/<session_id>.start, so strata_stop_gate.sh can tell
 # "markers this session created" from "markers that were already there".
-# See ADR #4.
+# See ADR #4. HEAD= (v0.16.3; empty before the first commit) lets the Stop gate's
+# trigger (b) count code this session COMMITTED, not only what is still dirty.
 #
 # P2 additions (docs/superpowers/specs/2026-09-01-episodic-state-layer.md):
 # if the current branch has a .strata/state/<slug>.json, print its summary —
@@ -147,6 +148,7 @@ mkdir -p .strata/sessions 2>/dev/null || true
 {
   echo "EPOCH=$(date +%s)"
   echo "LOG_LINES=$log_lines"
+  echo "HEAD=$(git rev-parse -q --verify HEAD 2>/dev/null)"
 } > ".strata/sessions/${session_id}.start" 2>/dev/null || true
 
 # Snapshot of the uncommitted files that were ALREADY dirty when this session

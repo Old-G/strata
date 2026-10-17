@@ -178,6 +178,76 @@ STRATA_SNAPSHOT_MAX=100 bash -c "rm -rf .strata; echo '{\"session_id\":\"s17\"}'
 check "over STRATA_SNAPSHOT_MAX → (b) fails open (clear)" "$(verdict s17)" "clear"
 rm -rf src/many
 
+# v0.16.3: an agent that COMMITS its code before it stops leaves a clean tree —
+# (b) used to see 0 lines exactly when it mattered. Committed lines count too:
+# commits in <start HEAD>..HEAD, no merges, committer time >= session start.
+# Own fixture repo, outside the main one: these tests make commits, and the
+# A2/e2e checks below count the main fixture's commits.
+echo "== A1 Stop gate — trigger (b): code committed this session =="
+WORK_C="$(mktemp -d)"
+trap 'rm -rf "$WORK" "$WORK_C"' EXIT
+cd "$WORK_C" || exit 1
+git init -q . && git config user.email test@strata.local && git config user.name "Strata Test"
+mkdir -p src docs wiki scripts/lib scripts/hooks
+cp "$TPL/lib/pending_ingest.sh" "$TPL/lib/tree_snapshot.sh" scripts/lib/
+cp "$TPL/hooks/strata_session_start.sh" "$TPL/hooks/strata_stop_gate.sh" scripts/hooks/
+printf 'seed\n' > seed.txt; : > wiki/log.md; printf '.strata/\n' > .gitignore
+git add -A >/dev/null && git commit -qm seed
+lines() { python3 -c "print('$2\n' * $3, end='')" > "$1"; }
+commit_all() { git add -A >/dev/null && git commit -q --no-verify -m "$1" >/dev/null 2>&1; }
+
+new_session c0
+check "the session stamp records the starting commit" \
+  "$(grep -c "^HEAD=$(git rev-parse HEAD)$" .strata/sessions/c0.start)" "1"
+
+new_session c1
+lines src/feat.py 'a = 1' 120; commit_all "feat"
+check "code committed this session, tree clean, wiki silent → blocked" "$(verdict c1)" "blocked"
+
+new_session c2
+lines src/feat2.py 'b = 2' 120; echo 'feat2: what changed and why' >> wiki/log.md; commit_all "feat2"
+check "committed code + a committed wiki/log.md line → clear" "$(verdict c2)" "clear"
+
+new_session c3
+lines src/half.py 'c = 3' 30; commit_all "half"
+lines src/other.py 'c = 4' 30
+check "committed + uncommitted lines are summed (30+30 → blocked)" "$(verdict c3)" "blocked"
+commit_all "other"
+
+new_session c4
+lines src/theirs.py 'd = 4' 120
+git add -A >/dev/null
+GIT_AUTHOR_DATE='2001-01-01T00:00:00Z' GIT_COMMITTER_DATE='2001-01-01T00:00:00Z' \
+  git commit -q --no-verify -m "pulled from someone else" >/dev/null 2>&1
+check "a commit dated before the session (pulled in) is not billed → clear" "$(verdict c4)" "clear"
+
+new_session c5
+lines docs/guide.md 'prose' 120; commit_all "docs only"
+check "committed docs/ lines are excluded like uncommitted ones → clear" "$(verdict c5)" "clear"
+
+new_session c6
+git checkout -q -b side HEAD~1
+lines src/side.py 'e = 5' 120; commit_all "side"
+check "start HEAD not an ancestor of HEAD (branch switch) → committed part skipped (clear)" "$(verdict c6)" "clear"
+git checkout -q -
+
+new_session c7
+grep -v '^HEAD=' .strata/sessions/c7.start > .strata/sessions/c7.tmp && mv .strata/sessions/c7.tmp .strata/sessions/c7.start
+lines src/legacy.py 'f = 6' 120; commit_all "legacy"
+check "stamp without HEAD= (older SessionStart) → committed part skipped (clear)" "$(verdict c7)" "clear"
+
+# The gate reads HEAD with builtins on the plain layout; packed refs and linked
+# worktrees take the other paths and must reach the same verdict.
+new_session c8
+lines src/packed.py 'g = 7' 120; commit_all "packed"; git pack-refs --all --prune
+check "HEAD's ref only in packed-refs → still counted (blocked)" "$(verdict c8)" "blocked"
+git worktree add -q -b wt-branch "$WORK_C/wt" >/dev/null 2>&1
+cd "$WORK_C/wt" || exit 1
+new_session c9
+lines src/in_worktree.py 'h = 8' 120; commit_all "in a worktree"
+check "code committed in a linked worktree → blocked" "$(verdict c9)" "blocked"
+cd "$WORK" || exit 1
+
 echo "== A1 Stop gate — performance =="
 : > wiki/log.md; new_session s8
 # Best-of-N, not the mean: the question is whether this code path CAN clear

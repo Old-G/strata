@@ -19,7 +19,9 @@
 6831c711de39d4b5cda08f442b695636b527ac31  pre-commit/check_raw_mirror.sh
 685d897d48ecfb7cb9e8cc20a3079e0380760892  hooks/strata_session_start.sh
 6a3d70db6ca48eabf7d9ec90f08180be15d52ac4  hooks/strata_pre_tool_guard.sh
+6e66722a37153134ebab967e273662d7b4ef12b3  hooks/strata_session_start.sh
 7a4bcccf02d0d731887da932ef50ec87da50966b  lib/state_tools.py
+7e3d6ad15b3975870b742ccf939da20ff272408d  hooks/strata_stop_gate.sh
 8d23df3b8836b52d65050d48c63ce865b01809dd  hooks/strata_session_start.sh
 92abfb0937a750797fc514129e68b47db7d0f266  hooks/strata_stop_gate.sh
 974ce0095f012f3887c588f1222c206cf8c8727c  strata_upgrade_check.sh

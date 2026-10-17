@@ -25,7 +25,16 @@
 #      wiki/ raw/ docs/ (default 50; set 0 to disable this trigger). Counts only
 #      files THIS session touched — uncommitted work already in the tree at
 #      SessionStart is not billed (lib/tree_snapshot.sh, v0.9.0).
-#      Always satisfiable in one line — including an explicit "no-wiki-impact:".
+#      Since v0.16.3 it also counts code COMMITTED this session — an agent that
+#      commits before it stops leaves a clean tree, and the gate used to see 0.
+#      Committed = commits in <start HEAD>..HEAD (the stamp's HEAD=), no merges,
+#      committer time >= the stamp's EPOCH (commits pulled in from others carry
+#      older dates and are not billed), same wiki/ raw/ docs/ exclusion. Skipped
+#      — fail open — when the start HEAD is not an ancestor of HEAD (branch
+#      switch, rebase), when the stamp has no HEAD= (older SessionStart) or an
+#      empty one (no commits yet when the session began).
+#      Satisfied by wiki/log.md growing since the session started, committed or
+#      not. Always satisfiable in one line — including an explicit "no-wiki-impact:".
 #   c) the current branch's .strata/state/<slug>.json (see lib/state_tools.py —
 #      P2, docs/superpowers/specs/2026-09-01-episodic-state-layer.md) has a
 #      non-empty wiki_debt array, or exists but fails schema validation. A
@@ -95,11 +104,17 @@ BLOCKED=".strata/sessions/${session_id}.blocked"
 # --- 3. one forced continuation per session, hard ----------------------------
 [ -e "$BLOCKED" ] && exit 0
 
-start_log_lines=0
+start_log_lines=0; start_epoch=""; start_head=""
 while IFS='=' read -r k v; do
-  [ "$k" = "LOG_LINES" ] && start_log_lines="$v"
+  case "$k" in
+    LOG_LINES) start_log_lines="$v" ;;
+    EPOCH)     start_epoch="$v" ;;
+    HEAD)      start_head="$v" ;;
+  esac
 done < "$STAMP"
 case "$start_log_lines" in (*[!0-9]*|'') start_log_lines=0 ;; esac
+case "$start_epoch" in (*[!0-9]*) start_epoch="" ;; esac
+case "$start_head" in (*[!0-9a-f]*) start_head="" ;; esac   # a sha, or nothing
 
 log_lines_now=0
 [ -f wiki/log.md ] && log_lines_now="$(wc -l < wiki/log.md | tr -d ' ')"
@@ -108,6 +123,35 @@ LIB="$SCRIPT_DIR/../lib/pending_ingest.sh"
 [ -f "$LIB" ] || exit 0
 # shellcheck source=../lib/pending_ingest.sh
 . "$LIB"
+
+# HEAD's commit id, read with builtins when the layout is the plain one (a loose
+# ref or a detached HEAD, in a repo, worktree or submodule); anything else —
+# packed refs, reftable — asks git. Sets head_now; no subshell, so the clean
+# path spends no process on it (a git rev-parse measured ~8 ms).
+read_head_now() {
+  local gd="" line ref sha="" common=""
+  if [ -d .git ]; then gd=.git
+  elif [ -f .git ]; then IFS= read -r line < .git; gd="${line#gitdir: }"; fi
+  if [ -n "$gd" ] && [ -f "$gd/HEAD" ] && IFS= read -r line < "$gd/HEAD"; then
+    case "$line" in
+      "ref: refs/"*)
+        ref="${line#ref: }"
+        if [ -f "$gd/$ref" ]; then IFS= read -r sha < "$gd/$ref"
+        elif [ -f "$gd/commondir" ] && IFS= read -r common < "$gd/commondir"; then
+          case "$common" in (/*) ;; (*) common="$gd/$common" ;; esac
+          [ -f "$common/$ref" ] && IFS= read -r sha < "$common/$ref"
+        fi ;;
+      *) sha="$line" ;;
+    esac
+  fi
+  case "${#sha}:$sha" in
+    (40:*[!0-9a-f]*|64:*[!0-9a-f]*) sha="" ;;
+    (40:*|64:*) ;;
+    (*) sha="" ;;
+  esac
+  [ -n "$sha" ] || sha="$(git rev-parse -q --verify HEAD 2>/dev/null || true)"
+  head_now="$sha"
+}
 
 # JSON-safe: these strings are interpolated into the reason field.
 sanitize() { printf '%s' "$1" | tr -d '"\\' | tr '\n' ' '; }
@@ -147,9 +191,27 @@ if [ -z "$reason" ] && [ "$LINES_THRESHOLD" -gt 0 ]; then
         [ -f "$f" ] && changed=$(( changed + $(wc -l < "$f" | tr -d ' ') ))
       done < <(git ls-files --others --exclude-standard 2>/dev/null)
     fi
+    case "$changed" in (''|*[!0-9]*) changed=0 ;; esac
 
-    if [ "${changed:-0}" -ge "$LINES_THRESHOLD" ]; then
-      reason="This session changed ~${changed} lines of code and wrote nothing to the wiki.\n"
+    # Plus code COMMITTED this session (v0.16.3). HEAD unmoved → no git process
+    # at all, so the clean path keeps its budget. Unsure → 0 (fail open).
+    if [ -n "$start_head" ] && [ -n "$start_epoch" ]; then
+      head_now=""; read_head_now
+      if [ -n "$head_now" ] && [ "$head_now" != "$start_head" ] \
+         && git merge-base --is-ancestor "$start_head" "$head_now" 2>/dev/null; then
+        committed="$(git -c core.quotePath=off log --no-merges --format='@%ct' --numstat \
+            "${start_head}..${head_now}" -- . ':(exclude)wiki' ':(exclude)raw' ':(exclude)docs' 2>/dev/null \
+          | awk -F'\t' -v since="$start_epoch" '
+              /^@[0-9]+$/ { bill = (substr($0, 2) + 0 >= since + 0); next }
+              bill && NF >= 3 { a = ($1 == "-") ? 0 : $1; d = ($2 == "-") ? 0 : $2; s += a + d }
+              END { print s + 0 }')"
+        case "$committed" in (''|*[!0-9]*) committed=0 ;; esac
+        changed=$(( changed + committed ))
+      fi
+    fi
+
+    if [ "$changed" -ge "$LINES_THRESHOLD" ]; then
+      reason="This session changed (incl. committed) ~${changed} lines of code and wrote nothing to the wiki.\n"
       reason="${reason}Code-only changes leave no knowledge trace — that is how the wiki goes stale.\n\n"
       reason="${reason}Append ONE line to wiki/log.md before stopping: either a summary of what changed and why,\n"
       reason="${reason}or, if this genuinely has no knowledge impact, 'no-wiki-impact: <reason>'.\n"

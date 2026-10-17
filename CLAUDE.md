@@ -2,7 +2,7 @@
 
 Claude Code plugin that packages a reusable way to run AI-assisted projects: AI-navigable wiki,
 architecture canon, spec→plan→TDD feature flow, a parallel review council, and drift detection with
-staged refactor. **State:** v0.16.2 — deterministic wiki freshness (hook + commit gates), native
+staged refactor. **State:** v0.16.3 — deterministic wiki freshness (hook + commit gates), native
 command-free invocation, an episodic branch-state layer with a hook-driven upgrade path, a
 PreToolUse guard (raw/ mirror · tests read-only mid-fix), a diff-vs-plan review at branch close,
 a Stop gate that asks for the lesson when a session hurt, a diagram layer (`wiki/diagrams/`,
@@ -21,7 +21,7 @@ WHEN/THEN scenarios, a plan's `## Behaviour delta` applied at branch close — a
 | One-line AI-led onboarding (BOOTSTRAP.md + install.sh + /strata:onboard) | ✅ verified end-to-end |
 | Adaptive ceremony in /strata:feature (triage + tiers + effort + lens-selected council) | 🔄 building |
 | Council subagents (ceo / eng / design / cso) | 🔄 building |
-| Enforcement layer (A1 Stop gate · A2 commit gate · A3 SessionStart inject · A4 drift-close) | ✅ 28/28 behavioural tests green |
+| Enforcement layer (A1 Stop gate · A2 commit gate · A3 SessionStart inject · A4 drift-close) | ✅ 49/49 behavioural tests green |
 | Native invocation — EN+RU trigger specs on all 13 skills, routing map, coordinator | ✅ enforced by validate.sh |
 | This repo runs its own wiki pipeline (`wiki/` + `raw/` + gates) | ✅ bootstrapped 2026-08-15 |
 | Templates: core + python-fastapi stack pack | ✅ seeded from a production project, genericized |
@@ -62,7 +62,7 @@ claude --plugin-dir /path/to/strata
 
 # validate everything (manifests, skills, gates behaviour)
 bash scripts/validate.sh
-bash scripts/test_p1_gates.sh            # 28 behavioural assertions on A1/A2/A3
+bash scripts/test_p1_gates.sh            # 49 behavioural assertions on A1/A2/A3
 bash scripts/test_p2_state.sh            # state schema/validator, Stop-gate trigger (c), upgrade check
 bash scripts/test_p3_guards.sh           # PreToolUse guard: raw/ mirror, tests read-only mid-fix, stale-toggle warning
 bash scripts/test_p4_friction.sh         # Stop-gate trigger (d): friction counted from the session transcript

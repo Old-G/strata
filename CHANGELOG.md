@@ -6,6 +6,20 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.16.3] — 2026-10-17
+
+### Fixed
+- **Stop gate trigger (b) now sees code committed this session.** It counted only uncommitted lines,
+  so an agent that wrote 50+ lines, committed them and then stopped left a clean tree and was never
+  asked for a wiki line — the common case in the field. SessionStart now records the starting commit
+  in the session stamp (`HEAD=`); (b) adds the lines of commits in `<start>..HEAD` (no merges,
+  committer time at or after the session start, `wiki/ raw/ docs/` excluded) to the uncommitted
+  count, and the reason says "changed (incl. committed)". Fails open: the committed part is skipped
+  when the start commit is not an ancestor of HEAD (branch switch, rebase) or the stamp predates
+  0.16.3. Satisfied as before by a `wiki/log.md` line, committed or not. HEAD is read with shell
+  builtins on the plain ref layout (git only for packed refs/reftable), so the clean path keeps its
+  100 ms budget. `test_p1_gates.sh` 39 → 49.
+
 ## [0.16.2] — 2026-10-16
 
 ### Changed
