@@ -22,7 +22,8 @@
 #      markers are the commit gate's job, not an interruption you did not earn).
 #   b) substantive code-only change with nothing written to wiki/log.md this
 #      session. Threshold: STRATA_STOP_GATE_LINES changed lines outside
-#      wiki/ raw/ docs/ (default 50; set 0 to disable this trigger). Counts only
+#      wiki/ raw/ docs/ (default 20 since v0.16.4, was 50; set 0 to disable this
+#      trigger). Counts only
 #      files THIS session touched — uncommitted work already in the tree at
 #      SessionStart is not billed (lib/tree_snapshot.sh, v0.9.0).
 #      Since v0.16.3 it also counts code COMMITTED this session — an agent that
@@ -35,6 +36,15 @@
 #      empty one (no commits yet when the session began).
 #      Satisfied by wiki/log.md growing since the session started, committed or
 #      not. Always satisfiable in one line — including an explicit "no-wiki-impact:".
+#   e) wiki left behind (v0.16.4): this session wrote to wiki/log.md, but wiki/
+#      files this session touched (mtime newer than the session stamp) are still
+#      uncommitted — while the session's code is already committed (HEAD moved
+#      this session) or there is no uncommitted code left at all. A wiki that
+#      lives only in one working tree never reaches anyone else; (b) is satisfied
+#      by a log line committed or not, so this is the half that asks for the
+#      commit. Uncommitted code still in the tree reads as work in progress and
+#      passes. Only runs when wiki/log.md grew this session — the clean path pays
+#      nothing for it.
 #   c) the current branch's .strata/state/<slug>.json (see lib/state_tools.py —
 #      P2, docs/superpowers/specs/2026-09-01-episodic-state-layer.md) has a
 #      non-empty wiki_debt array, or exists but fails schema validation. A
@@ -70,7 +80,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$REPO_ROOT" || exit 0
 
-LINES_THRESHOLD="${STRATA_STOP_GATE_LINES:-50}"
+LINES_THRESHOLD="${STRATA_STOP_GATE_LINES:-20}"
 
 # Friction thresholds (trigger d). Non-numeric values fall back to the default.
 num_or() { case "$1" in (''|*[!0-9]*) printf '%s' "$2" ;; (*) printf '%s' "$1" ;; esac; }
@@ -216,6 +226,26 @@ if [ -z "$reason" ] && [ "$LINES_THRESHOLD" -gt 0 ]; then
       reason="${reason}Append ONE line to wiki/log.md before stopping: either a summary of what changed and why,\n"
       reason="${reason}or, if this genuinely has no knowledge impact, 'no-wiki-impact: <reason>'.\n"
       reason="${reason}Update affected wiki/entities/ pages if the change altered how something works."
+    fi
+  fi
+fi
+
+# --- trigger (e): wiki written this session, left uncommitted ----------------
+if [ -z "$reason" ] && [ "$log_lines_now" -gt "$start_log_lines" ]; then
+  n_left=0; left=""
+  while IFS= read -r f; do
+    f="${f#???}"; f="${f##* -> }"           # porcelain v1: "XY path" / "XY old -> new"
+    [ -n "$f" ] && [ -e "$f" ] && [ "$f" -nt "$STAMP" ] || continue
+    n_left=$((n_left + 1)); left="${left}  - $(sanitize "$f")\n"
+  done < <(git -c core.quotePath=off status --porcelain=v1 -uall -- wiki 2>/dev/null)
+  if [ "$n_left" -gt 0 ]; then
+    head_now=""; [ -n "$start_head" ] && read_head_now
+    code_dirty="$(git status --porcelain=v1 -- . ':(exclude)wiki' ':(exclude)raw' ':(exclude)docs' \
+      ':(exclude).strata' 2>/dev/null | head -1)"
+    if { [ -n "$head_now" ] && [ "$head_now" != "$start_head" ]; } || [ -z "$code_dirty" ]; then
+      reason="This session wrote the wiki but left ${n_left} wiki file(s) uncommitted while its code is committed:\n${left}"
+      reason="${reason}\nA wiki that stays in one working tree never reaches anyone else.\n"
+      reason="${reason}Commit wiki/ now — together with the code it describes (git add wiki/ && git commit)."
     fi
   fi
 fi

@@ -333,6 +333,7 @@ is a hook in Strata, not a paragraph. Three of them keep the wiki honest:
 | `scripts/hooks/strata_stop_gate.sh` | `Stop` | Refuses to end the turn **once** if this session left the wiki behind — including a non-empty `wiki_debt` in the current branch's `.strata/state/*.json`, the episodic state layer. |
 | `scripts/hooks/strata_pre_tool_guard.sh` | `PreToolUse` | Refuses a write **before it happens**: always under `raw/` (a mirror — edit `docs/`; escape `STRATA_ALLOW_RAW_EDIT=1`), and to test files while `.strata/guard-tests` exists (a fix is in progress — fix the code, not the test). Exit 2 with the reason; fails open on anything it cannot parse. |
 | `scripts/pre-commit/check_wiki_fresh.sh` | pre-commit | Fails the commit while any doc is mirrored but un-ingested. |
+| `scripts/pre-commit/check_wiki_push.sh` | pre-push | Refuses a push whose new commits change 20+ lines of code and never touch `wiki/log.md` — the net for commits made outside Claude Code. |
 
 **Nothing is installed globally.** The plugin ships these as templates; `init`/`adopt` copy them
 into the *target* project and merge the events into that project's `.claude/settings.json`. Strata
@@ -346,7 +347,9 @@ earn. The clean-state path is measured under 100 ms.
 
 It also blocks a session that changed a lot of code and wrote nothing to the wiki at all — because
 code-only changes were the drift nobody caught. That block is always satisfiable with one line in
-`wiki/log.md`, including an explicit `no-wiki-impact: <reason>`.
+`wiki/log.md`, including an explicit `no-wiki-impact: <reason>`. And a session that wrote the wiki
+cannot stop with those wiki files uncommitted once its code is committed — a wiki that stays in one
+working tree never reaches anyone else.
 
 And it knows when a session **hurt**: from the session transcript it counts your interrupts, denied
 tool calls and tool errors, and a session past the threshold cannot end without a recorded lesson —
@@ -354,9 +357,10 @@ a `gotchas` entry in the branch state, or one `gotcha: …` / `no-gotcha: …` l
 The sessions worth documenting are the painful ones, and pain is countable without a model.
 
 ```bash
-STRATA_STOP_GATE_LINES=0     # disable the code-only trigger (default: 50 changed lines)
+STRATA_STOP_GATE_LINES=0     # disable the code-only trigger (default: 20 changed lines)
+STRATA_PUSH_GATE_LINES=0     # disable the push gate (default: 20 changed lines)
 STRATA_FRICTION_INTERRUPTS=1 STRATA_FRICTION_DENIALS=2 STRATA_FRICTION_ERRORS=8   # friction thresholds; 0 disables
-STRATA_SKIP_WIKI=1 git commit -m "wip"   # escape hatch for a genuine WIP commit
+STRATA_SKIP_WIKI=1 git commit -m "wip"   # escape hatch for a genuine WIP commit (and for git push)
 ```
 
 Verify the whole layer end-to-end: `bash scripts/test_p1_gates.sh` (markers, gates), `test_p2_state.sh`

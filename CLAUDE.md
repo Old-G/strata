@@ -2,7 +2,7 @@
 
 Claude Code plugin that packages a reusable way to run AI-assisted projects: AI-navigable wiki,
 architecture canon, spec→plan→TDD feature flow, a parallel review council, and drift detection with
-staged refactor. **State:** v0.16.3 — deterministic wiki freshness (hook + commit gates), native
+staged refactor. **State:** v0.16.4 — deterministic wiki freshness (hook + commit + push gates), native
 command-free invocation, an episodic branch-state layer with a hook-driven upgrade path, a
 PreToolUse guard (raw/ mirror · tests read-only mid-fix), a diff-vs-plan review at branch close,
 a Stop gate that asks for the lesson when a session hurt, a diagram layer (`wiki/diagrams/`,
@@ -21,7 +21,7 @@ WHEN/THEN scenarios, a plan's `## Behaviour delta` applied at branch close — a
 | One-line AI-led onboarding (BOOTSTRAP.md + install.sh + /strata:onboard) | ✅ verified end-to-end |
 | Adaptive ceremony in /strata:feature (triage + tiers + effort + lens-selected council) | 🔄 building |
 | Council subagents (ceo / eng / design / cso) | 🔄 building |
-| Enforcement layer (A1 Stop gate · A2 commit gate · A3 SessionStart inject · A4 drift-close) | ✅ 49/49 behavioural tests green |
+| Enforcement layer (A1 Stop gate · A2 commit gate · A2b push gate · A3 SessionStart inject · A4 drift-close) | ✅ 70/70 behavioural tests green |
 | Native invocation — EN+RU trigger specs on all 13 skills, routing map, coordinator | ✅ enforced by validate.sh |
 | This repo runs its own wiki pipeline (`wiki/` + `raw/` + gates) | ✅ bootstrapped 2026-08-15 |
 | Templates: core + python-fastapi stack pack | ✅ seeded from a production project, genericized |
@@ -46,8 +46,8 @@ Claude Code plugin · Markdown skills + subagents · bundled shell/python templa
 - `agents/strata-*-review.md` — the parallel review council subagents (plan stage) + `strata-diff-review` (branch close, diff vs plan).
 - `templates/core/` — portable assets: `PROJECT_PATTERN.md`, `WIKI.md`, `wiki/` skeleton, `scripts/`, CLAUDE/ADR templates.
 - `templates/stacks/<stack>/` — per-stack architecture canon (`SCALABLE_ARCHITECTURE_REFERENCE.md`) + scaffold generator.
-- `reference/` — council personas, Diataxis doc-map, tool-integration (RTK / claude-mem / Caveman / claude-api evals), `llm-evals.md` (evidence for LLM-behaviour changes).
-- `templates/core/scripts/` — installed per target project: `sync_raw_mirror.sh`, `lib/pending_ingest.sh` (the one marker rule), `lib/state_tools.py` (the episodic-state schema/validator + `plan <branch>`, the one plan lookup), `lib/requirements.py` (P6 — behaviour-spec checker `check`/`owed`; run by light-finish/audit, never a hook), `hooks/` (SessionStart + Stop + PreToolUse guard), `pre-commit/` guards, `strata_upgrade_check.sh` (re-sync diff reporter, backs `/strata:upgrade`), `diagram_check.sh` (P4 — pinned-source drift check for `wiki/diagrams/`; run by light-finish/audit, never a hook), `git-hooks/strata_commit_trailer.sh` + `strata_why.sh` (P5 provenance — a *git* hook, never registered in settings.json; install: `reference/agent-session-trailer.md`).
+- `reference/` — council personas, Diataxis doc-map, tool-integration (RTK / claude-mem / Caveman / claude-api evals), `llm-evals.md` (evidence for LLM-behaviour changes), `wiki-push-gate.md` (wiring the pre-push gate).
+- `templates/core/scripts/` — installed per target project: `sync_raw_mirror.sh`, `lib/pending_ingest.sh` (the one marker rule), `lib/state_tools.py` (the episodic-state schema/validator + `plan <branch>`, the one plan lookup), `lib/requirements.py` (P6 — behaviour-spec checker `check`/`owed`; run by light-finish/audit, never a hook), `hooks/` (SessionStart + Stop + PreToolUse guard), `pre-commit/` guards (incl. the pre-push `check_wiki_push.sh`), `strata_upgrade_check.sh` (re-sync diff reporter, backs `/strata:upgrade`), `diagram_check.sh` (P4 — pinned-source drift check for `wiki/diagrams/`; run by light-finish/audit, never a hook), `git-hooks/strata_commit_trailer.sh` + `strata_why.sh` (P5 provenance — a *git* hook, never registered in settings.json; install: `reference/agent-session-trailer.md`).
 - `wiki/diagrams/` — this repo's own diagram layer: `system.architecture.json` (canonical, Archify JSON, sources pinned to a commit) + `system.html` (open it to see the whole plugin); `history/*.json` only when the semantics changed.
 - `bin/strata-upgrade-all` — on PATH in every Claude session (plugin `bin/`); `bin/strata-context-gate` — opt-in `Stop` hook the user adds to `~/.claude/settings.json` (asks for `/strata:handoff` past 60% context; hooks don't see plugin `bin/` on PATH, so the entry runs the newest cached copy — `reference/context-gate.md`); `templates/core/scripts.history` — hash of every shipped template version (what auto-sync may safely replace).
 - `docs/superpowers/{specs,plans}/` — Strata's own design specs & plans (dated).
@@ -62,7 +62,7 @@ claude --plugin-dir /path/to/strata
 
 # validate everything (manifests, skills, gates behaviour)
 bash scripts/validate.sh
-bash scripts/test_p1_gates.sh            # 49 behavioural assertions on A1/A2/A3
+bash scripts/test_p1_gates.sh            # 70 behavioural assertions on A1/A2/A2b/A3
 bash scripts/test_p2_state.sh            # state schema/validator, Stop-gate trigger (c), upgrade check
 bash scripts/test_p3_guards.sh           # PreToolUse guard: raw/ mirror, tests read-only mid-fix, stale-toggle warning
 bash scripts/test_p4_friction.sh         # Stop-gate trigger (d): friction counted from the session transcript
@@ -107,7 +107,7 @@ raw or risky idea             → office-hours grill
 - **The plugin ships NO global hooks.** Every hook (PostToolUse mirror, SessionStart injection, Stop gate, PreToolUse guard) and every pre-commit guard is a *template* installed into the target project by `init`/`adopt`, so the plugin stays inert in unrelated repos. Updates still reach every project: the installed SessionStart hook auto-syncs `scripts/**` from a newer plugin (`--apply-safe`: never a locally edited file), and `bin/strata-upgrade-all` does all projects at once.
 - **Changing a skill description changes the routing surface.** Descriptions are the whole routing signal, and other installed plugins compete for the same words — check the change by saying the trigger phrase in a fresh session, not by reading the file. A misroute is fixed at its cause (a competing plugin claiming the words, a description too broad or too narrow) — not by appending the one phrase that missed: that fits the case, not the class.
 - **One marker rule, one implementation.** Anything asking "does the wiki owe an ingest?" sources `scripts/lib/pending_ingest.sh`. Gates that disagree about what pending means are worse than no gates.
-- **Gates must be escapable and self-limiting.** The Stop gate blocks at most once per session and fails open when unsure; the commit gate honours `STRATA_SKIP_WIKI=1`.
+- **Gates must be escapable and self-limiting.** The Stop gate blocks at most once per session and fails open when unsure; the commit and push gates honour `STRATA_SKIP_WIKI=1`.
 - **Skill/command names are namespaced** `/strata:<name>` — do not prefix skill dirs with `strata-` (the namespace already adds it). Subagents in `agents/` DO keep the `strata-` prefix to avoid collisions in target projects.
 - **A verify you ran but did not record did not happen.** Put its result in `wiki/log.md` or the commit message — the branch review reads git, not the session. (Second occurrence: P4 red run, P5 routing check.)
 - **Every template change regenerates `templates/core/scripts.history`** (`bash scripts/gen_template_history.sh`; validate.sh §2d fails otherwise) — auto-sync trusts only versions listed there.

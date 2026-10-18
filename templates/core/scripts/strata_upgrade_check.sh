@@ -40,6 +40,12 @@
 #                     command from templates/core/claude-settings-hook.json runs
 #                     (matched by script file name, any path) — a synced script nobody runs is
 #                     not an up-to-date install (exit 1; /strata:upgrade merges it).
+#   UNWIRED  git pre-push: scripts/pre-commit/check_wiki_push.sh
+#                     the push gate is installed and the repo has wiki/log.md, but no
+#                     pre-push hook calls it (core.hooksPath or the git hooks dir,
+#                     .husky/, .pre-commit-config.yaml). Reported, NOT counted in the
+#                     exit code: a git hook is wired per clone, which a file sync
+#                     cannot do — /strata:upgrade Step 3.6 wires it.
 #   <templates-scripts-dir>   e.g. $CLAUDE_PLUGIN_ROOT/templates/core/scripts
 #   <installed-scripts-dir>   default: ./scripts (repo root, from cwd)
 #
@@ -183,6 +189,17 @@ for c in sorted(want):
   if [ -n "$unwired" ]; then
     while IFS= read -r c; do echo "UNWIRED  .claude/settings.json: $c"; done <<< "$unwired"
     status=1
+  fi
+fi
+
+# The push gate (v0.16.4) is a git hook, not a Claude Code one.
+REPO_DIR="$(dirname "${INSTALLED_DIR%/}")"
+if [ -f "${INSTALLED_DIR%/}/pre-commit/check_wiki_push.sh" ] && [ -f "$REPO_DIR/wiki/log.md" ]; then
+  hooks_dir="$(cd "$REPO_DIR" && { git config core.hooksPath || git rev-parse --git-path hooks; } 2>/dev/null)"
+  case "$hooks_dir" in (''|/*) ;; (*) hooks_dir="$REPO_DIR/$hooks_dir" ;; esac
+  if ! grep -qs check_wiki_push "$hooks_dir/pre-push" "$REPO_DIR/.husky/pre-push" \
+       "$REPO_DIR/.pre-commit-config.yaml"; then
+    echo "UNWIRED  git pre-push: scripts/pre-commit/check_wiki_push.sh"
   fi
 fi
 

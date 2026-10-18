@@ -127,6 +127,14 @@ check "STRATA_STOP_GATE_LINES=0 disables the trigger" \
   "$(echo '{"session_id":"s6"}' | STRATA_STOP_GATE_LINES=0 bash "$GATE" 2>/dev/null | grep -c . | tr -d ' ')" "0"
 rm -f src/big.py; new_session s7
 check "small changes stay below the threshold" "$(verdict s7)" "clear"
+# v0.16.4: the default threshold is 20 lines (was 50 — a 40-line fix left no trace).
+new_session s7b
+python3 -c "print('t = 1\n' * 25, end='')" > src/mid.py
+check "25 changed lines → blocked (default threshold 20)" "$(verdict s7b)" "blocked"
+rm -f src/mid.py; new_session s7c
+python3 -c "print('t = 1\n' * 10, end='')" > src/tiny.py
+check "10 changed lines → clear (below the default)" "$(verdict s7c)" "clear"
+rm -f src/tiny.py
 
 # (b) is about THIS session's code. Uncommitted work that was already in the tree
 # when the session started is not this session's change (seen in P5: a fresh
@@ -246,6 +254,93 @@ cd "$WORK_C/wt" || exit 1
 new_session c9
 lines src/in_worktree.py 'h = 8' 120; commit_all "in a worktree"
 check "code committed in a linked worktree → blocked" "$(verdict c9)" "blocked"
+
+# v0.16.4 trigger (e): the session wrote the wiki but left it uncommitted while its
+# code is committed (or there is no code left to commit). mtime decides what this
+# session touched, so each case waits a second past its stamp.
+echo "== A1 Stop gate — trigger (e): wiki left uncommitted =="
+cd "$WORK_C" || exit 1
+git worktree remove --force "$WORK_C/wt" >/dev/null 2>&1
+mkdir -p wiki/entities
+new_session e1; sleep 1
+lines src/e1.py 'i = 1' 5; commit_all "small code"
+echo 'e1: what changed' >> wiki/log.md; echo '# page' > wiki/entities/e1.md
+check "code committed, wiki written but uncommitted → blocked" "$(verdict e1)" "blocked"
+commit_all "wiki for e1"
+
+new_session e2; sleep 1
+lines src/e2.py 'j = 1' 5
+echo 'e2: work in progress' >> wiki/log.md
+check "wiki and code both uncommitted (work in progress) → clear" "$(verdict e2)" "clear"
+commit_all "e2"
+
+new_session e3; sleep 1
+echo 'e3: wiki-only session' >> wiki/log.md
+check "wiki-only session, nothing committed, no code dirty → blocked" "$(verdict e3)" "blocked"
+commit_all "e3"
+
+new_session e4; sleep 1
+lines src/e4.py 'k = 1' 5; echo 'e4: committed together' >> wiki/log.md; commit_all "e4 code + wiki"
+check "code and wiki committed together → clear" "$(verdict e4)" "clear"
+
+echo '# old notes' > wiki/entities/old.md; sleep 1
+new_session e5; sleep 1
+lines src/e5.py 'l = 1' 5; echo 'e5: line' >> wiki/log.md; commit_all "e5"
+git rm -q --cached wiki/entities/old.md >/dev/null 2>&1
+check "wiki dirt older than the session is not its debt → clear" "$(verdict e5)" "clear"
+rm -f wiki/entities/old.md
+
+new_session e6
+lines src/e6.py 'm = 1' 5; commit_all "e6 code, wiki untouched"
+check "log not written this session → (e) stays out of it (clear)" "$(verdict e6)" "clear"
+
+echo "== A2b push gate =="
+WORK_P="$(mktemp -d)"
+trap 'rm -rf "$WORK" "$WORK_C" "$WORK_P"' EXIT
+git init -q --bare "$WORK_P/remote.git"
+git clone -q "$WORK_P/remote.git" "$WORK_P/clone" 2>/dev/null
+cd "$WORK_P/clone" || exit 1
+git config user.email test@strata.local && git config user.name "Strata Test"
+mkdir -p src wiki scripts/pre-commit
+cp "$TPL/pre-commit/check_wiki_push.sh" scripts/pre-commit/
+cp "$ROOT/.githooks/pre-push" .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+echo 'seed' > wiki/log.md; git add -A >/dev/null && git commit -qm seed && git push -q origin HEAD:main 2>/dev/null
+git branch -q -u origin/main 2>/dev/null
+remote_head() { git --git-dir="$WORK_P/remote.git" rev-parse "${1:-main}" 2>/dev/null; }
+push_ok() { git push -q origin "${1:-HEAD:main}" >/dev/null 2>&1 && echo pushed || echo refused; }
+
+lines src/p1.py 'n = 1' 30; git add -A >/dev/null; git commit -qm "code only"
+check "30 lines of code, no wiki/log.md in the pushed commits → refused" "$(push_ok)" "refused"
+check "the remote did not move" "$(remote_head)" "$(git rev-parse HEAD~1)"
+check "the refusal names the line count" \
+  "$(git push origin HEAD:main 2>&1 | grep -c 'carries ~30 lines of code')" "1"
+echo 'p1: what changed' >> wiki/log.md; git add -A >/dev/null; git commit -qm "wiki"
+check "a pushed commit touching wiki/log.md satisfies it → pushed" "$(push_ok)" "pushed"
+lines src/p2.py 'o = 1' 30; git add -A >/dev/null; git commit -qm "code again"
+check "STRATA_SKIP_WIKI=1 bypasses it" \
+  "$(STRATA_SKIP_WIKI=1 git push -q origin HEAD:main >/dev/null 2>&1 && echo pushed || echo refused)" "pushed"
+lines src/p3.py 'p = 1' 10; git add -A >/dev/null; git commit -qm "small"
+check "10 lines → below the default threshold → pushed" "$(push_ok)" "pushed"
+lines src/p4.py 'q = 1' 30; git add -A >/dev/null; git commit -qm "big"
+check "STRATA_PUSH_GATE_LINES=0 disables it" \
+  "$(STRATA_PUSH_GATE_LINES=0 git push -q origin HEAD:main >/dev/null 2>&1 && echo pushed || echo refused)" "pushed"
+git checkout -q -b feature
+lines src/p5.py 'r = 1' 30; git add -A >/dev/null; git commit -qm "feature code"
+check "a new branch (remote sha all zeros) is judged too → refused" "$(push_ok feature)" "refused"
+git tag v-test
+check "a tag push passes" "$(push_ok v-test)" "pushed"
+check "pre-commit framework env (FROM/TO refs) → refused" \
+  "$(PRE_COMMIT_FROM_REF="$(git rev-parse main)" PRE_COMMIT_TO_REF="$(git rev-parse HEAD)" \
+     bash scripts/pre-commit/check_wiki_push.sh >/dev/null 2>&1; echo $?)" "1"
+check "upgrade check: a wired pre-push is not reported" \
+  "$(bash "$TPL/strata_upgrade_check.sh" "$TPL" scripts 2>/dev/null | grep -c '^UNWIRED  git pre-push')" "0"
+mv .git/hooks/pre-push .git/hooks/pre-push.off
+check "upgrade check: an unwired push gate is reported" \
+  "$(bash "$TPL/strata_upgrade_check.sh" "$TPL" scripts 2>/dev/null | grep -c '^UNWIRED  git pre-push')" "1"
+mv .git/hooks/pre-push.off .git/hooks/pre-push
+rm -f wiki/log.md
+check "a repo without wiki/log.md is out of scope" \
+  "$(bash scripts/pre-commit/check_wiki_push.sh origin </dev/null >/dev/null 2>&1; echo $?)" "0"
 cd "$WORK" || exit 1
 
 echo "== A1 Stop gate — performance =="

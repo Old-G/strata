@@ -58,7 +58,7 @@ solutions / Related / Sources.
 |---|---|
 | [[enforcement-layer]] | The deterministic half of the knowledge pipeline: hooks + guards that make wiki freshness an invariant. |
 | [[stop-gate]] | A1 — `Stop` hook that refuses to end the turn once while this session owes wiki work. |
-| [[commit-gate]] | A2 — pre-commit guard failing the commit while `pending_ingest` markers exist. |
+| [[commit-gate]] | A2 — pre-commit guard failing the commit while `pending_ingest` markers exist; A2b — pre-push guard refusing code pushed without a `wiki/log.md` line. |
 | [[session-start-injection]] | A3 — `SessionStart` hook injecting branch, pending list, and wiki index head into every session. |
 | [[pending-ingest-marker]] | The `pending_ingest:` line in `wiki/log.md` — the single token every gate reads. |
 | [[raw-mirror-hook]] | `sync_raw_mirror.sh` — PostToolUse hook mirroring `docs/*.md → raw/` and emitting the marker. |

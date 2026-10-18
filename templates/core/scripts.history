@@ -1,3 +1,4 @@
+030c1a637718d551f075934dc73fad8dbd807772  pre-commit/check_wiki_push.sh
 04ecf5d82f6bdd38960e9f7e614127717cdbc145  lib/state_tools.py
 05615ebbda3f9e4465deb821c6eba0d41cab77dc  git-hooks/strata_commit_trailer.sh
 14e81e46e4c3706234d388c2f83b4cf89ac0a8fd  hooks/strata_stop_gate.sh
@@ -29,6 +30,7 @@
 9a6aae60c90c1442d6853ef7c66f14210159b7bb  lib/pending_ingest.sh
 9c4f366e57095960a132e38dc788a46e36f0e556  sync_raw_mirror.sh
 a1fc5b3c37480112691fb676da7b5d41386932ab  strata_why.sh
+a4922218d3c3f00f4165b8d545ae1d79b9101bc2  hooks/strata_stop_gate.sh
 a52f6a1327f5d66c1bcc0ed9a8219e73e6bd996d  lib/pending_ingest.sh
 a6518a71ecf389175bd2f8b8800ea03e2aac6507  pre-commit/check_secrets.sh
 ab219c34bc239ee9c3917a4d7f3d4516fa72810b  lib/state_tools.py
@@ -40,6 +42,7 @@ b535d92f2204eca08cc8532f4224293269521d99  diagram_check.sh
 ba12a6ec590679ad049041633022966e237a0fe8  pre-commit/check_raw_mirror.sh
 be08ba3d1ae57059602e5e4f34da3c725bc4d941  hooks/strata_stop_gate.sh
 bf355c30608d1cc3b1637c0ade537fd38397830d  lib/pending_ingest.sh
+bfca4e60669251c428a4968d5c63420b70777dc2  strata_upgrade_check.sh
 c5294d291184dbcc28e7575fb7890cd4cb9e01b9  strata_upgrade_check.sh
 d773c238fcfe44527e20b91a09542d8075983ab3  lib/state_tools.py
 de1e3300f686452ef672f272b2fdeea0fb259527  lib/requirements.py

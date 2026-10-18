@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Strata A2b — wiki push gate. Missing script → the push goes through.
+s="$(git rev-parse --show-toplevel 2>/dev/null)/scripts/pre-commit/check_wiki_push.sh"
+[ -f "$s" ] || exit 0
+exec bash "$s" "$@"

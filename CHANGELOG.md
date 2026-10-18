@@ -6,6 +6,30 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.16.4] — 2026-10-18
+
+### Added
+- **Push gate (A2b) — `scripts/pre-commit/check_wiki_push.sh`.** The Stop gate only sees sessions run
+  through Claude Code and the commit gate only fires on docs→raw markers, so code committed by another
+  agent, an editor or by hand reached the remote with no knowledge trace. The push gate refuses a push
+  whose new commits change `STRATA_PUSH_GATE_LINES` (default 20) lines outside `wiki/ raw/ docs/` and
+  never touch `wiki/log.md`. New branches are judged against everything the remote lacks; tags,
+  deletions and repos without `wiki/log.md` pass; `STRATA_SKIP_WIKI=1` bypasses it. Works as a plain
+  git `pre-push` hook and at the pre-commit framework's `pre-push` stage. Wiring:
+  `reference/wiki-push-gate.md`; `strata_upgrade_check.sh` reports `UNWIRED  git pre-push` (without
+  failing — a git hook is per clone) and `/strata:upgrade` Step 3.6 wires it.
+- **Stop gate trigger (e) — wiki left uncommitted.** (b) is satisfied by a `wiki/log.md` line committed
+  or not, so a session could commit its code and leave the wiki in its own working tree. When the log
+  grew this session, the gate now blocks once while `wiki/` files this session touched (newer than the
+  session stamp) are uncommitted and the session's code is committed (HEAD moved) or no code is left
+  uncommitted. Code still dirty reads as work in progress and passes. The clean path is unchanged.
+
+### Changed
+- **Stop gate trigger (b) threshold 50 → 20 changed lines** (`STRATA_STOP_GATE_LINES` still
+  overrides; `0` disables). A 40-line fix used to leave no trace in the wiki.
+
+`test_p1_gates.sh` 49 → 70 (the threshold and trigger (e) cases were red on the 0.16.3 gate).
+
 ## [0.16.3] — 2026-10-17
 
 ### Fixed

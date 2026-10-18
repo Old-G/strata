@@ -103,6 +103,11 @@ SessionStart notice drift on its own next time.
    (`--git-path`, not a literal `.git/hooks`: in a linked worktree `.git` is a file) — ask the one question
    in `${CLAUDE_PLUGIN_ROOT}/reference/agent-session-trailer.md` §1 and, on yes, wire it per §3.
    Skip the question when `git config strata.trailer` says `declined`.
+6. The push gate (v0.16.4) is a git hook too. When Step 1 printed `UNWIRED  git pre-push`, wire
+   `scripts/pre-commit/check_wiki_push.sh` as `pre-push` per
+   `${CLAUDE_PLUGIN_ROOT}/reference/wiki-push-gate.md` — into the mechanism the repo already uses,
+   chaining an existing `pre-push`, never replacing it. No question needed: it only refuses a push of
+   code with no `wiki/log.md` line, and `STRATA_SKIP_WIKI=1` passes it.
 
 ## Step 4 — Stamp the version
 
@@ -118,6 +123,7 @@ what lets SessionStart notice a *future* drift without anyone running this skill
    `strata_session_start` and `sync_raw_mirror` — each present exactly once per event, not
    duplicated.
 4. If the trailer was wired in Step 3.5: the §4 verify in `reference/agent-session-trailer.md`.
+   If the push gate was wired in Step 3.6: Step 1 no longer prints `UNWIRED  git pre-push`.
 5. Report a one-line summary: files re-synced (count), settings.json merged (yes/no — it's fine
    if it was already current), version stamped, trailer (wired / already wired / declined /
    inert — id not exported), diagram layer (offered / seeded / declined / archify absent).

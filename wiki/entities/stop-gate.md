@@ -2,7 +2,7 @@
 title: Stop gate (A1)
 type: entity
 created: 2026-08-15
-updated: 2026-10-17
+updated: 2026-10-18
 links: [enforcement-layer, pending-ingest-marker, commit-gate, branch-state, friction-capture]
 ---
 
@@ -37,7 +37,8 @@ gate. Fast path when the state is clean: `exit 0` in under 100 ms.
 Shipped in `templates/core/scripts/hooks/`, installed into the target project's
 `.claude/settings.json` by `init` / `adopt` — never as a global plugin hook.
 
-A second trigger covers code-only sessions: ~50+ changed lines outside `wiki/ raw/ docs/` with
+A second trigger covers code-only sessions: ~20+ changed lines (50 until v0.16.4 — a 40-line fix
+left no trace) outside `wiki/ raw/ docs/` with
 nothing written to `wiki/log.md` blocks once, satisfiable by a single log line (including an
 explicit `no-wiki-impact:`). Tune with `STRATA_STOP_GATE_LINES`; `0` disables it. Since v0.9.0 it
 counts only what *this* session touched: SessionStart snapshots the already-dirty files as
@@ -58,6 +59,15 @@ commit made this session is this session's act, even if it carries uncommitted w
 the session. HEAD is read with shell builtins on the plain layout (loose ref or detached, incl.
 linked worktrees and submodules) and from `git rev-parse` only for packed refs/reftable — a
 `rev-parse` on every Stop cost ~8 ms of the 100 ms budget.
+
+**Trigger (e), shipped in v0.16.4 — wiki left behind:** (b) is satisfied by a `wiki/log.md` line
+*committed or not*, so a session could write the wiki, commit only its code and leave the wiki in its
+own working tree, where nobody else ever reads it (seen in the field: a repo with a dozen wiki pages
+uncommitted for a week). When `wiki/log.md` grew this session, the gate lists `wiki/` files that are
+uncommitted *and* newer than the session stamp (mtime — older wiki dirt is not this session's), and
+blocks once when the session's code is already committed (HEAD moved since the stamp) or no code is
+left uncommitted at all. Code still dirty reads as work in progress and passes. The clean path pays
+nothing: the check runs only after the log grew. Its push-time twin is the [[commit-gate]]'s push gate.
 
 The hook payload is parsed with `grep`/`sed`, not `python3` — interpreter startup measured ~36 ms,
 unaffordable against the sub-100 ms budget. Verified clean-state path: 69 ms.
@@ -109,7 +119,7 @@ Markers and dirty files that existed before the session started are not this ses
 Trigger (b) bills a session for the code it committed as well as the code it left uncommitted, and
 skips the committed part whenever it cannot tell what the session committed.
 
-- Scenario: commit then stop — WHEN this session committed 50+ lines of code and `wiki/log.md` did not
+- Scenario: commit then stop — WHEN this session committed 20+ lines of code and `wiki/log.md` did not
   grow THEN the first Stop is blocked · `test: scripts/test_p1_gates.sh::code committed this session, tree clean, wiki silent → blocked`
 - Scenario: commit with a log line — WHEN the commit also added a `wiki/log.md` line THEN Stop is not
   blocked · `test: scripts/test_p1_gates.sh::committed code + a committed wiki/log.md line → clear`
@@ -119,6 +129,26 @@ skips the committed part whenever it cannot tell what the session committed.
   committed part is skipped · `test: scripts/test_p1_gates.sh::start HEAD not an ancestor of HEAD (branch switch)`
 - Scenario: older stamp — WHEN the session stamp has no `HEAD=` line THEN the committed part is
   skipped · `test: scripts/test_p1_gates.sh::stamp without HEAD= (older SessionStart)`
+
+### Asks for a code change of 20+ lines
+The default threshold of trigger (b) is 20 changed lines; `STRATA_STOP_GATE_LINES` overrides it.
+
+- Scenario: 25 lines — WHEN this session changed 25 lines of code and wrote nothing to the wiki THEN
+  Stop is blocked · `test: scripts/test_p1_gates.sh::25 changed lines → blocked (default threshold 20)`
+- Scenario: 10 lines — WHEN it changed 10 lines THEN Stop is not blocked ·
+  `test: scripts/test_p1_gates.sh::10 changed lines → clear (below the default)`
+
+### Asks for the wiki to be committed with the code
+A session that wrote the wiki may not stop with those wiki files uncommitted once its code is committed.
+
+- Scenario: wiki left behind — WHEN this session committed code and left wiki files it wrote
+  uncommitted THEN Stop is blocked · `test: scripts/test_p1_gates.sh::code committed, wiki written but uncommitted → blocked`
+- Scenario: work in progress — WHEN both the wiki and the code are still uncommitted THEN Stop is not
+  blocked · `test: scripts/test_p1_gates.sh::wiki and code both uncommitted (work in progress) → clear`
+- Scenario: committed together — WHEN code and wiki went into the same commit THEN Stop is not
+  blocked · `test: scripts/test_p1_gates.sh::code and wiki committed together → clear`
+- Scenario: older wiki dirt — WHEN the only uncommitted wiki file predates the session THEN Stop is
+  not blocked · `test: scripts/test_p1_gates.sh::wiki dirt older than the session is not its debt → clear`
 
 ## Related
 
