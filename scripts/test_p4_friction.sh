@@ -138,10 +138,14 @@ else
 fi
 
 # 8. recorded via wiki/log.md after the session stamp → silent
+# The line is committed, as a session would: left uncommitted it trips trigger (e)
+# wherever `-nt` sees sub-second mtimes (Linux bash; macOS bash 3.2 compares whole seconds).
 new_session s8
+sleep 1   # make the log newer than the stamp on every platform, so (e) is really exercised
 echo "gotcha: the thing that went wrong" >> wiki/log.md
+git add wiki/log.md && git commit -qm "log: gotcha"
 check "friction + a wiki/log.md line this session → silent (recorded)" "$(stop_gate s8 "$TR/int2.jsonl")" ""
-git checkout -q -- wiki/log.md
+git reset -q --hard HEAD~1   # fixture back to the seed (temp repo)
 
 # 9. branch state: older than the stamp does not count as recorded; touched after it does
 python3 scripts/lib/state_tools.py init main --goal "fixture" >/dev/null
