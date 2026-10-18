@@ -25,6 +25,7 @@ If **no design doc exists** for a non-trivial change, your top recommendation is
 4. **Tests.** Coverage of the risky paths, not line-count theater. Design for the tired human at 3am: failures must be legible. Systems over heroes — the test suite, not vigilance, should catch regressions.
 5. **Performance.** N+1s, unbounded loops/queries, hot paths, payload sizes. Only flag with a concrete cost story; don't micro-optimize cold paths.
 6. **Footguns / best practice.** Grep for known-bad patterns in the stack and check the plan against the repo's SCALABLE_ARCHITECTURE_REFERENCE.md if present.
+7. **Product readiness.** Check the plan against `reference/product-ready-architecture.md` in the Strata plugin (`${CLAUDE_PLUGIN_ROOT}/reference/…`; when unset, the newest `~/.claude/plugins/cache/*/strata/<version>/reference/`). Level 1 always. Level 2 only when the target repo's `.strata/profile` contains `product` — otherwise a plan that builds tenancy, per-tenant secrets or boundary tooling is an *accidental complexity* finding, not a virtue. Cite the rule number (`1.1`…`2.5`).
 
 ## Judgment lenses — apply each explicitly and name it in findings
 

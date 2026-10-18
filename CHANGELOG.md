@@ -6,6 +6,17 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.16.6] — 2026-10-18
+
+### Added
+- **Product-ready architecture, two levels** (`reference/product-ready-architecture.md`). Level 1 for
+  every project: nothing owner-specific in code, one module per external service, data through one
+  storage layer, domain modules, one-command run, no generalisation before the third repetition.
+  Level 2 only for a project marked a product candidate (`.strata/profile` contains `product`):
+  owner/tenant scope on every record, per-scope config and secrets, a user in the model, enforced
+  module boundaries, per-scope export/delete. `strata-eng-review` checks plans against it (item 7)
+  and flags level-2 machinery in an unmarked project as accidental complexity.
+
 ## [0.16.5] — 2026-10-18
 
 ### Fixed
