@@ -324,6 +324,10 @@ check "10 lines → below the default threshold → pushed" "$(push_ok)" "pushed
 lines src/p4.py 'q = 1' 30; git add -A >/dev/null; git commit -qm "big"
 check "STRATA_PUSH_GATE_LINES=0 disables it" \
   "$(STRATA_PUSH_GATE_LINES=0 git push -q origin HEAD:main >/dev/null 2>&1 && echo pushed || echo refused)" "pushed"
+mkdir -p scripts/hooks scripts/lib
+lines scripts/hooks/strata_stop_gate.sh '# synced' 30; lines scripts/lib/pending_ingest.sh '# synced' 30
+git add -A >/dev/null; git commit -qm "chore: strata hook re-sync"
+check "a commit of Strata's own synced scripts needs no wiki line → pushed" "$(push_ok)" "pushed"
 git checkout -q -b feature
 lines src/p5.py 'r = 1' 30; git add -A >/dev/null; git commit -qm "feature code"
 check "a new branch (remote sha all zeros) is judged too → refused" "$(push_ok feature)" "refused"

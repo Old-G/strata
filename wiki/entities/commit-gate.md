@@ -41,7 +41,8 @@ The commit gate only fires on docs→raw markers, and the [[stop-gate]] only see
 through Claude Code — code committed by another agent, an editor or by hand reached the remote with
 no knowledge trace. The push is the point every path crosses. Per pushed branch, over the commits
 the remote does not have (`<remote sha>..<local sha>`; `<local> --not --remotes=<remote>` for a new
-branch or an unfetched remote sha), it sums changed lines outside `wiki/ raw/ docs/` (no merges)
+branch or an unfetched remote sha), it sums changed lines outside `wiki/ raw/ docs/` and Strata's own installed scripts (since v0.16.5 — a
+hook re-sync is the plugin's change, not the project's) (no merges)
 and refuses the push at `STRATA_PUSH_GATE_LINES` (default 20; `0` disables) when none of those
 commits touches `wiki/log.md`. Tags, branch deletions and repos without `wiki/log.md` pass.
 `STRATA_SKIP_WIKI=1` (or `--no-verify`) bypasses it. Reads git's pre-push stdin, or the pre-commit

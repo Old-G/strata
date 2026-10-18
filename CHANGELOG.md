@@ -6,6 +6,15 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.16.5] — 2026-10-18
+
+### Fixed
+- **The push gate no longer refuses Strata's own hook re-sync.** A commit of `strata-upgrade-all`'s
+  sync (scripts under `scripts/hooks/strata_*`, `scripts/lib/*`, `scripts/pre-commit/check_*`, …)
+  counted as code, so the first push after every upgrade asked for a wiki line about a change the
+  project never made. Strata's own installed scripts are now excluded by name, like `wiki/ raw/ docs/`.
+  Found on the first rollout: a 76-line sync commit was refused. `test_p1_gates.sh` 70 → 71.
+
 ## [0.16.4] — 2026-10-18
 
 ### Added

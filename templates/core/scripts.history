@@ -37,6 +37,7 @@ ab219c34bc239ee9c3917a4d7f3d4516fa72810b  lib/state_tools.py
 ab949599697817ec58355d94177ae432d929b67c  hooks/strata_session_start.sh
 ab954a76bb585d1f3424ea7575dd713582b3d311  hooks/strata_session_start.sh
 ad2e4b9f7ac6b69860a8c282cad1d410cb052385  strata_why.sh
+ae155b9d4f1b5101cd160108a4b33fb85e652692  pre-commit/check_wiki_push.sh
 b32c1c7265a48790259a04d0db02f677ba1500f2  lib/state_tools.py
 b535d92f2204eca08cc8532f4224293269521d99  diagram_check.sh
 ba12a6ec590679ad049041633022966e237a0fe8  pre-commit/check_raw_mirror.sh

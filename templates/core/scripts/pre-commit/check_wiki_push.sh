@@ -8,7 +8,9 @@
 # is the last point every one of those paths crosses.
 #
 # Judged per pushed branch, over the commits the remote does not have yet:
-# changed lines outside wiki/ raw/ docs/ (no merges) against
+# changed lines outside wiki/ raw/ docs/ and Strata's own installed scripts
+# (a hook re-sync is the plugin's change, not the project's — its trace is
+# Strata's changelog) (no merges) against
 # STRATA_PUSH_GATE_LINES (default 20; 0 disables). Any of those commits touching
 # wiki/log.md satisfies it — one line, including "no-wiki-impact: <reason>".
 # Tags and branch deletions pass. A repo without wiki/log.md passes.
@@ -40,12 +42,22 @@ zero_sha() { case "$1" in (*[!0]*) return 1 ;; esac; return 0; }
 
 fail=0
 
+# What git counts as code here. Strata's own files are excluded by name so a
+# commit of `strata-upgrade-all`'s sync never needs a wiki line.
+CODE_PATHS=(. ':(exclude)wiki' ':(exclude)raw' ':(exclude)docs'
+  ':(exclude,glob)scripts/hooks/strata_*' ':(exclude,glob)scripts/git-hooks/strata_*'
+  ':(exclude)scripts/lib/pending_ingest.sh' ':(exclude)scripts/lib/tree_snapshot.sh'
+  ':(exclude)scripts/lib/state_tools.py' ':(exclude)scripts/lib/requirements.py'
+  ':(exclude)scripts/pre-commit/check_secrets.sh' ':(exclude)scripts/pre-commit/check_raw_mirror.sh'
+  ':(exclude)scripts/pre-commit/check_wiki_fresh.sh' ':(exclude)scripts/pre-commit/check_wiki_push.sh'
+  ':(exclude)scripts/sync_raw_mirror.sh' ':(exclude)scripts/strata_upgrade_check.sh'
+  ':(exclude)scripts/strata_why.sh' ':(exclude)scripts/diagram_check.sh')
+
 # $1 = label, rest = rev-list arguments naming the commits being pushed.
 check_range() {
   local label="$1"; shift
   local code logged
-  code="$(git log --no-merges --format= --numstat "$@" -- . \
-      ':(exclude)wiki' ':(exclude)raw' ':(exclude)docs' 2>/dev/null \
+  code="$(git log --no-merges --format= --numstat "$@" -- "${CODE_PATHS[@]}" 2>/dev/null \
     | awk -F'\t' 'NF >= 3 { a = ($1 == "-") ? 0 : $1; d = ($2 == "-") ? 0 : $2; s += a + d } END { print s + 0 }')"
   case "$code" in (''|*[!0-9]*) code=0 ;; esac
   [ "$code" -ge "$threshold" ] || return 0
