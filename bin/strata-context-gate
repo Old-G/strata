@@ -138,5 +138,6 @@ try:
 except Exception:
     pass
 PY
-STRATA_GATE_SKILL="${here%/bin}/skills/handoff/SKILL.md" python3 -c "$GATE_PY" 2>/dev/null
+# Why -I: a hook runs in the project dir, and `-c` puts it on sys.path — a json.py there would run.
+STRATA_GATE_SKILL="${here%/bin}/skills/handoff/SKILL.md" python3 -I -c "$GATE_PY" 2>/dev/null
 exit 0

@@ -50,5 +50,6 @@ except Exception:
     pass
 PY
 
-python3 -c "$GATE_PY" 2>/dev/null || true
+# Why -I: a hook runs in the project dir, and `-c` puts it on sys.path — a json.py there would run.
+python3 -I -c "$GATE_PY" 2>/dev/null || true
 exit 0

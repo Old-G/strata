@@ -31,5 +31,9 @@ if [ -z "$asks_off" ]; then ok "STRATA_DEEPEN=0 disables"; else bad "STRATA_DEEP
 bad_json="$(printf 'not json' | bash "$GATE"; echo "exit=$?")"
 if [ "$bad_json" = "exit=0" ]; then ok "fails open on bad input"; else bad "fails open on bad input (got '$bad_json')"; fi
 
+shadow="$(mktemp -d)"; echo 'raise SystemExit("shadowed")' > "$shadow/json.py"
+out="$(cd "$shadow" && printf '{"prompt":"Add a CSV export to the report for accounting"}' | bash "$GATE")"; rm -rf "$shadow"
+case "$out" in *strata:deepen*) ok "a json.py in the project dir does not run (python3 -I)";; *) bad "module shadowing from the project dir";; esac
+
 echo "Deepen gate: $pass passed, $fail failed"
 [ "$fail" -eq 0 ]

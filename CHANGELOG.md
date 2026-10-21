@@ -25,8 +25,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   politely worded note got 0/1, the imperative one ("your FIRST action is the Skill tool with
   strata:deepen") 2/2 — both sessions invoked `strata:deepen` as their first tool call. The gate adds one line of context to
   messages with a build verb (EN/RU), skips questions without one, slash commands, short replies;
-  `STRATA_DEEPEN=0` disables; fails open. `scripts/test_deepen_gate.sh` 10/10, wired into
+  `STRATA_DEEPEN=0` disables; fails open. `scripts/test_deepen_gate.sh` 11/11, wired into
   `validate.sh` §16b. The installed SessionStart hook also prints the deepen rule.
+
+### Security
+- **Both opt-in gates run Python isolated (`python3 -I`).** A hook runs in the project directory and
+  `python3 -c` puts it on `sys.path`, so a `json.py` in a cloned repo would have run on every prompt
+  (deepen gate) or every stop (context gate). Found by an automated review of this release;
+  `test_deepen_gate.sh` covers it.
 
 ## [0.16.6] — 2026-10-18
 
