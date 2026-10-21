@@ -6,6 +6,28 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.17.0] — 2026-10-22
+
+### Added
+- **`/strata:deepen` — ask for the result, not the task.** An agent does what the prompt names and
+  stops; nothing in the prompt says what the task is for. Before the plan, deepen restates the ask
+  as its outcome (altitude), asks what the best practitioner would do that the ask does not mention,
+  from which material, with which methods and tools, and what proves it right outside the model
+  (depth), sets a target tweaking cannot reach (ambition), and on risky work that faces people runs
+  2-4 fields as sequential subagents (range). The check is planned for a model that did not build
+  the work — another vendor's CLI, a `claude -p` session on a different model, or a fresh reviewer.
+  `/strata:feature` runs it by itself on standard and risky tiers, between Think and Plan; its
+  Deeper ask becomes `lean-plan`'s intent and success criterion, and risky work gets the outside
+  judge on the diff before `light-finish`. After Felix Rieseberg's altitude / depth / range framing.
+- **`bin/strata-deepen-gate` — opt-in `UserPromptSubmit` hook** (install: `reference/deepen-gate.md`,
+  like the context gate). Measured before shipping: on a plain "add X" three fresh sessions made zero
+  Skill calls with only the skill description and a SessionStart rule; with the gate installed, a
+  politely worded note got 0/1, the imperative one ("your FIRST action is the Skill tool with
+  strata:deepen") 2/2 — both sessions invoked `strata:deepen` as their first tool call. The gate adds one line of context to
+  messages with a build verb (EN/RU), skips questions without one, slash commands, short replies;
+  `STRATA_DEEPEN=0` disables; fails open. `scripts/test_deepen_gate.sh` 10/10, wired into
+  `validate.sh` §16b. The installed SessionStart hook also prints the deepen rule.
+
 ## [0.16.6] — 2026-10-18
 
 ### Added

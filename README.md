@@ -206,6 +206,7 @@ All skills are invoked as `/strata:<name>` and are also auto-suggested by Claude
 | `/strata:refactor` | Close audit findings safely — per finding → dated spec+plan → TDD | Green, behavior-preserving changes |
 | `/strata:office-hours` | YC-partner interrogation of a feature idea (6 forcing questions) | A design doc |
 | `/strata:feature` | Adaptive feature flow: triage → (grill) → lean plan → risk-matched council → build with evidence → finish → wiki+audit | A shipped feature, with ceremony matched to its risk |
+| `/strata:deepen` | Raise an ask before planning: the outcome behind it, what the best practitioner adds and with which methods, a target tweaking cannot reach, proof outside the model. Runs by itself inside `feature` on standard/risky | A Deeper ask the plan copies |
 | `/strata:lean-plan` | Write a complete-but-lean plan: intent, constraints, success criterion; references real code instead of pasting it | An inline plan, or `docs/superpowers/plans/<date>-<slug>-plan.md` when risky |
 | `/strata:light-finish` | Wrap up a branch: confirm green, then merge / PR / keep / discard, and clean up | An integrated (or cleanly parked) branch |
 | `/strata:autoplan` | Run the review council automatically; surface only taste calls & disagreements | A build-ready plan |
@@ -398,13 +399,13 @@ strata/
 ├── .claude-plugin/
 │   ├── plugin.json          # plugin manifest
 │   └── marketplace.json     # this repo is also its own marketplace
-├── skills/                  # 12 skills (one dir each, SKILL.md)
+├── skills/                  # 15 skills (one dir each, SKILL.md)
 │   ├── using-strata/        # entry router
 │   ├── onboard/             # AI-led end-to-end setup
 │   ├── init/  adopt/        # bootstrap new / adopt existing
 │   ├── audit/  refactor/    # drift detection / staged remediation
 │   ├── feature/  office-hours/  autoplan/   # the process layer
-│   ├── lean-plan/  light-finish/            #   …lean plan + branch wrap-up
+│   ├── deepen/  lean-plan/  light-finish/   #   …deeper ask, lean plan, branch wrap-up
 │   └── wiki-ingest/         # knowledge protocol
 ├── agents/                  # the council reviewer subagents (read-only)
 │   └── strata-{ceo,eng,design,cso}-review.md

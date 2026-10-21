@@ -56,6 +56,7 @@ solutions / Related / Sources.
 
 | Page | What it is |
 |---|---|
+| [[deepen]] | Pre-plan pass that restates an ask as its outcome, the practitioner's methods, an ambitious target and outside proof; run by `feature` on standard/risky. |
 | [[enforcement-layer]] | The deterministic half of the knowledge pipeline: hooks + guards that make wiki freshness an invariant. |
 | [[product-ready-architecture]] | Two-level architecture canon (level 1 always, level 2 under `.strata/profile` = `product`) the eng reviewer checks. |
 | [[stop-gate]] | A1 — `Stop` hook that refuses to end the turn once while this session owes wiki work. |

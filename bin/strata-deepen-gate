@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# strata-deepen-gate — a Claude Code `UserPromptSubmit` hook. When a message asks to build or change
+# something, it adds one line of context asking the model to run /strata:deepen before planning, so
+# the plan aims at the result instead of the task. Questions, slash commands, short replies ("yes",
+# "go") and messages with no build verb pass untouched.
+#
+# Why a hook: a skill description and a SessionStart rule were both measured not to fire on a plain
+# "add X" (2026-10-22, three fresh sessions: zero Skill calls); this imperative note at prompt time
+# made strata:deepen the first tool call in 2/2 (a polite wording: 0/1).
+#
+# Not a plugin hook — the plugin ships none (ADR #1). ~/.claude/settings.json calls the newest
+# installed copy from the plugin cache; install: reference/deepen-gate.md.
+#
+# Env: STRATA_DEEPEN=0 disables · STRATA_DEEPEN_MIN_CHARS (default 25). Fails open: any error adds
+# nothing.
+
+read -r -d '' GATE_PY <<'PY'
+import json, os, re, sys
+
+BUILD = re.compile(
+    r"\b(add|build|implement|make|create|fix|change|refactor|rework|redesign|improve|ship|write|"
+    r"support|migrate|replace|remove|rename)\b"
+    r"|(сдела|добав|реализ|запил|почин|исправ|помен|переде|дорабо|улучш|напиш|созда|внедр|настро|"
+    r"убер|замен|перене|надо,? чтобы|нужно,? чтобы|хочу,? чтобы)",
+    re.I,
+)
+NOTE = (
+    "Strata deepen gate: the user's message asks to build or change something. Your FIRST action, "
+    "before reading code or planning, is the Skill tool with skill \"strata:deepen\" — follow it "
+    "and show its Deeper ask in 5-8 lines, then continue with the task. Skip this only when the "
+    "message is a one-line fix, a question, or an exact spec the user wants done as written."
+)
+
+
+def main():
+    if os.environ.get("STRATA_DEEPEN") == "0":
+        return
+    data = json.load(sys.stdin)
+    prompt = (data.get("prompt") or "").strip()
+    min_chars = int(os.environ.get("STRATA_DEEPEN_MIN_CHARS") or 25)
+    if len(prompt) < min_chars or prompt.startswith("/") or not BUILD.search(prompt):
+        return
+    print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
+                                             "additionalContext": NOTE}}))
+
+
+try:
+    main()
+except Exception:
+    pass
+PY
+
+python3 -c "$GATE_PY" 2>/dev/null || true
+exit 0

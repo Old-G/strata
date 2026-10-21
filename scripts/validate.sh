@@ -275,6 +275,18 @@ else
   err "scripts/test_context_gate.sh is missing"
 fi
 
+echo "== 16b. deepen gate — asks for /strata:deepen on build requests only =="
+if [ -f scripts/test_deepen_gate.sh ]; then
+  if out="$(bash scripts/test_deepen_gate.sh 2>&1)"; then
+    ok "$(printf '%s' "$out" | tail -n 1)"
+  else
+    printf '%s\n' "$out" | grep '✗' >&2
+    err "deepen gate tests failed (run: bash scripts/test_deepen_gate.sh)"
+  fi
+else
+  err "scripts/test_deepen_gate.sh is missing"
+fi
+
 echo "== 17. P6 behaviour specs — requirements.py check/owed; this wiki's Requirements resolve =="
 if [ -f scripts/test_p6_requirements.sh ]; then
   if out="$(bash scripts/test_p6_requirements.sh 2>&1)"; then

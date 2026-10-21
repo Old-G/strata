@@ -9,7 +9,8 @@ Frontier models do best with the **complete** task specification up front, then 
 
 ## What a plan carries
 
-- **Intent** — what should be true when this is done.
+- **Intent** — what should be true when this is done. When `/strata:deepen` ran, its Outcome and
+  Target are the intent and its Proof is the success criterion — copy them, do not water them down.
 - **Constraints** — stack, ADRs, data, security, compatibility.
 - **Success criterion** — how we'll know, in one line.
 - **Steps** — what changes, in order.

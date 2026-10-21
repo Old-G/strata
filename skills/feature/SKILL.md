@@ -28,10 +28,11 @@ Classify the request with `${CLAUDE_PLUGIN_ROOT}/skills/feature/sections/triage.
 | Phase | trivial | standard | risky |
 |---|---|---|---|
 | Think | restate the ask in one line | light grill via `/strata:office-hours` (intent + success criterion) | `/strata:office-hours` — grill to convergence, design doc |
+| Deepen | none | `/strata:deepen` — outcome, practitioner's methods, target, proof | `/strata:deepen` + range lenses on work that faces people |
 | Plan | none | `/strata:lean-plan`, short | `/strata:lean-plan`, complete-but-lean |
 | Council | none | none by default | 1–2 risk-matched lenses (below) |
 | Build | implement, then evidence | implement, evidence on the core | implement, evidence per meaningful step |
-| Finish | `/strata:light-finish` | `/strata:light-finish` | `/strata:light-finish` + an explicit gate |
+| Finish | `/strata:light-finish` | `/strata:light-finish` | outside judge on the diff (deepen step 5), then `/strata:light-finish` + an explicit gate |
 | Drift-close | floor #3 | `/strata:wiki-ingest` + scoped mini-`/strata:audit` | `/strata:wiki-ingest` + mini-audit |
 
 ## The council — risk-triggered, lens-selected
@@ -48,13 +49,13 @@ Answer quality decays as a session fills up, so long work is split rather than p
 
 ## Delegation
 
-Think → `/strata:office-hours` · Plan → `/strata:lean-plan` · Council → `/strata:autoplan` or the `strata-*-review` agents in parallel · Finish → `/strata:light-finish` · Knowledge → `/strata:wiki-ingest`, `/strata:audit`.
+Think → `/strata:office-hours` · Deepen → `/strata:deepen` (runs by itself on standard and risky; its Deeper ask is the plan's intent and success criterion) · Plan → `/strata:lean-plan` · Council → `/strata:autoplan` or the `strata-*-review` agents in parallel · Finish → `/strata:light-finish` · Knowledge → `/strata:wiki-ingest`, `/strata:audit`.
 
 **Superpowers is optional.** If `superpowers:*` skills are installed you may use them as accelerators on `risky` work. Absent — the native path above is complete; nothing degrades.
 
 ## Never
 
-Skip the floor. Treat a risk-surface task as trivial. Run the council on trivial or standard work by default. Claim something works without showing its evidence.
+Skip the floor. Skip Deepen on standard or risky work. Treat a risk-surface task as trivial. Run the council on trivial or standard work by default. Claim something works without showing its evidence.
 
 ## Do NOT use when
 

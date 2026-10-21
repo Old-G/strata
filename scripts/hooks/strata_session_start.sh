@@ -232,5 +232,6 @@ if [ -f "$INDEX" ]; then
 fi
 
 echo "Rule: answer project questions from wiki/index.md first — never grep-first."
+echo "Rule: before planning any change bigger than a one-liner, run /strata:deepen — the outcome behind the ask, what the best practitioner adds, a target tweaking cannot reach, proof outside the model — then plan."
 
 exit 0
