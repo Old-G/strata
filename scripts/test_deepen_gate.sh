@@ -35,5 +35,15 @@ shadow="$(mktemp -d)"; echo 'raise SystemExit("shadowed")' > "$shadow/json.py"
 out="$(cd "$shadow" && printf '{"prompt":"Add a CSV export to the report for accounting"}' | bash "$GATE")"; rm -rf "$shadow"
 case "$out" in *strata:deepen*) ok "a json.py in the project dir does not run (python3 -I)";; *) bad "module shadowing from the project dir";; esac
 
+# The gate runs from ~/.claude/settings.json in every project, also where the plugin is not enabled and
+# the skill is not loaded: the note must point at the skill file so the pass can be followed by hand.
+out="$(run "Add a CSV export to the report so accounting can open it")"
+case "$out" in *"$ROOT/skills/deepen/SKILL.md"*) ok "note names the skill file as a fallback";; *) bad "no SKILL.md fallback in the note";; esac
+
+# The gate already ran the pass; /strata:feature must reuse it, not run it (and its range subagents) again.
+if grep -qi "already ran" "$ROOT/skills/feature/SKILL.md" && grep -qi "reuse" "$ROOT/skills/feature/SKILL.md"; then
+  ok "feature reuses a deepen pass already run this session"
+else bad "feature runs deepen again after the gate"; fi
+
 echo "Deepen gate: $pass passed, $fail failed"
 [ "$fail" -eq 0 ]

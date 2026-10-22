@@ -32,6 +32,8 @@ Append under `UserPromptSubmit` in `~/.claude/settings.json` — keep entries ot
 ```
 
 For one project only, put the same entry in that project's `.claude/settings.json`.
+Installed for all projects while the plugin is enabled in only some, the note also names the
+skill file, so where `strata:deepen` is not loaded the model follows the pass by hand.
 
 ## Knobs
 
@@ -39,4 +41,5 @@ For one project only, put the same entry in that project's `.claude/settings.jso
 - `STRATA_DEEPEN_MIN_CHARS` — shorter messages pass (default 25), so "yes, go" never triggers it.
 
 The model still decides: the note says to skip one-line fixes, questions and exact specs, and the
-skill's own `## Do NOT use when` holds the same line.
+skill's own `## Do NOT use when` holds the same line. A request the gate already deepened and that
+then routes to `/strata:feature` reuses that pass; feature does not run it again.

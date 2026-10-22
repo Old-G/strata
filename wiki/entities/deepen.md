@@ -29,6 +29,9 @@ Think and Plan; the user can also ask for it ("go deeper", «глубже»).
 - **Reaching it.** A skill description alone does not fire on a plain "add X" (measured 0/3); the
   opt-in `bin/strata-deepen-gate` UserPromptSubmit hook makes it the first tool call (2/2) —
   `reference/deepen-gate.md`.
+- **Once per ask.** A pass the gate already ran is reused by `feature`, not repeated (range
+  subagents included). The gate runs in every project, so its note also names the skill file — where
+  the plugin is off, the model follows the pass by hand (the context gate does the same).
 
 Related: [[native-invocation]] (how it is reached without a command), [[diff-review]] (the other
 outside read, at branch close). Source: Felix Rieseberg's altitude / depth / range framing.

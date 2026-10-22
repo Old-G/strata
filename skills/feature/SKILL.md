@@ -49,7 +49,7 @@ Answer quality decays as a session fills up, so long work is split rather than p
 
 ## Delegation
 
-Think → `/strata:office-hours` · Deepen → `/strata:deepen` (runs by itself on standard and risky; its Deeper ask is the plan's intent and success criterion) · Plan → `/strata:lean-plan` · Council → `/strata:autoplan` or the `strata-*-review` agents in parallel · Finish → `/strata:light-finish` · Knowledge → `/strata:wiki-ingest`, `/strata:audit`.
+Think → `/strata:office-hours` · Deepen → `/strata:deepen` (runs by itself on standard and risky; its Deeper ask is the plan's intent and success criterion — once per ask: when the prompt gate or the user already ran it this session, reuse that Deeper ask, range included, instead of running it again) · Plan → `/strata:lean-plan` · Council → `/strata:autoplan` or the `strata-*-review` agents in parallel · Finish → `/strata:light-finish` · Knowledge → `/strata:wiki-ingest`, `/strata:audit`.
 
 **Superpowers is optional.** If `superpowers:*` skills are installed you may use them as accelerators on `risky` work. Absent — the native path above is complete; nothing degrades.
 

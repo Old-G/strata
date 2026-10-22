@@ -40,8 +40,11 @@ def main():
     min_chars = int(os.environ.get("STRATA_DEEPEN_MIN_CHARS") or 25)
     if len(prompt) < min_chars or prompt.startswith("/") or not BUILD.search(prompt):
         return
+    # Why the path: the hook runs in every project, also where the plugin is off and the skill is not loaded.
+    skill = os.environ.get("STRATA_GATE_SKILL", "")
+    note = NOTE + (f" If that skill is not available, follow {skill} by hand." if os.path.isfile(skill) else "")
     print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
-                                             "additionalContext": NOTE}}))
+                                             "additionalContext": note}}))
 
 
 try:
@@ -50,6 +53,7 @@ except Exception:
     pass
 PY
 
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)"
 # Why -I: a hook runs in the project dir, and `-c` puts it on sys.path — a json.py there would run.
-python3 -I -c "$GATE_PY" 2>/dev/null || true
+STRATA_GATE_SKILL="${here%/bin}/skills/deepen/SKILL.md" python3 -I -c "$GATE_PY" 2>/dev/null || true
 exit 0
