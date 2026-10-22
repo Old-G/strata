@@ -6,6 +6,16 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.17.1] — 2026-10-23
+
+### Fixed
+- **Deepen runs once per ask.** With the opt-in prompt gate installed, a build request that then
+  routed to `/strata:feature` ran `/strata:deepen` a second time (on risky work that faces people,
+  the range subagents too). `feature` now reuses a Deeper ask already made this session.
+- **Deepen gate where the plugin is off.** Installed for all projects while Strata is enabled in
+  only some, the gate asked for a skill that is not loaded there. Its note now names the skill file
+  to follow by hand — the same fallback the context gate uses.
+
 ## [0.17.0] — 2026-10-22
 
 ### Added
