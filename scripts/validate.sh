@@ -239,6 +239,37 @@ else
   err "scripts/test_p4_diagrams.sh is missing"
 fi
 
+echo "== 13b. this repo's diagram renders show the revision their JSON pins =="
+# A re-pin edited by hand left the evidence panel saying one commit while its links said another;
+# re-render with archify deliver instead (Codex review, 2026-10-23).
+for json in wiki/diagrams/*.architecture.json; do
+  [ -f "$json" ] || continue
+  html="${json%.architecture.json}.html"
+  [ -f "$html" ] || { err "$html is missing (render $json with archify deliver)"; continue; }
+  if msg="$(python3 -I - "$json" "$html" 2>&1 <<'PY'
+import json, re, sys
+pin = (json.load(open(sys.argv[1])).get("meta", {}).get("repository") or {}).get("revision")
+m = re.search(r'<script id="archify-source-evidence-data" type="application/json">(.*?)</script>',
+              open(sys.argv[2]).read(), re.S)
+if not pin:
+    sys.exit(0)
+if not m:
+    sys.exit("no source-evidence block")
+repo = json.loads(m.group(1)).get("repository", {})
+bad = []
+if repo.get("revision") != pin:
+    bad.append(f"revision {repo.get('revision')} != pinned {pin}")
+if not pin.startswith(repo.get("shortRevision") or "-"):
+    bad.append(f"shortRevision {repo.get('shortRevision')} is not {pin[:7]}")
+sys.exit("; ".join(bad) or None)
+PY
+  )"; then
+    ok "$html matches its pin"
+  else
+    err "$html: $msg — re-render with archify deliver"
+  fi
+done
+
 echo "== 14. P5 provenance — Agent-Session trailer hook, strata_why.sh =="
 if [ -f scripts/test_p5_provenance.sh ]; then
   if out="$(bash scripts/test_p5_provenance.sh 2>&1)"; then
