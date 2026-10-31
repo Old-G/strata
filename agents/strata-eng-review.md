@@ -39,19 +39,39 @@ If **no design doc exists** for a non-trivial change, your top recommendation is
 
 Read the plan fully, then inspect the target repo for prior art and conventions. Be specific and lean. A short report that kills one bad abstraction is worth more than a long one that nitpicks naming.
 
+## Review rules (shared with strata-diff-review)
+
+- **REVIEW.md first.** Read `REVIEW.md` at the repo root, and any in a directory the plan touches.
+  What *broken* means there decides what is Important; its skip paths get no review; its nit cap
+  holds (default five, count the rest); a plan that touches its always-human paths gets one row
+  saying a person signs off. None → these defaults.
+- **Label every finding** Important / Nit / Pre-existing. Pre-existing = a problem in code that
+  exists before this change and that the change does not alter: its own list, never Important,
+  never a BLOCK reason. On a diff, decide it with `bash scripts/lib/line_origin.sh <base>
+  <file>:<line>` (git blame), never by a guess.
+- **Name the bug class** and list every location (grep for the siblings) in one row, so the class
+  gets fixed, not the one line.
+- **No repeats.** One defect, one row. A finding already raised — an earlier round, another
+  reviewer whose report you were handed — is not raised again.
+- **Open with the count.** The report's first line under its heading is `<n> findings (Important
+  <i> · Nit <k>) · <p> pre-existing` — `0 findings — Nothing to fix.` when there is nothing.
+
 ## Required output — STRUCTURED REVIEW REPORT
 
 End your message with exactly this:
 
 ```
 ## Engineering Review
+<n> findings (Important <i> · Nit <k>) · <p> pre-existing[ — Nothing to fix.]
 
 **Step 0 — Scope:** minimum change = <one line>. Prior art found: <yes/no — where>.
 **Complexity smell:** <PASS / TRIPPED — N files, M new classes/services> — <if tripped, the leaner path>
 
-| # | Finding | Lens | Evidence (plan §/file:line) | Severity | Fix |
-|---|---------|------|-----------------------------|----------|-----|
-| 1 | ...     | blast-radius | ...                  | high     | ... |
+| # | Label | Finding | Lens | Evidence (plan §/file:line) | Severity | Fix |
+|---|-------|---------|------|-----------------------------|----------|-----|
+| 1 | Important | ...  | blast-radius | ...              | high     | ... |
+
+**Pre-existing (listed apart):** <finding — file:line> … or "none"
 
 **Diagram/state-machine present?** yes/no — <if no, what to draw>
 **Design doc present?** yes/no — <if no: recommend /strata:office-hours>

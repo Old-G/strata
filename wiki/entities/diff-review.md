@@ -2,8 +2,8 @@
 title: Diff-vs-plan review (R1)
 type: entity
 created: 2026-09-01
-updated: 2026-09-26
-links: [branch-state, session-reflector, enforcement-layer]
+updated: 2026-10-31
+links: [branch-state, session-reflector, enforcement-layer, review-md]
 ---
 
 # Diff-vs-plan review (R1)
@@ -66,9 +66,18 @@ skill, tool description, model id/effort or the harness feeding them must show a
 on a held-out split, or a `no-eval: <reason>`; neither = Important, and so is a prompt carrying a
 failing case or the missed phrase verbatim. This one check also runs when there is no plan.
 
+**Since v0.18.0 — REVIEW.md and three rounds ([[review-md]]):** reads the owner's `REVIEW.md`
+first; labels Important / Nit / Pre-existing, Pre-existing from `scripts/lib/line_origin.sh` (git
+blame) and listed apart; one row per bug class with every location; no repeats across passes or
+rounds. Briefed by light-finish with `ROUND`/`SINCE`/`PREVIOUS` from `state_tools.py
+review-round`: round 2–3 read only the new diff and mark previous findings Fixed / Still open; a
+4th round is refused and the human reconsiders the approach. The output now opens with the count
+line (`<n> findings (Important i · Nit k) · p pre-existing`, `— Nothing to fix.` when Important is
+0), then the VERDICT/PLAN/DIFF/ROUND/REVIEW.md header; `VERDICT: CLEAN` = no Important.
+
 ## Related
 
-[[branch-state]] · [[session-reflector]] · [[enforcement-layer]] · [[pre-tool-guard]] · [[behaviour-specs]] · [[llm-eval-evidence]]
+[[branch-state]] · [[session-reflector]] · [[enforcement-layer]] · [[pre-tool-guard]] · [[behaviour-specs]] · [[llm-eval-evidence]] · [[review-md]]
 
 ## Sources
 

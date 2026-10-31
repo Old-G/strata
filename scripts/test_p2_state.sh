@@ -366,6 +366,7 @@ check "edited repo: named, version not stamped"      "$(printf '%s' "$out" | gre
 check "a file left over → exit 1"                    "$rc" "1"
 check "linked worktree skipped, untouched"           "$(printf '%s' "$out" | grep -c 'clean-wt — linked worktree'):$(cat "$WORK/fleet/clean-wt/.strata/version")" "1:0.0.1"
 check "never commits"                                "$(git -C "$WORK/fleet/clean" log --oneline | wc -l | tr -d ' ')" "1"
+check "repos with no REVIEW.md are named, none written" "$(printf '%s' "$out" | grep -c '^No REVIEW.md.*clean'):$([ -f "$WORK/fleet/clean/REVIEW.md" ] && echo y || echo n)" "1:n"
 mkrepo "$WORK/fleet/newer"; echo "99.0.0" > "$WORK/fleet/newer/.strata/version"
 out="$(CLAUDE_CONFIG_DIR="$WORK/cfg2" bash "$UPALL" --scan "$WORK/fleet/newer")"
 check "repo newer than the plugin: skipped, never downgraded" "$(printf '%s' "$out" | grep -c 'newer than this plugin'):$(cat "$WORK/fleet/newer/.strata/version"):$([ -f "$WORK/fleet/newer/scripts/strata_why.sh" ] && echo y || echo n)" "1:99.0.0:n"

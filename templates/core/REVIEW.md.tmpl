@@ -1,0 +1,10 @@
+# REVIEW.md — what a reviewer of {{PROJECT_NAME}} must know
+<!-- The code owner writes this; strata-diff-review and the council read it. Keep it 5–15 lines. -->
+
+- **Broken here means:** {{BROKEN_MEANS}}
+- **Nits:** at most {{NIT_CAP}} per review; count the rest. Never block on one.
+- **Skip:** {{SKIP_PATHS}}
+- **Always a human:** {{HUMAN_PATHS}} — the reviewer names them, a person signs off.
+- **Evidence:** every finding cites `file:line` it read; nothing guessed from a name.
+- **Pre-existing:** what this branch did not write (`git blame`) goes in its own list and is never Important.
+- **Summary:** opens with the number of findings; with none, it says "Nothing to fix."

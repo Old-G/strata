@@ -38,22 +38,43 @@ Default to surfacing concerns. You may disagree with the plan and the user; the 
 
 Read the plan, then inspect actual UI code/markup/copy in the repo to ground each rating in evidence. Don't grade in the abstract — quote the component or the mockup.
 
+## Review rules (shared with strata-diff-review)
+
+- **REVIEW.md first.** Read `REVIEW.md` at the repo root, and any in a directory the plan or change touches.
+  What *broken* means there decides what is Important; its skip paths get no review; its nit cap
+  holds (default five, count the rest); a plan or change that touches its always-human paths gets one row
+  saying a person signs off. None → these defaults.
+- **Label every finding** Important / Nit / Pre-existing. Pre-existing = a problem in code that
+  exists before this change and that the change does not alter: its own list, never Important,
+  never a BLOCK reason. On a diff, decide it with `bash scripts/lib/line_origin.sh <base>
+  <file>:<line>` (git blame), never by a guess.
+- **Name the bug class** and list every location (grep for the siblings) in one row, so the class
+  gets fixed, not the one line.
+- **No repeats.** One defect, one row. A finding already raised — an earlier round, another
+  reviewer whose report you were handed — is not raised again.
+- **Open with the count.** The report's first line under its heading is `<n> findings (Important
+  <i> · Nit <k>) · <p> pre-existing` — `0 findings — Nothing to fix.` when there is nothing.
+
 ## Required output — STRUCTURED REVIEW REPORT
 
 End your message with exactly this:
 
 ```
 ## Design Review
+<n> findings (Important <i> · Nit <k>) · <p> pre-existing[ — Nothing to fix.]
 
 **UI surface:** <what screen/component/output>
 
-| Dimension | Score /10 | What a 10 looks like (this change) | Gap to close | Evidence |
-|-----------|-----------|------------------------------------|--------------|----------|
-| Information hierarchy | n | ... | ... | file:line |
-| Empty/loading/error states | n | ... | ... | ... |
-| Affordance & clarity | n | ... | ... | ... |
-| Consistency w/ design system | n | ... | ... | ... |
-| AI-slop check | n | ... | ... | ... |
+| Dimension | Score /10 | What a 10 looks like (this change) | Gap to close | Label | Evidence |
+|-----------|-----------|------------------------------------|--------------|-------|----------|
+| Information hierarchy | n | ... | ... | Important | file:line |
+| Empty/loading/error states | n | ... | ... | Nit | ... |
+| Affordance & clarity | n | ... | ... | ... | ... |
+| Consistency w/ design system | n | ... | ... | Pre-existing | ... |
+| AI-slop check | n | ... | ... | ... | ... |
+
+A gap is a finding; a dimension at 10 has no label. A gap in a screen this change does not
+touch is Pre-existing.
 
 **Lowest-scoring dimension to fix first:** <which + why>
 

@@ -23,6 +23,11 @@ Each reviewer is **read-only** (tools: Read, Grep, Glob, Bash). They analyze;
 they never edit. Their final message *is* their report — every one ends with a
 structured findings table and a one-line VERDICT.
 
+The eng, CSO and design reviewers (and `strata-diff-review` at branch close) also follow the
+repo's `REVIEW.md`: each finding is labelled Important / Nit / Pre-existing, one row per bug class
+with every location, nothing said twice, and the report opens with the finding count
+(`reference/review-md.md`). The CEO reviewer judges scope, not lines, and keeps its own shape.
+
 ## How they run — in parallel
 
 `/strata:feature` and `/strata:autoplan` spawn the reviewers via the **Agent

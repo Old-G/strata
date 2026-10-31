@@ -208,7 +208,7 @@ All skills are invoked as `/strata:<name>` and are also auto-suggested by Claude
 | `/strata:feature` | Adaptive feature flow: triage → (grill) → lean plan → risk-matched council → build with evidence → finish → wiki+audit | A shipped feature, with ceremony matched to its risk |
 | `/strata:deepen` | Raise an ask before planning: the outcome behind it, what the best practitioner adds and with which methods, a target tweaking cannot reach, proof outside the model. Runs by itself inside `feature` on standard/risky | A Deeper ask the plan copies |
 | `/strata:lean-plan` | Write a complete-but-lean plan: intent, constraints, success criterion; references real code instead of pasting it | An inline plan, or `docs/superpowers/plans/<date>-<slug>-plan.md` when risky |
-| `/strata:light-finish` | Wrap up a branch: confirm green, then merge / PR / keep / discard, and clean up | An integrated (or cleanly parked) branch |
+| `/strata:light-finish` | Wrap up a branch: confirm green, review by `REVIEW.md` (≤ 3 rounds), then merge / PR (Testing · Risk · How to revert) / keep / discard, and clean up | An integrated (or cleanly parked) branch |
 | `/strata:autoplan` | Run the review council automatically; surface only taste calls & disagreements | A build-ready plan |
 | `/strata:wiki-ingest` | The karpathy `ingest` / `query` / `lint` protocol over docs → raw → wiki | Updated `wiki/` |
 | `/strata:upgrade` | Re-sync a repo's installed hooks with the plugin currently running — fixes a repo adopted before this version shipped | Current `scripts/**` + merged `.claude/settings.json` |
@@ -277,6 +277,17 @@ by `/strata:light-finish` at branch close to check the diff against the plan it 
 security. It cannot block a merge — you decide — but it cannot be skipped, its Important findings land
 in the branch state and `wiki/log.md`, and a mistake it flags for the **second time** proposes a line
 for `CLAUDE.md` in the same closing commit.
+
+**`REVIEW.md` — the owner's rules for the review** (after Anthropic's "How the Claude Code team does
+code review"). 5–15 lines at the repo root that `adopt`/`init` draft from what is in the repo and you
+approve: what *broken* means here (docs that lie, config that points the wrong way), the nit cap,
+paths to skip, paths a human always signs off, `file:line` evidence, a summary that opens with the
+count. Every reviewer reads it and labels each finding **Important / Nit / Pre-existing** —
+pre-existing is decided by `git blame` (`scripts/lib/line_origin.sh`), not by a guess, and listed
+apart. One row per bug class with every location, nothing said twice. The review → fix loop stops
+after **three rounds** (rounds 2–3 read only the new diff) and asks you to reconsider the approach.
+A PR that `light-finish` opens carries **Testing / Risk / How to revert**, drafted by the agent,
+confirmed by you. Details: [`reference/review-md.md`](reference/review-md.md).
 
 `/strata:autoplan` runs them and classifies every surfaced decision:
 
@@ -407,23 +418,25 @@ strata/
 │   ├── feature/  office-hours/  autoplan/   # the process layer
 │   ├── deepen/  lean-plan/  light-finish/   #   …deeper ask, lean plan, branch wrap-up
 │   └── wiki-ingest/         # knowledge protocol
-├── agents/                  # the council reviewer subagents (read-only)
-│   └── strata-{ceo,eng,design,cso}-review.md
+├── agents/                  # the reviewer subagents (read-only)
+│   ├── strata-{ceo,eng,design,cso}-review.md   # the council — on the plan
+│   └── strata-diff-review.md                   # branch close — on the diff
 ├── templates/
 │   ├── core/                # PROJECT_PATTERN.md, WIKI.md, wiki/ skeleton,
-│   │   │                    #   CLAUDE/ADR templates
+│   │   │                    #   CLAUDE/ADR/REVIEW.md templates
 │   │   └── scripts/         # installed per-project by init/adopt:
 │   │       ├── sync_raw_mirror.sh        # PostToolUse: docs → raw + marker
 │   │       ├── lib/pending_ingest.sh     # the one marker-retirement rule
 │   │       ├── hooks/                    # SessionStart injection · Stop gate (+ friction) · PreToolUse guard
 │   │       ├── diagram_check.sh          # wiki/diagrams/: pinned-source drift → wiki_debt
+│   │       ├── lib/line_origin.sh        # git blame → the review's Pre-existing label
 │   │       └── pre-commit/               # secrets · raw mirror · wiki freshness
 │   └── stacks/python-fastapi/   # SCALABLE_ARCHITECTURE_REFERENCE.md + scaffold generator
-├── reference/               # council personas, tool-integration, Diataxis doc-map
+├── reference/               # council personas, review-md, tool-integration, Diataxis doc-map
 ├── scripts/                 # validate.sh + behavioural tests (installer, P1–P4)
 ├── .githooks/pre-commit     # Strata's own guards (git config core.hooksPath .githooks)
 ├── raw/  wiki/              # Strata's own knowledge layer — it dogfoods the wiki
-├── CLAUDE.md                # Strata dogfoods its own pattern
+├── CLAUDE.md  REVIEW.md     # Strata dogfoods its own pattern
 └── README.md
 ```
 

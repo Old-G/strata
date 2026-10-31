@@ -2,7 +2,7 @@
 
 Claude Code plugin that packages a reusable way to run AI-assisted projects: AI-navigable wiki,
 architecture canon, spec→plan→TDD feature flow, a parallel review council, and drift detection with
-staged refactor. **State:** v0.17.1 — a pre-plan deepen pass, deterministic wiki freshness (hook + commit + push gates), native
+staged refactor. **State:** v0.18.0 — an owner-written REVIEW.md the branch review follows (Important / Nit / Pre-existing by git blame, three rounds, PR Testing / Risk / How to revert), a pre-plan deepen pass, deterministic wiki freshness (hook + commit + push gates), native
 command-free invocation, an episodic branch-state layer with a hook-driven upgrade path, a
 PreToolUse guard (raw/ mirror · tests read-only mid-fix), a diff-vs-plan review at branch close,
 a Stop gate that asks for the lesson when a session hurt, a diagram layer (`wiki/diagrams/`,
@@ -33,6 +33,7 @@ WHEN/THEN scenarios, a plan's `## Behaviour delta` applied at branch close — a
 | Provenance — `Agent-Session:` trailer (prepare-commit-msg) + `strata_why.sh` + diff-review lenses / "decided, not asked" | ✅ `test_p5_provenance.sh` green · dogfooded via `.githooks/prepare-commit-msg` |
 | Behaviour specs — entity `## Requirements` + plan `## Behaviour delta` applied in light-finish 1b + `requirements.py check/owed` | ✅ `test_p6_requirements.sh` green · Strata's own stop-gate/commit-gate specified |
 | LLM-behaviour evidence — eval before/after on a held-out split, `no-eval:` escape, diff-review check (`reference/llm-evals.md`) | ✅ text-only; tooling delegated to Claude Code's `claude-api` skill |
+| Review loop — owner's `REVIEW.md` (adopt/init draft it) · Important / Nit / Pre-existing via `line_origin.sh` · ≤ 3 rounds via `state_tools.py review-round` · PR Testing / Risk / How to revert | ✅ `test_p7_review.sh` green · Strata's own `REVIEW.md` |
 | Verified by adopting a real external project | ⬜ pending (user will test elsewhere) |
 
 ## Stack
@@ -46,8 +47,9 @@ Claude Code plugin · Markdown skills + subagents · bundled shell/python templa
 - `agents/strata-*-review.md` — the parallel review council subagents (plan stage) + `strata-diff-review` (branch close, diff vs plan).
 - `templates/core/` — portable assets: `PROJECT_PATTERN.md`, `WIKI.md`, `wiki/` skeleton, `scripts/`, CLAUDE/ADR templates.
 - `templates/stacks/<stack>/` — per-stack architecture canon (`SCALABLE_ARCHITECTURE_REFERENCE.md`) + scaffold generator.
-- `reference/` — council personas, Diataxis doc-map, tool-integration (RTK / claude-mem / Caveman / claude-api evals), `llm-evals.md` (evidence for LLM-behaviour changes), `wiki-push-gate.md` (wiring the pre-push gate), `product-ready-architecture.md` (two-level architecture canon the eng reviewer checks; level 2 only under `.strata/profile` = `product`).
-- `templates/core/scripts/` — installed per target project: `sync_raw_mirror.sh`, `lib/pending_ingest.sh` (the one marker rule), `lib/state_tools.py` (the episodic-state schema/validator + `plan <branch>`, the one plan lookup), `lib/requirements.py` (P6 — behaviour-spec checker `check`/`owed`; run by light-finish/audit, never a hook), `hooks/` (SessionStart + Stop + PreToolUse guard), `pre-commit/` guards (incl. the pre-push `check_wiki_push.sh`), `strata_upgrade_check.sh` (re-sync diff reporter, backs `/strata:upgrade`), `diagram_check.sh` (P4 — pinned-source drift check for `wiki/diagrams/`; run by light-finish/audit, never a hook), `git-hooks/strata_commit_trailer.sh` + `strata_why.sh` (P5 provenance — a *git* hook, never registered in settings.json; install: `reference/agent-session-trailer.md`).
+- `REVIEW.md` — this repo's own review rules (what *broken* means for Strata); the template is `templates/core/REVIEW.md.tmpl`.
+- `reference/` — council personas, `review-md.md` (REVIEW.md, labels, three rounds, PR fields), Diataxis doc-map, tool-integration (RTK / claude-mem / Caveman / claude-api evals), `llm-evals.md` (evidence for LLM-behaviour changes), `wiki-push-gate.md` (wiring the pre-push gate), `product-ready-architecture.md` (two-level architecture canon the eng reviewer checks; level 2 only under `.strata/profile` = `product`).
+- `templates/core/scripts/` — installed per target project: `sync_raw_mirror.sh`, `lib/pending_ingest.sh` (the one marker rule), `lib/state_tools.py` (the episodic-state schema/validator + `plan <branch>`, the one plan lookup, + `review-round`, the three-round cap), `lib/line_origin.sh` (git blame → the review's Pre-existing label), `lib/requirements.py` (P6 — behaviour-spec checker `check`/`owed`; run by light-finish/audit, never a hook), `hooks/` (SessionStart + Stop + PreToolUse guard), `pre-commit/` guards (incl. the pre-push `check_wiki_push.sh`), `strata_upgrade_check.sh` (re-sync diff reporter, backs `/strata:upgrade`), `diagram_check.sh` (P4 — pinned-source drift check for `wiki/diagrams/`; run by light-finish/audit, never a hook), `git-hooks/strata_commit_trailer.sh` + `strata_why.sh` (P5 provenance — a *git* hook, never registered in settings.json; install: `reference/agent-session-trailer.md`).
 - `wiki/diagrams/` — this repo's own diagram layer: `system.architecture.json` (canonical, Archify JSON, sources pinned to a commit) + `system.html` (open it to see the whole plugin); `history/*.json` only when the semantics changed.
 - `bin/strata-upgrade-all` — on PATH in every Claude session (plugin `bin/`); `bin/strata-context-gate` — opt-in `Stop` hook the user adds to `~/.claude/settings.json` (asks for `/strata:handoff` past 60% context; hooks don't see plugin `bin/` on PATH, so the entry runs the newest cached copy — `reference/context-gate.md`); `bin/strata-deepen-gate` — opt-in `UserPromptSubmit` hook that asks for `/strata:deepen` on build requests (`reference/deepen-gate.md`); `templates/core/scripts.history` — hash of every shipped template version (what auto-sync may safely replace).
 - `docs/superpowers/{specs,plans}/` — Strata's own design specs & plans (dated).
@@ -71,6 +73,7 @@ bash scripts/test_p5_provenance.sh       # Agent-Session trailer hook (replays, 
 bash scripts/test_context_gate.sh        # context gate: once per session, 1M/200k window, sidechain-proof
 bash scripts/test_deepen_gate.sh         # deepen gate: note on build requests, quiet on questions/short/slash
 bash scripts/test_p6_requirements.sh     # behaviour specs: requirements.py check/owed, state_tools.py plan
+bash scripts/test_p7_review.sh           # REVIEW.md template, line_origin.sh, review-round cap, reviewer/skill wiring
 python3 scripts/lib/requirements.py check  # do this wiki's Requirements scenarios point at tests that exist?
 bash scripts/strata_why.sh <file> -L a,b # which commits/sessions wrote these lines (transcripts stay local)
 bash scripts/gen_template_history.sh     # after ANY templates/core/scripts change (auto-sync safety manifest)

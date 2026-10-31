@@ -48,6 +48,8 @@ bfca4e60669251c428a4968d5c63420b70777dc2  strata_upgrade_check.sh
 c5294d291184dbcc28e7575fb7890cd4cb9e01b9  strata_upgrade_check.sh
 d773c238fcfe44527e20b91a09542d8075983ab3  lib/state_tools.py
 de1e3300f686452ef672f272b2fdeea0fb259527  lib/requirements.py
+de4b4fe6b70361a44cf74ff5e47c10f3d97dbe76  lib/line_origin.sh
 ed1a466c1a994395fed94e37440e37f9d399f675  diagram_check.sh
+f10cfda6ceca7f66378b71f06df6b28b8dbda1b3  lib/state_tools.py
 faa3557c67ba0014d6cfb8343f3c67affe2ae248  strata_upgrade_check.sh
 faa6179c0a0cb9cf2b05e053d8e2678d115501be  hooks/strata_stop_gate.sh

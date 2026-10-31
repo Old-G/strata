@@ -28,9 +28,12 @@ edited file (often it is an improvement — then also propose upstreaming it int
 in `scripts/.strata-keep` as `<git hash-object of the TEMPLATE file>  <path>`: the check reports it
 KEPT until the template changes again. `UNWIRED` lines are the Step 3.3 settings merge. Then offer to commit per repo (on the
 repo's current branch, only `scripts/` + `.strata/version`, never mixing in the owner's WIP).
+Its last line names the repos with no `REVIEW.md`; offer Step 7 in each, one repo at a time — never
+draft them all unasked.
 
 This skill NEVER touches `wiki/`, `CLAUDE.md`, or application code. It only re-syncs the
-mechanical layer: `scripts/**` and the hook block in `.claude/settings.json`.
+mechanical layer: `scripts/**` and the hook block in `.claude/settings.json` — plus, only on the
+owner's yes, the `REVIEW.md` draft in Step 7.
 
 ## Step 1 — Diagnose (read-only)
 
@@ -148,6 +151,14 @@ never got that offer, and nothing else will make it — `scripts/diagram_check.s
   diagram exists, so the phrase to use later is «нарисуй системную диаграмму в wiki/diagrams».
 - If archify is absent, print one line — `npx skills add tt-a1i/archify -g -a claude-code -s archify -y`
   (Node ≥ 18, no npm dependencies) — and move on. Not a finding, not a blocker.
+
+## Step 7 — Offer a REVIEW.md (v0.18.0; never force)
+
+The branch review (`strata-diff-review`, the council) reads the owner's `REVIEW.md`; a repo adopted
+before v0.18.0 has none and is reviewed on the defaults. When there is no `REVIEW.md` at the root,
+ask ONE question — draft one now? On yes, do what `adopt` Phase 2 step 5 describes (from what is
+in the repo, 5–15 lines) and show it before writing; it is the owner's file. On no, say the review
+keeps its defaults. A repo that has one: leave it alone.
 
 ## Do NOT use when
 

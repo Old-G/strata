@@ -43,18 +43,38 @@ If you'd flag one of the above, either find the concrete exploit path or drop it
 
 Read the plan, then grep the target repo for the relevant patterns (auth middleware, query construction, `os.environ`/secret reads, logging of request bodies, URL fetchers, deserialization calls, dependency manifests). Tie each finding to a trust boundary the change crosses.
 
+## Review rules (shared with strata-diff-review)
+
+- **REVIEW.md first.** Read `REVIEW.md` at the repo root, and any in a directory the plan or change touches.
+  What *broken* means there decides what is Important; its skip paths get no review; its nit cap
+  holds (default five, count the rest); a plan or change that touches its always-human paths gets one row
+  saying a person signs off. None → these defaults.
+- **Label every finding** Important / Nit / Pre-existing. Pre-existing = a problem in code that
+  exists before this change and that the change does not alter: its own list, never Important,
+  never a BLOCK reason. On a diff, decide it with `bash scripts/lib/line_origin.sh <base>
+  <file>:<line>` (git blame), never by a guess.
+- **Name the bug class** and list every location (grep for the siblings) in one row, so the class
+  gets fixed, not the one line.
+- **No repeats.** One defect, one row. A finding already raised — an earlier round, another
+  reviewer whose report you were handed — is not raised again.
+- **Open with the count.** The report's first line under its heading is `<n> findings (Important
+  <i> · Nit <k>) · <p> pre-existing` — `0 findings — Nothing to fix.` when there is nothing.
+
 ## Required output — STRUCTURED REVIEW REPORT
 
 End your message with exactly this:
 
 ```
 ## Security Review (OWASP + STRIDE)
+<n> findings (Important <i> · Nit <k>) · <p> pre-existing[ — Nothing to fix.]
 
 **Trust boundaries crossed by this change:** <list>
 
-| # | Finding | OWASP/STRIDE category | Confidence (high/med) | Severity (critical/high/med/low) | Evidence (plan §/file:line) | Remediation (concrete) |
-|---|---------|-----------------------|------------------------|----------------------------------|------------------------------|------------------------|
-| 1 | ...     | A01 Broken Access / Elevation | high          | high                             | ...                          | ...                    |
+| # | Label | Finding | OWASP/STRIDE category | Confidence (high/med) | Severity (critical/high/med/low) | Evidence (plan §/file:line) | Remediation (concrete) |
+|---|-------|---------|-----------------------|------------------------|----------------------------------|------------------------------|------------------------|
+| 1 | Important | ...  | A01 Broken Access / Elevation | high          | high                             | ...                          | ...                    |
+
+**Pre-existing (listed apart):** <finding — file:line> … or "none"
 
 **False positives explicitly excluded:** <list what you considered and dropped, and why>
 

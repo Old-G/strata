@@ -33,6 +33,7 @@ Run the PROJECT_PATTERN §10 checklist. Use `git mv`/plain writes; keep it one r
    Also the provenance trailer: per `${CLAUDE_PLUGIN_ROOT}/reference/agent-session-trailer.md` — ask once, copy `git-hooks/strata_commit_trailer.sh` + `strata_why.sh` into `scripts/`, add the `prepare-commit-msg` stage to this same `.pre-commit-config.yaml` (with `default_install_hook_types` and `default_stages: [pre-commit]`), verify on the first commit.
 9. `tests/` with ONE passing smoke test (`test_smoke` that imports the package / hits a health route). It must actually pass.
 10. CI skeleton (`.github/workflows/ci.yml` or `.gitlab-ci.yml` per stack): install → lint → type-check → test. It MUST be green on the first commit — only wire steps that pass now.
+11. `REVIEW.md` ← render `${CLAUDE_PLUGIN_ROOT}/templates/core/REVIEW.md.tmpl` (5–15 lines; format: `${CLAUDE_PLUGIN_ROOT}/reference/review-md.md`): `{{BROKEN_MEANS}}` from the purpose and stack the user gave (a service: a caller breaks; a data job: rows are lost or doubled; docs: they say what the code does not do), `{{NIT_CAP}}` `5`, `{{SKIP_PATHS}}` the stack's generated paths, `{{HUMAN_PATHS}}` the risky dirs this scaffold creates (migrations, auth, deploy config) or `none yet`. Show it with the Phase 1 plan; it is the owner's file — they edit or decline it.
 
 ## Phase 3 — AI-mirror + wiki (only if Phase 1 said "yes")
 
@@ -54,6 +55,7 @@ Skip this entire phase for human-only repos (§9 skip-list). When enabled:
    - `hooks/strata_pre_tool_guard.sh` → `scripts/hooks/strata_pre_tool_guard.sh` (A5 — PreToolUse: refuses a write under `raw/`, and to test files while `.strata/guard-tests` exists; exit 2 with the reason, fails open otherwise)
    - `lib/state_tools.py` → `scripts/lib/state_tools.py` (the branch-state schema/validator the Stop gate and SessionStart read)
    - `diagram_check.sh` → `scripts/diagram_check.sh` (P4 diagram layer — pinned-source drift check run by `light-finish` and `audit`; not a hook)
+   - `lib/line_origin.sh` → `scripts/lib/line_origin.sh` (git blame for the branch review's Pre-existing label; not a hook)
 
    Then MERGE `${CLAUDE_PLUGIN_ROOT}/templates/core/claude-settings-hook.json`'s `hooks` block into the project's `.claude/settings.json` (create the file if absent; if an array for an event already exists, append the entry — never overwrite). Drop the `_strata_note` key when merging. Add `.strata/` to `.gitignore` — it holds per-session gate state, not source.
 5. Hand the wiki population to `/strata:wiki-ingest` for `raw/Architecture.md` and `raw/ADR-Lean.md` (do not hand-write deep entity pages here).

@@ -607,3 +607,12 @@ Post-review suites: P4 diagrams 17/17, P4 friction 25/25, P2 28/28.
 [2026-10-21T22:47:26Z] fix gates-python-isolated (v0.17.0) → automated security review: python3 -c puts the hook's cwd (the project) on sys.path, so a json.py in a cloned repo ran on every prompt (deepen gate) / stop (context gate). Both gates now python3 -I. Red first: the new shadowing case fails on the -c gate (10/11), passes on -I (11/11); context gate 23/23.
 [2026-10-22T22:02:38Z] fix deepen-codex-review (v0.17.0) → outside review (Codex) found two gaps, both reproduced red first (test_deepen_gate 11/13): (1) feature re-ran /strata:deepen after the prompt gate already ran it — feature's Delegation now says once per ask, reuse that Deeper ask (range included); (2) the all-projects gate asked for strata:deepen where the plugin is not enabled — the note now names the skill file to follow by hand, same as the context gate (chose fallback over a no-op: a global install is the owner's choice for every project). Verified: test_deepen_gate 13/13, validate.sh PASSED. no-eval: skill-text change checked by assertion only, no routing eval set yet. wiki/entities/deepen.md, reference/deepen-gate.md updated.
 [2026-10-23T21:38:38Z] fix diagram-short-revision (v0.17.1) → outside review (Codex): the 0.17.1 re-pin (1176357) was a hand edit, so system.html's evidence panel said @3fa6bbd while its links and the JSON pin said 886955b. Red first: new validate.sh §13b (each wiki/diagrams render's evidence revision == its JSON pin, shortRevision a prefix of it) failed on system.html. Fix: re-rendered with archify finalize (validate · deliver · check · browser-check pass); the HTML diff is that one field. Verified: §13b green, diagram_check.sh main clean, claude plugin validate passed, all test_*.sh green except timing assertions (P1 clean-state <100ms, P4 friction +150ms) that fail the same way on clean main at load average ~65 — environment, not this diff. Wiki/dev-check only: no plugin release.
+
+## 2026-10-31T20:37:27Z auto-mirror
+
+- pending_ingest: docs/superpowers/plans/2026-10-31-review-md-plan.md (mirrored docs/ -> raw/, ingest still owed)
+
+## 2026-10-31T20:50:36Z lint
+
+- errors: 0, warnings: 0
+[2026-10-31T20:51:34Z] ingest raw/superpowers/plans/2026-10-31-review-md-plan.md → new entities/review-md.md (owner's REVIEW.md, Important / Nit / Pre-existing via line_origin.sh, bug class, no repeats, review-round cap 3, PR Testing / Risk / How to revert); entities/diff-review.md gains its v0.18.0 section; index row added.

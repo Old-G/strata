@@ -6,6 +6,31 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.18.0] — 2026-10-31
+
+After Anthropic's "How the Claude Code team does code review".
+
+### Added
+- **`REVIEW.md` — the owner's rules for the review** (`templates/core/REVIEW.md.tmpl`, 5–15 lines):
+  what *broken* means in this repo (docs that lie, config that points the wrong way), the nit cap,
+  paths the review skips, paths a human always signs off, `file:line` evidence, a summary that opens
+  with the count and says "Nothing to fix" when so. `/strata:adopt` and `/strata:init` draft it from
+  what is in the repo and show it to the owner; `/strata:upgrade` offers a draft where none exists,
+  and `strata-upgrade-all` names the repos without one. Never written unasked. Strata has its own.
+- **Important / Nit / Pre-existing.** `strata-diff-review` and the eng, CSO and design reviewers read
+  REVIEW.md, label every finding, report one row per bug class with every location, say nothing
+  twice, and open with the finding count. Pre-existing comes from `git blame`, not a guess:
+  `scripts/lib/line_origin.sh <base> <file>:<line>` prints `PRE-EXISTING | BRANCH | UNCOMMITTED |
+  UNKNOWN` (plain blame — a moved or reindented line counts as the branch's, since a false
+  "pre-existing" hides a bug). Pre-existing findings are listed apart and never Important.
+- **Three review rounds, then the human.** `state_tools.py review-round <branch>` counts rounds in
+  the branch state (`review: {rounds, head}`); round 1 reads the whole branch, rounds 2–3 only the
+  new diff since the last round, checking earlier findings as Fixed / Still open. The fourth call
+  exits 3 and `light-finish` asks whether to reconsider the approach; `--reset` starts a new one.
+- **PR description: Testing / Risk / How to revert.** `light-finish` drafts the three sections from
+  the run's evidence when it opens a PR or MR; the human confirms or edits them first.
+- `reference/review-md.md`; `scripts/test_p7_review.sh` (75 checks, red first), `validate.sh` §18.
+
 ## [0.17.1] — 2026-10-23
 
 ### Fixed

@@ -78,6 +78,7 @@ solutions / Related / Sources.
 | [[version-stamp]] | Which plugin build a session loaded — stamped in `using-strata`'s description, held true by `validate.sh` §2c. |
 | [[pre-tool-guard]] | A5 — `PreToolUse` hook refusing writes under `raw/` and to test files mid-fix; exit 2 with reason, fails open. |
 | [[diff-review]] | R1 — fifth read-only agent at branch close: diff vs plan (read in lenses), "decided, not asked", bugs, security-lite; second occurrence → `CLAUDE.md`. |
+| [[review-md]] | v0.18.0 — owner's REVIEW.md, Important / Nit / Pre-existing (git blame via `line_origin.sh`), bug class, no repeats, ≤ 3 rounds (`review-round`), PR Testing / Risk / How to revert. |
 | [[agent-session-trailer]] | P5 — every agent commit carries its session id; `strata_why.sh` + QUERY step 4b trace code back to the session that wrote it (transcripts stay local). |
 | [[friction-capture]] | P4 — Stop-gate trigger (d): interrupts, denials and tool errors counted from the session transcript; a painful session must record a `gotcha` or a `no-gotcha:` line. |
 | [[session-handoff]] | v0.10 — `/strata:handoff`: drift-close + verified commit + `.claude/handoff/handoff-<session>.md` with a ready first prompt, then stop; works without Strata. |

@@ -19,6 +19,7 @@ Usage:
   state_tools.py debt   <path>                            # print wiki_debt entries, one per line
   state_tools.py summary <path>                           # short human summary (SessionStart)
   state_tools.py plan   <branch>                          # the branch's plan file (the one lookup)
+  state_tools.py review-round <branch> [--reset]          # count one review round; exit 3 at the cap
 
 Exit codes: 0 success, 1 validation/usage error, 2 file not found.
 No third-party dependencies — stdlib only, matching the rest of this scripts/ tree.
@@ -31,11 +32,15 @@ from pathlib import Path
 
 REQUIRED_KEYS = {"goal", "status", "branch", "updated"}
 ALLOWED_KEYS = REQUIRED_KEYS | {
-    "verify", "decisions", "open_questions", "gotchas", "wiki_debt", "files_touched",
+    "verify", "decisions", "open_questions", "gotchas", "wiki_debt", "files_touched", "review",
 }
 STATUS_VALUES = {"active", "blocked", "done"}
 TRUST_VALUES = {"session", "reviewed"}
 DECISION_KEYS = {"what", "why", "evidence", "trust"}
+REVIEW_KEYS = {"rounds", "head"}
+# After three review → fix rounds the reviewer stops and the human reconsiders the approach
+# (Anthropic's code-review practice). One number, here, so light-finish never re-states it.
+REVIEW_ROUNDS = 3
 
 
 def state_dir(repo_root: Path) -> Path:
@@ -112,6 +117,20 @@ def validate_obj(obj) -> list:
                 trust = d.get("trust", "session")
                 if trust not in TRUST_VALUES:
                     errors.append(f"decisions[{i}].trust must be one of {sorted(TRUST_VALUES)}, got {trust!r}")
+
+    if "review" in obj:
+        review = obj["review"]
+        if not isinstance(review, dict):
+            errors.append("review must be an object")
+        else:
+            runknown = review.keys() - REVIEW_KEYS
+            if runknown:
+                errors.append(f"review has unknown key(s): {', '.join(sorted(runknown))}")
+            rounds = review.get("rounds", 0)
+            if not isinstance(rounds, int) or isinstance(rounds, bool) or rounds < 0:
+                errors.append("review.rounds must be a non-negative integer")
+            if "head" in review and not isinstance(review["head"], str):
+                errors.append("review.head must be a string")
 
     return errors
 
@@ -261,6 +280,67 @@ def cmd_plan(args):
     return 0
 
 
+def git_head(root: Path) -> str:
+    import subprocess
+    try:
+        out = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"],
+                             capture_output=True, text=True, check=True)
+        return out.stdout.strip()
+    except Exception:
+        return ""
+
+
+def cmd_review_round(args):
+    """Count one review round of <branch> — light-finish runs it before each strata-diff-review.
+    Round 1 reviews the whole branch (SINCE base); a later round only what came after the commit
+    the previous round saw. A round past REVIEW_ROUNDS is refused (exit 3, nothing counted): the
+    human reconsiders the approach, then `--reset` starts over. No state file yet → one is made,
+    so a branch closed without a plan-time state file still has somewhere to count."""
+    branch = args[0] if args and not args[0].startswith("--") else ""
+    if not branch or any(a not in ("--reset",) for a in args[1:]):
+        print("usage: state_tools.py review-round <branch> [--reset]", file=sys.stderr)
+        return 1
+    root = find_repo_root()
+    path = state_dir(root) / f"{slug(branch)}.json"
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    if path.exists():
+        try:
+            obj = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            print(f"invalid JSON: {e}", file=sys.stderr)
+            return 1
+        errors = validate_obj(obj)
+        if errors:
+            for e in errors:
+                print(f"  - {e}", file=sys.stderr)
+            return 1
+    else:
+        plan = find_plan(root, branch)
+        obj = {
+            "goal": f"implement {plan.relative_to(root)}" if plan else f"close branch {branch}",
+            "status": "active", "branch": branch, "updated": now, "verify": "",
+            "decisions": [], "open_questions": [], "gotchas": [], "wiki_debt": [], "files_touched": [],
+        }
+    review = {} if "--reset" in args else dict(obj.get("review") or {})
+    rounds = review.get("rounds", 0)
+    if rounds >= REVIEW_ROUNDS:
+        print(f"ROUND cap reached ({rounds}/{REVIEW_ROUNDS}): ask the human to reconsider the approach "
+              f"instead of a round {rounds + 1}; once they have, review-round {branch} --reset")
+        return 3
+    since = review.get("head", "") if rounds else ""
+    obj["review"] = {"rounds": rounds + 1, "head": git_head(root)}
+    obj["updated"] = now
+    errors = validate_obj(obj)
+    if errors:
+        for e in errors:
+            print(f"  - {e}", file=sys.stderr)
+        return 1
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"ROUND {rounds + 1}/{REVIEW_ROUNDS} SINCE {since or 'base'}")
+    return 0
+
+
 def cmd_summary(args):
     if not args:
         print("usage: state_tools.py summary <path>", file=sys.stderr)
@@ -304,6 +384,7 @@ def main(argv):
         "add-debt": cmd_add_debt,
         "summary": cmd_summary,
         "plan": cmd_plan,
+        "review-round": cmd_review_round,
     }
     fn = dispatch.get(cmd)
     if fn is None:

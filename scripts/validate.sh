@@ -337,6 +337,18 @@ else
   err "this repo's wiki Requirements do not check (run: python3 scripts/lib/requirements.py check)"
 fi
 
+echo "== 18. P7 review loop — REVIEW.md template, line_origin.sh, review-round cap, reviewer wiring =="
+if [ -f scripts/test_p7_review.sh ]; then
+  if out="$(bash scripts/test_p7_review.sh 2>&1)"; then
+    ok "$(printf '%s' "$out" | tail -n 1)"
+  else
+    printf '%s\n' "$out" | grep '✗' >&2
+    err "P7 review loop tests failed (run: bash scripts/test_p7_review.sh)"
+  fi
+else
+  err "scripts/test_p7_review.sh is missing"
+fi
+
 echo
 if [ "$fail" -eq 0 ]; then echo "✅ Strata plugin validation PASSED"; else echo "❌ validation FAILED"; fi
 exit "$fail"

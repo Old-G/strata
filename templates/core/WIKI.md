@@ -202,6 +202,8 @@ moment a session hurt, so rung two is filled when the memory is fresh. The secon
 in `light-finish` is the only path from rung three to rung four — a `CLAUDE.md` line without a
 prior log line is a rule nobody proved was needed. Facts (formulas, paths, schemas) are not on
 this ladder at all: they go to `wiki/` and are queried on demand, never into `CLAUDE.md`.
+A rule for the reviewer — what *broken* means here, a path it keeps flagging that is fine — goes
+into `REVIEW.md` instead of `CLAUDE.md`: only the reviewer reads it, so no other session pays for it.
 
 ---
 

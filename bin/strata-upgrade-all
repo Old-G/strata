@@ -9,7 +9,7 @@
 # copy only what cannot lose a local line, leave locally edited files alone and
 # name them, stamp .strata/version only when nothing is left over.
 #
-# It never commits, never pushes, never touches settings.json, CLAUDE.md, wiki/ or
+# It never commits, never pushes, never touches settings.json, CLAUDE.md, wiki/, REVIEW.md or
 # application code, and never wires the Agent-Session trailer (that is asked per
 # repo — reference/agent-session-trailer.md). Linked git worktrees are skipped:
 # they are other branches' checkouts and get the scripts when they merge.
@@ -75,7 +75,7 @@ for key, entries in plugins.items():
   done
 } | awk 'NF && !seen[$0]++' | sort)"
 
-left_any=0
+left_any=0; no_review=""
 echo "Strata ${VERSION} — upgrading every project on this machine$([ "$dry" -eq 1 ] && echo ' (dry run: nothing is written)')"
 while IFS= read -r repo; do
   [ -d "$repo/scripts" ] && [ -f "$repo/.strata/version" ] || continue
@@ -85,6 +85,7 @@ while IFS= read -r repo; do
     continue
   fi
   have="$(tr -d '[:space:]' < "$repo/.strata/version")"
+  [ -f "$repo/REVIEW.md" ] || no_review="${no_review:+$no_review, }$(basename "$repo")"
   if strata_version_gt "$have" "$VERSION"; then
     echo "· $repo — at ${have}, newer than this plugin (${VERSION}); skipped, never downgraded"
     continue
@@ -109,4 +110,5 @@ while IFS= read -r repo; do
   fi
 done <<< "$candidates"
 [ "$dry" -eq 1 ] || echo "Changes are uncommitted in each repo — review and commit them there."
+[ -z "$no_review" ] || echo "No REVIEW.md (the branch review runs on defaults; /strata:upgrade there offers a draft): $no_review"
 exit "$left_any"
