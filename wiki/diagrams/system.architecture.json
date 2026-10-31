@@ -8,7 +8,7 @@
       "url": "https://github.com/Old-G/strata",
       "provider": "github",
       "link_mode": "web",
-      "revision": "886955b002d2320b824794f148c34ee2f1c59eb6"
+      "revision": "d0c2502ef94a9241c8537b87552153f990cdb539"
     },
     "views": [
       {
@@ -272,7 +272,7 @@
       "id": "council",
       "type": "backend",
       "label": "review council",
-      "sublabel": "plan · then the diff",
+      "sublabel": "plan · diff · REVIEW.md",
       "pos": [
         1040,
         448
@@ -288,9 +288,14 @@
           "label": "diff review"
         },
         {
-          "path": "agents/strata-eng-review.md",
+          "path": "templates/core/REVIEW.md.tmpl",
           "line": 1,
-          "label": "eng lens"
+          "label": "owner's rules"
+        },
+        {
+          "path": "templates/core/scripts/lib/line_origin.sh",
+          "line": 1,
+          "label": "pre-existing"
         }
       ]
     },
