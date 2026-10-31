@@ -40,8 +40,9 @@ rounds.
 ## Three rounds
 
 `light-finish` asks `state_tools.py review-round <branch>` which round is next before each review
-(it writes nothing) and records it with `--done` once the report is in, so an interrupted review is
-retried with the same scope. Round 1 reads the whole branch, rounds 2 and 3 only what was committed
+(it writes nothing; `ROUND n/3 SINCE <sha> AT <sha>`) and records it with `--done <AT>` once the
+report is in, so an interrupted review is retried with the same scope and a commit that landed
+during the review is still in the next round. Round 1 reads the whole branch, rounds 2 and 3 only what was committed
 after the previous round (`SINCE`), and check the previous findings as `Fixed` / `Still open`; a
 still-open Important keeps the verdict off `CLEAN`. Past round 3 both calls exit 3: the human is
 asked to reconsider the approach instead; a new approach starts again with `--reset`. The count

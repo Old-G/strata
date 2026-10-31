@@ -19,7 +19,7 @@ Usage:
   state_tools.py debt   <path>                            # print wiki_debt entries, one per line
   state_tools.py summary <path>                           # short human summary (SessionStart)
   state_tools.py plan   <branch>                          # the branch's plan file (the one lookup)
-  state_tools.py review-round <branch> [--done|--reset]   # next review round; --done records it; exit 3 at the cap
+  state_tools.py review-round <branch> [--done <AT>|--reset]  # next review round; --done records it; exit 3 at the cap
 
 Exit codes: 0 success, 1 validation/usage error, 2 file not found.
 No third-party dependencies — stdlib only, matching the rest of this scripts/ tree.
@@ -294,15 +294,21 @@ def cmd_review_round(args):
     """The review → fix loop of <branch>, in two calls around each strata-diff-review run.
 
     `review-round <branch>` asks which round is next and writes nothing: `ROUND <n>/3 SINCE
-    <sha|base>` — round 1 reviews the whole branch, a later round only what came after the commit
-    the last finished round saw. A review that never finished is asked again with the same scope.
-    `review-round <branch> --done` records that round once its report is in. Past REVIEW_ROUNDS
+    <sha|base> AT <head>` — round 1 reviews the whole branch, a later round only what came after the
+    commit the last finished round saw. A review that never finished is asked again with the same
+    scope. `review-round <branch> --done <AT>` records that round once its report is in, at the
+    commit it was asked AT — a commit that landed meanwhile is still in the next round's diff. Past REVIEW_ROUNDS
     both exit 3 and count nothing: the human reconsiders the approach, then `--reset`. A state
     file made only to hold the count has an empty goal, which no reader takes for a plan."""
-    flags = {a for a in args[1:]}
     branch = args[0] if args and not args[0].startswith("--") else ""
-    if not branch or flags - {"--done", "--reset"} or flags == {"--done", "--reset"}:
-        print("usage: state_tools.py review-round <branch> [--done | --reset]", file=sys.stderr)
+    rest = list(args[1:])
+    reviewed = ""
+    if rest[:1] == ["--done"] and len(rest) == 2:
+        reviewed = rest.pop()
+    flags = set(rest)
+    usage = "usage: state_tools.py review-round <branch> [--done <AT-commit> | --reset]"
+    if not branch or len(rest) > 1 or flags - {"--done", "--reset"} or ("--done" in flags and not reviewed):
+        print(usage, file=sys.stderr)
         return 1
     root = find_repo_root()
     path = state_dir(root) / f"{slug(branch)}.json"
@@ -321,13 +327,14 @@ def cmd_review_round(args):
             return 1
     review = dict((obj or {}).get("review") or {})
     done = review.get("rounds", 0)
+    head = git_head(root)
 
     if "--reset" in flags:
         if obj is not None:
             obj["review"] = {"rounds": 0, "head": ""}
             obj["updated"] = now
             path.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-        print(f"ROUND 1/{REVIEW_ROUNDS} SINCE base")
+        print(f"ROUND 1/{REVIEW_ROUNDS} SINCE base AT {head or 'no commit'}")
         return 0
     if done >= REVIEW_ROUNDS:
         print(f"ROUND cap reached ({done}/{REVIEW_ROUNDS}): ask the human to reconsider the approach "
@@ -335,16 +342,22 @@ def cmd_review_round(args):
         return 3
     if "--done" not in flags:
         since = review.get("head", "") if done else ""
-        print(f"ROUND {done + 1}/{REVIEW_ROUNDS} SINCE {since or 'base'}")
+        print(f"ROUND {done + 1}/{REVIEW_ROUNDS} SINCE {since or 'base'} AT {head or 'no commit'}")
         return 0
+
+    import subprocess
+    sha = subprocess.run(["git", "-C", str(root), "rev-parse", "-q", "--verify", f"{reviewed}^{{commit}}"],
+                         capture_output=True, text=True).stdout.strip()
+    if not sha:
+        print(f"not a commit: {reviewed} — pass the AT commit the round was asked at", file=sys.stderr)
+        return 1
 
     if obj is None:
         obj = {
             "goal": "", "status": "active", "branch": branch, "updated": now, "verify": "",
             "decisions": [], "open_questions": [], "gotchas": [], "wiki_debt": [], "files_touched": [],
         }
-    head = git_head(root)
-    obj["review"] = {"rounds": done + 1, "head": head}
+    obj["review"] = {"rounds": done + 1, "head": sha}
     obj["updated"] = now
     errors = validate_obj(obj)
     if errors:
@@ -353,7 +366,7 @@ def cmd_review_round(args):
         return 1
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"ROUND {done + 1}/{REVIEW_ROUNDS} recorded at {head or 'no commit'}")
+    print(f"ROUND {done + 1}/{REVIEW_ROUNDS} recorded at {sha}")
     return 0
 
 

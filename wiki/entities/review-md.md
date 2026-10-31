@@ -35,9 +35,11 @@ from running forever.
   --is-ancestor` against the merge-base (never the round's SINCE). No `-M/-C/-w`: a moved line
   counts as the branch's — a false "pre-existing" hides a bug, a false "branch" costs a look.
 - **Three rounds** — `state_tools.py review-round <branch>` (cap `REVIEW_ROUNDS = 3`, one place)
-  prints `ROUND n/3 SINCE <sha|base>` and writes nothing; `--done` records the round in the
-  [[branch-state]] (`review: {rounds, head}`) after the report, so an interrupted review is retried
-  with the same scope (Codex review, 0.18.0 pre-release). Round 2–3 read `git diff <SINCE>` only and
+  prints `ROUND n/3 SINCE <sha|base> AT <sha>` and writes nothing; `--done <AT>` records the round
+  in the [[branch-state]] (`review: {rounds, head}`) after the report, at the commit it was asked
+  at — an interrupted review is retried with the same scope, a commit that landed meanwhile stays in
+  the next diff (Codex review rounds 1–2, 0.18.0 pre-release). A planless branch still gets round
+  2+'s new-diff scope and PREVIOUS reconciliation before the no-plan stop. Round 2–3 read `git diff <SINCE>` only and
   mark PREVIOUS findings Fixed / Still open; a still-open Important keeps VERDICT off CLEAN. Past
   round 3 both calls exit 3 without counting; `--reset` after the human changes the approach. No
   state file → `--done` makes one with an empty goal, and an empty goal is not a plan (else the

@@ -42,8 +42,10 @@ the defaults below, and say `REVIEW.md: none — defaults`.
    description, a model id or effort level, the harness feeding them), run the **LLM-behaviour
    evidence** check from Step 3, count its row(s) in the first line and put them in a findings
    table under the VERDICT line. A one-line prompt tweak is the commonest case of that rule and is
-   usually trivial-tier. Otherwise stopping is a legitimate outcome, not a failure — do not invent
-   a plan from the diff.
+   usually trivial-tier. Round 2+ holds even with no plan: read only the new diff and give each
+   `PREVIOUS` finding its `Fixed` / `Still open` line (Step 2) before you stop, and count the
+   still-open ones in the first line. Otherwise stopping is a legitimate outcome, not a failure —
+   do not invent a plan from the diff.
 
 ## Step 2 — Get the diff
 

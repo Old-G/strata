@@ -77,36 +77,39 @@ printf '.strata/*\n!.strata/state/\n' > .gitignore
 S=".strata/state/feat.json"
 RR() { python3 scripts/lib/state_tools.py review-round "$@"; }
 out="$(RR feat)"; rc=$?
-check "round 1 on a branch with no state file" "$rc:$out" "0:ROUND 1/3 SINCE base"
+check "round 1 on a branch with no state file" "$rc:$out" "0:ROUND 1/3 SINCE base AT $(git rev-parse HEAD)"
 check "asking writes nothing"                  "$([ -f "$S" ] && echo y || echo n)" "n"
 out="$(RR feat)"
-check "a review that never finished is retried with the same scope" "$out" "ROUND 1/3 SINCE base"
+check "a review that never finished is retried with the same scope" "$out" "ROUND 1/3 SINCE base AT $(git rev-parse HEAD)"
 h1="$(git rev-parse HEAD)"
-out="$(RR feat --done)"; rc=$?
-check "--done records round 1 at HEAD"         "$rc:$out" "0:ROUND 1/3 recorded at $h1"
+echo late >> .gitignore; git add .gitignore && git commit -qm "landed while round 1 ran"
+out="$(RR feat --done "$h1")"; rc=$?
+check "--done records the commit the round reviewed, not a later HEAD" "$rc:$out" "0:ROUND 1/3 recorded at $h1"
+RR feat --done >/dev/null 2>&1;                check "--done without the reviewed commit → exit 1" "$?" "1"
+RR feat --done not-a-commit >/dev/null 2>&1;   check "--done with a non-commit → exit 1" "$?" "1"
 check "it created a valid state file"          "$(python3 scripts/lib/state_tools.py validate "$S" && echo valid)" "valid"
 check "a state file made for the count has no goal (it is not a plan)" "$(python3 -c 'import json,sys; print(repr(json.load(open(sys.argv[1]))["goal"]))' "$S")" "''"
 echo x >> .gitignore; git add .gitignore && git commit -qm fix1
 out="$(RR feat)"
-check "round 2 reviews only what came after round 1" "$out" "ROUND 2/3 SINCE $h1"
-RR feat --done >/dev/null; h2="$(git rev-parse HEAD)"
+check "round 2 reviews only what came after round 1 (incl. the late commit)" "$out" "ROUND 2/3 SINCE $h1 AT $(git rev-parse HEAD)"
+h2="$(git rev-parse HEAD)"; RR feat --done "$h2" >/dev/null
 echo y >> .gitignore; git add .gitignore && git commit -qm fix2
 check "the fix rounds made real commits" "$([ "$h1" != "$h2" ] && [ "$h2" != "$(git rev-parse HEAD)" ] && echo y)" "y"
 out="$(RR feat)"
-check "round 3"                                "$out" "ROUND 3/3 SINCE $h2"
-RR feat --done >/dev/null
+check "round 3"                                "$out" "ROUND 3/3 SINCE $h2 AT $(git rev-parse HEAD)"
+RR feat --done "$(git rev-parse HEAD)" >/dev/null
 out="$(RR feat)"; rc=$?
 check "a 4th round is refused (exit 3)"        "$rc" "3"
 check "…and says to reconsider the approach"   "$(printf '%s' "$out" | grep -c 'reconsider the approach')" "1"
-RR feat --done >/dev/null; rc=$?
+RR feat --done "$(git rev-parse HEAD)" >/dev/null; rc=$?
 check "--done past the cap is refused too"     "$rc" "3"
 check "…without counting it"                   "$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["review"]["rounds"])' "$S")" "3"
 out="$(RR feat --reset)"
-check "--reset after the human reconsiders → round 1, full diff" "$out" "ROUND 1/3 SINCE base"
+check "--reset after the human reconsiders → round 1, full diff" "$out" "ROUND 1/3 SINCE base AT $(git rev-parse HEAD)"
 check "--reset clears the count"               "$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["review"]["rounds"])' "$S")" "0"
 RR feat --bogus >/dev/null 2>&1;               check "an unknown flag → exit 1" "$?" "1"
 python3 scripts/lib/state_tools.py init other --goal "keep this goal" >/dev/null
-python3 scripts/lib/state_tools.py review-round other --done >/dev/null
+python3 scripts/lib/state_tools.py review-round other --done "$(git rev-parse HEAD)" >/dev/null
 check "an existing state file keeps its goal"  "$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["goal"])' .strata/state/other.json)" "keep this goal"
 python3 - "$S" <<'PY'
 import json, sys
@@ -125,7 +128,7 @@ check "this repo's state_tools.py matches the template" "$(cmp -s "$ST" "$ROOT/s
 echo "== the reviewers and the skills carry the rules =="
 cd "$ROOT" || exit 1
 D=agents/strata-diff-review.md
-for s in "REVIEW.md" "line_origin.sh" "Pre-existing" "bug class" "every location" "ROUND" "SINCE" "PREVIOUS" "findings (Important" "Nothing to fix" "Still open" "still open ·" "empty \`goal\` is not a plan" "not counted"; do
+for s in "REVIEW.md" "line_origin.sh" "Pre-existing" "bug class" "every location" "ROUND" "SINCE" "PREVIOUS" "findings (Important" "Nothing to fix" "Still open" "still open ·" "empty \`goal\` is not a plan" "not counted" "even with no plan"; do
   check "diff-review: $s" "$(has "$D" "$s")" "yes"
 done
 for a in eng cso design; do
@@ -134,7 +137,7 @@ for a in eng cso design; do
   done
 done
 L=skills/light-finish/SKILL.md
-for s in "review-round" "review-round <branch> --done" "reconsider the approach" "## Testing" "## Risk" "## How to revert" "PREVIOUS"; do
+for s in "review-round" "review-round <branch> --done <AT>" "reconsider the approach" "## Testing" "## Risk" "## How to revert" "PREVIOUS"; do
   check "light-finish: $s" "$(has "$L" "$s")" "yes"
 done
 for f in skills/adopt/SKILL.md skills/init/SKILL.md; do

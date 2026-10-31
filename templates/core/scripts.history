@@ -30,6 +30,7 @@
 984b6682e2fed17678470a65876e84e05a9e4a7b  pre-commit/check_wiki_fresh.sh
 9a6aae60c90c1442d6853ef7c66f14210159b7bb  lib/pending_ingest.sh
 9c4f366e57095960a132e38dc788a46e36f0e556  sync_raw_mirror.sh
+a160551a9aae7d0bc1d2658d065200c9e69fecba  lib/state_tools.py
 a1fc5b3c37480112691fb676da7b5d41386932ab  strata_why.sh
 a4922218d3c3f00f4165b8d545ae1d79b9101bc2  hooks/strata_stop_gate.sh
 a52f6a1327f5d66c1bcc0ed9a8219e73e6bd996d  lib/pending_ingest.sh
