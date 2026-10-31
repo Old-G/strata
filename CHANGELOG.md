@@ -6,6 +6,14 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.18.1] — 2026-11-01
+
+### Fixed
+- **Push gate refused Strata's own 0.18.0 sync.** `lib/line_origin.sh` was not in the gate's list of
+  Strata-owned files, so a project pushing the 0.18.0 script sync was asked for a wiki line. Fixed for
+  the class: `test_p1_gates.sh` now commits every script Strata ships and expects the push through, so
+  the next new template file cannot miss the list.
+
 ## [0.18.0] — 2026-10-31
 
 After Anthropic's "How the Claude Code team does code review".

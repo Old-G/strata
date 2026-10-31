@@ -2,7 +2,7 @@
 
 Claude Code plugin that packages a reusable way to run AI-assisted projects: AI-navigable wiki,
 architecture canon, spec→plan→TDD feature flow, a parallel review council, and drift detection with
-staged refactor. **State:** v0.18.0 — an owner-written REVIEW.md the branch review follows (Important / Nit / Pre-existing by git blame, three rounds, PR Testing / Risk / How to revert), a pre-plan deepen pass, deterministic wiki freshness (hook + commit + push gates), native
+staged refactor. **State:** v0.18.1 — an owner-written REVIEW.md the branch review follows (Important / Nit / Pre-existing by git blame, three rounds, PR Testing / Risk / How to revert), a pre-plan deepen pass, deterministic wiki freshness (hook + commit + push gates), native
 command-free invocation, an episodic branch-state layer with a hook-driven upgrade path, a
 PreToolUse guard (raw/ mirror · tests read-only mid-fix), a diff-vs-plan review at branch close,
 a Stop gate that asks for the lesson when a session hurt, a diagram layer (`wiki/diagrams/`,

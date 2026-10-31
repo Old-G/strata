@@ -328,6 +328,14 @@ mkdir -p scripts/hooks scripts/lib
 lines scripts/hooks/strata_stop_gate.sh '# synced' 30; lines scripts/lib/pending_ingest.sh '# synced' 30
 git add -A >/dev/null; git commit -qm "chore: strata hook re-sync"
 check "a commit of Strata's own synced scripts needs no wiki line → pushed" "$(push_ok)" "pushed"
+# The class, not one file: EVERY script Strata ships is its own and needs no wiki line. 0.18.0
+# added lib/line_origin.sh without excluding it, and the first project push of the sync was refused.
+(cd "$TPL" && find . -type f ! -name '*.pyc' | sed 's#^\./##') | while IFS= read -r rel; do
+  [ "$rel" = pre-commit/check_wiki_push.sh ] && continue   # the gate under test stays real
+  mkdir -p "scripts/$(dirname "$rel")"; lines "scripts/$rel" '# synced' 30
+done
+git add -A >/dev/null; git commit -qm "chore: strata full re-sync"
+check "a commit touching every shipped Strata script needs no wiki line → pushed" "$(push_ok)" "pushed"
 git checkout -q -b feature
 lines src/p5.py 'r = 1' 30; git add -A >/dev/null; git commit -qm "feature code"
 check "a new branch (remote sha all zeros) is judged too → refused" "$(push_ok feature)" "refused"
