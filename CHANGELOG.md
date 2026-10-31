@@ -23,13 +23,15 @@ After Anthropic's "How the Claude Code team does code review".
   `scripts/lib/line_origin.sh <base> <file>:<line>` prints `PRE-EXISTING | BRANCH | UNCOMMITTED |
   UNKNOWN` (plain blame — a moved or reindented line counts as the branch's, since a false
   "pre-existing" hides a bug). Pre-existing findings are listed apart and never Important.
-- **Three review rounds, then the human.** `state_tools.py review-round <branch>` counts rounds in
-  the branch state (`review: {rounds, head}`); round 1 reads the whole branch, rounds 2–3 only the
-  new diff since the last round, checking earlier findings as Fixed / Still open. The fourth call
-  exits 3 and `light-finish` asks whether to reconsider the approach; `--reset` starts a new one.
+- **Three review rounds, then the human.** `state_tools.py review-round <branch>` says which round
+  is next; `--done` records it in the branch state (`review: {rounds, head}`) once the report is in,
+  so an interrupted review is retried, not skipped. Round 1 reads the whole branch, rounds 2–3 only
+  the new diff since the last round, checking earlier findings as Fixed / Still open — a still-open
+  Important keeps the verdict off CLEAN. Past round 3 it exits 3 and `light-finish` asks whether to
+  reconsider the approach; `--reset` starts a new one.
 - **PR description: Testing / Risk / How to revert.** `light-finish` drafts the three sections from
   the run's evidence when it opens a PR or MR; the human confirms or edits them first.
-- `reference/review-md.md`; `scripts/test_p7_review.sh` (75 checks, red first), `validate.sh` §18.
+- `reference/review-md.md`; `scripts/test_p7_review.sh` (84 checks, red first), `validate.sh` §18.
 
 ## [0.17.1] — 2026-10-23
 

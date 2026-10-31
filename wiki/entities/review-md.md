@@ -35,10 +35,13 @@ from running forever.
   --is-ancestor` against the merge-base (never the round's SINCE). No `-M/-C/-w`: a moved line
   counts as the branch's — a false "pre-existing" hides a bug, a false "branch" costs a look.
 - **Three rounds** — `state_tools.py review-round <branch>` (cap `REVIEW_ROUNDS = 3`, one place)
-  counts in the [[branch-state]] (`review: {rounds, head}`), prints `ROUND n/3 SINCE <sha|base>`;
-  round 2–3 read `git diff <SINCE>` only and mark PREVIOUS findings Fixed / Still open; the 4th call
-  exits 3 without counting. `--reset` after the human changes the approach. Missing state file →
-  created (goal from the plan), so a branch with no plan-time state still counts.
+  prints `ROUND n/3 SINCE <sha|base>` and writes nothing; `--done` records the round in the
+  [[branch-state]] (`review: {rounds, head}`) after the report, so an interrupted review is retried
+  with the same scope (Codex review, 0.18.0 pre-release). Round 2–3 read `git diff <SINCE>` only and
+  mark PREVIOUS findings Fixed / Still open; a still-open Important keeps VERDICT off CLEAN. Past
+  round 3 both calls exit 3 without counting; `--reset` after the human changes the approach. No
+  state file → `--done` makes one with an empty goal, and an empty goal is not a plan (else the
+  reviewer checked a trivial branch against "close branch X").
 - **Council** — eng / CSO / design carry the same five rules and a `Label` column; the CEO
   reviewer judges scope, not lines, and kept its shape.
 - **PR** — `light-finish` step 4: `## Testing` / `## Risk` / `## How to revert`, into the repo's own

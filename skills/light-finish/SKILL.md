@@ -18,7 +18,7 @@ description: Use when implemented work needs integrating and the branch wrapped 
    "Requirements and behaviour deltas", `${CLAUDE_PLUGIN_ROOT}/templates/core/WIKI.md`.)
 2. **Review — cannot be skipped, cannot block, at most three rounds.**
    1. `python3 scripts/lib/state_tools.py review-round <branch>` prints `ROUND <n>/3 SINCE
-      <sha | base>` and counts the round in the branch state. **Exit 3 is the cap:** do not run a
+      <sha | base>` and writes nothing. **Exit 3 is the cap:** do not run a
       fourth round — ask the human once: "Three review rounds and Important findings remain:
       reconsider the approach (rethink the plan) · integrate with the findings recorded · keep the
       branch?" When they rethink and the approach changes, `review-round <branch> --reset` starts
@@ -30,7 +30,9 @@ description: Use when implemented work needs integrating and the branch wrapped 
       trivial-tier change). Brief it with `ROUND`, `SINCE` and `PREVIOUS` — the findings of earlier
       rounds (the branch state's `gotchas` plus the last table shown this session), so round 2
       and 3 review only the new diff and repeat nothing. Show the human its first line (the finding
-      count) and its tables verbatim.
+      count) and its tables verbatim. Only now record the round: `python3
+      scripts/lib/state_tools.py review-round <branch> --done` — a review that failed or was
+      interrupted is asked again with the same scope instead of being skipped.
    3. Every **Important** finding is written into the branch state's `gotchas` (the P2 file — it is
       folded into `wiki/log.md` in step 5, so the finding survives even if the human waves it
       through). **Pre-existing** findings are not this branch's: name them to the human as

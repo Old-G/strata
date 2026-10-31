@@ -31,8 +31,10 @@ the defaults below, and say `REVIEW.md: none — defaults`.
 2. Plan file: `python3 scripts/lib/state_tools.py plan <branch>` (the one lookup; older repos
    without it: `ls docs/superpowers/plans/*<slug>*`, also without the `strata-` prefix), and the
    spec under `docs/superpowers/specs/`.
-3. If none: `python3 scripts/lib/state_tools.py path <branch>` → if that file exists, its
-   `goal` and `verify` fields are the plan — a one-line plan is still a plan.
+3. If none: `python3 scripts/lib/state_tools.py path <branch>` → if that file exists and its
+   `goal` is set, its `goal` and `verify` fields are the plan — a one-line plan is still a plan.
+   A state file with an empty `goal` is not a plan: `review-round` makes one only to hold the
+   round count.
 4. If neither exists: open with `0 findings — no plan to check against`, then
    `VERDICT: no plan to check against` with one line saying this was a trivial-tier change and the
    compliance pass does not apply, then the `Human sign-off:` line. **Stop** — with one
@@ -150,7 +152,7 @@ best. A `PREVIOUS` finding is never reported again: it gets one `Fixed` or `Stil
 ## Output (exact shape — `light-finish` reads the first line and the header lines)
 
 ```
-<n> findings (Important <i> · Nit <k>) · <p> pre-existing, listed apart[ — Nothing to fix.]
+<n> findings (Important <i> · Nit <k>) · <o> still open · <p> pre-existing, listed apart[ — Nothing to fix.]
 VERDICT: <CLEAN | FINDINGS | no plan to check against>
 PLAN: <path or "branch state .strata/state/<slug>.json">
 DIFF: <base>...HEAD, <n> files, +<a>/-<d>
@@ -184,9 +186,11 @@ Decided, not asked:
 | retry 3× then fail open           | src/a.py:88     | unrecorded               |
 ```
 
-The first line opens with the number and ends `— Nothing to fix.` whenever Important is 0
-(`0 findings — Nothing to fix.` when there is nothing at all). `VERDICT: CLEAN` means Important
-is 0. The header lines follow it and keep their exact shape; `LENSES:` and the decisions table
+The first line opens with the number of new findings; `still open ·` counts the `PREVIOUS`
+Important findings this round did not fix (round 1: drop it). It ends `— Nothing to fix.` only
+when no Important is outstanding — none new and none still open (`0 findings — Nothing to fix.`
+when there is nothing at all), and only then is `VERDICT: CLEAN`. A `Decided, not asked` row that
+is not Important makes a choice visible; it is not a finding and is not counted. The header lines follow it and keep their exact shape; `LENSES:` and the decisions table
 always come after them (round 2+: only the files of the new diff). Write `Pre-existing: none`,
 `Previous findings: none` and `Decided, not asked: none found` rather than omitting them.
 

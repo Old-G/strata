@@ -1,6 +1,7 @@
 030c1a637718d551f075934dc73fad8dbd807772  pre-commit/check_wiki_push.sh
 04ecf5d82f6bdd38960e9f7e614127717cdbc145  lib/state_tools.py
 05615ebbda3f9e4465deb821c6eba0d41cab77dc  git-hooks/strata_commit_trailer.sh
+0bcc13273730796edb8c8f5c5cd51a4e452de931  lib/state_tools.py
 14e81e46e4c3706234d388c2f83b4cf89ac0a8fd  hooks/strata_stop_gate.sh
 197311f4919de0ad79504047d3e5523bfe2db198  lib/tree_snapshot.sh
 1a26257f9e63e1165609acc26712b0717cf39487  sync_raw_mirror.sh
