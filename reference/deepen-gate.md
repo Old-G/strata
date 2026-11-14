@@ -39,6 +39,12 @@ skill file, so where `strata:deepen` is not loaded the model follows the pass by
 
 - `STRATA_DEEPEN=0` — off (per shell or in settings `env`).
 - `STRATA_DEEPEN_MIN_CHARS` — shorter messages pass (default 25), so "yes, go" never triggers it.
+- Machine messages pass. A prompt that opens with a hyphenated harness tag (`<task-notification>`
+  and the like; a pasted `<div>` still counts as a person) is the harness reporting, not a request.
+  More prefixes go in `${XDG_CONFIG_HOME:-~/.config}/strata/deepen-skip` (`STRATA_DEEPEN_SKIP_FILE`
+  moves it): one Python regex per line as written (only the line break is dropped), matched at the
+  start of the prompt, `#` for comments — for example the prefix an app puts on messages it relays between chats.
+  `STRATA_DEEPEN_SKIP` adds one more regex. A pattern that does not compile is ignored; an unreadable file adds no patterns and the gate keeps working.
 
 The model still decides: the note says to skip one-line fixes, questions and exact specs, and the
 skill's own `## Do NOT use when` holds the same line. A request the gate already deepened and that

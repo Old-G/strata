@@ -11,8 +11,13 @@
 # Not a plugin hook — the plugin ships none (ADR #1). ~/.claude/settings.json calls the newest
 # installed copy from the plugin cache; install: reference/deepen-gate.md.
 #
-# Env: STRATA_DEEPEN=0 disables · STRATA_DEEPEN_MIN_CHARS (default 25). Fails open: any error adds
-# nothing.
+# Machine messages pass too: a prompt that opens with a harness tag (`<task-notification>` and the
+# like) and any prompt matching a skip pattern — one Python regex per line, matched at the start, from
+# STRATA_DEEPEN_SKIP_FILE (default ${XDG_CONFIG_HOME:-~/.config}/strata/deepen-skip) and STRATA_DEEPEN_SKIP. That is where
+# an app that relays messages between chats names its relay prefix.
+#
+# Env: STRATA_DEEPEN=0 disables · STRATA_DEEPEN_MIN_CHARS (default 25) · STRATA_DEEPEN_SKIP (one regex)
+# · STRATA_DEEPEN_SKIP_FILE. Fails open: any error adds nothing; a bad skip pattern is ignored.
 
 read -r -d '' GATE_PY <<'PY'
 import json, os, re, sys
@@ -24,6 +29,35 @@ BUILD = re.compile(
     r"убер|замен|перене|надо,? чтобы|нужно,? чтобы|хочу,? чтобы)",
     re.I,
 )
+# Why: a background-task notice or a scheduled wake-up is the harness talking, not a request; the
+# deepen pass on it costs a skill load and a 5-8 line restatement of a message nobody wrote.
+HARNESS_TAG = re.compile(r"<[a-z]+-[\w-]*>")  # hyphenated, so a pasted <div> or <b> is still a person
+
+
+def skip_patterns():
+    path = os.environ.get("STRATA_DEEPEN_SKIP_FILE") or os.path.join(
+        os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config"), "strata", "deepen-skip")
+    lines = []
+    try:
+        with open(path, encoding="utf-8-sig", errors="replace") as f:
+            lines = [ln.rstrip("\r\n") for ln in f if ln.strip() and not ln.lstrip().startswith("#")]
+    except OSError:
+        pass  # no file or unreadable: no extra patterns, the gate itself keeps working
+    if os.environ.get("STRATA_DEEPEN_SKIP"):
+        lines.append(os.environ["STRATA_DEEPEN_SKIP"])
+    out = []
+    for ln in lines:
+        try:
+            out.append(re.compile(ln))
+        except re.error:
+            pass
+    return out
+
+
+def is_machine_message(prompt):
+    return bool(HARNESS_TAG.match(prompt)) or any(p.match(prompt) for p in skip_patterns())
+
+
 NOTE = (
     "Strata deepen gate: the user's message asks to build or change something. Your FIRST action, "
     "before reading code or planning, is the Skill tool with skill \"strata:deepen\" — follow it "
@@ -39,6 +73,8 @@ def main():
     prompt = (data.get("prompt") or "").strip()
     min_chars = int(os.environ.get("STRATA_DEEPEN_MIN_CHARS") or 25)
     if len(prompt) < min_chars or prompt.startswith("/") or not BUILD.search(prompt):
+        return
+    if is_machine_message(prompt):
         return
     # Why the path: the hook runs in every project, also where the plugin is off and the skill is not loaded.
     skill = os.environ.get("STRATA_GATE_SKILL", "")

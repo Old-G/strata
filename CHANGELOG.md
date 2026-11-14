@@ -6,6 +6,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Fixed
+- **Deepen gate fired on machine messages.** A background-task notice (`<task-notification>…`)
+  or a message another chat relayed carries build verbs, so the gate asked for a deepen pass on text
+  no person wrote — a skill load and a restatement each time. A prompt that opens with a harness tag
+  now passes untouched, and `${XDG_CONFIG_HOME:-~/.config}/strata/deepen-skip` (or `STRATA_DEEPEN_SKIP`) lists more
+  prefixes, one regex per line — where an app that relays messages names its own.
+
 ## [0.18.1] — 2026-11-01
 
 ### Fixed
