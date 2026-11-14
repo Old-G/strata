@@ -6,6 +6,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.18.2] — 2026-11-14
+
 ### Fixed
 - **Deepen gate fired on machine messages.** A background-task notice (`<task-notification>…`)
   or a message another chat relayed carries build verbs, so the gate asked for a deepen pass on text
