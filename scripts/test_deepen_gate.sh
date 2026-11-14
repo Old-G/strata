@@ -9,7 +9,9 @@ GATE="$ROOT/bin/strata-deepen-gate"
 pass=0; fail=0
 ok()   { echo "  ✓ $1"; pass=$((pass+1)); }
 bad()  { echo "  ✗ $1"; fail=$((fail+1)); }
-unset STRATA_DEEPEN STRATA_DEEPEN_MIN_CHARS
+unset STRATA_DEEPEN STRATA_DEEPEN_MIN_CHARS STRATA_DEEPEN_SKIP
+# No skip file from the machine running the test: an empty one by default.
+export STRATA_DEEPEN_SKIP_FILE="$(mktemp)"
 
 # asks <name> <prompt> — the gate adds the deepen note; quiet <name> <prompt> — it adds nothing.
 run() { python3 -c 'import json,sys; print(json.dumps({"session_id":"s","prompt":sys.argv[1]}))' "$1" | bash "$GATE"; }
@@ -26,6 +28,25 @@ quiet "short reply"                 "да, делай"
 quiet "slash command"               "/strata:audit please add nothing"
 quiet "no build verb"               "Почему тест падает только на CI под Linux?"
 quiet "empty prompt"                ""
+# Machine messages: a harness notice and a relayed message pass, the same words typed by a person do not.
+quiet "harness tag notice"          "<task-notification> <task-id>b1</task-id> <summary>Background command \"fix the build\" completed</summary>"
+asks  "a tag later in the text"     "Add a CSV export to the <report> page so accounting can open it"
+printf '# relays from another chat\nRelay · a message from thread \n(\n' > "$STRATA_DEEPEN_SKIP_FILE"
+quiet "skip-file pattern"           "Relay · a message from thread app/chat-1: add a CSV export to the report"
+asks  "skip-file matches only the start" "Add a CSV export, then Relay · a message from thread app/chat-1"
+asks  "bad regex line is ignored"   "Добавь в отчёт экспорт в CSV для бухгалтерии"
+printf 'R\xe9lay \n' > "$STRATA_DEEPEN_SKIP_FILE"
+asks  "a non-UTF-8 skip file keeps the gate on" "Add a CSV export to the report for accounting"
+printf '\xef\xbb\xbfBOM relay: \n' > "$STRATA_DEEPEN_SKIP_FILE"
+quiet "a BOM does not break the first pattern" "BOM relay: add a CSV export to the report"
+asks  "a pasted HTML tag first is still a person" "<div> on the report page — add a CSV export button there"
+: > "$STRATA_DEEPEN_SKIP_FILE"
+xdg="$(mktemp -d)"; mkdir -p "$xdg/strata"; echo 'XDG relay: ' > "$xdg/strata/deepen-skip"
+out="$(unset STRATA_DEEPEN_SKIP_FILE; XDG_CONFIG_HOME="$xdg" run "XDG relay: add a CSV export to the report")"; rm -rf "$xdg"
+if [ -z "$out" ]; then ok "default skip file under XDG_CONFIG_HOME"; else bad "default skip file under XDG_CONFIG_HOME"; fi
+out="$(STRATA_DEEPEN_SKIP='Bot says: ' run "Bot says: please add a CSV export to the report")"
+if [ -z "$out" ]; then ok "STRATA_DEEPEN_SKIP pattern"; else bad "STRATA_DEEPEN_SKIP pattern"; fi
+rm -f "$STRATA_DEEPEN_SKIP_FILE"
 STRATA_DEEPEN=0 asks_off="$(STRATA_DEEPEN=0 run "Добавь в отчёт экспорт в CSV для бухгалтерии")"
 if [ -z "$asks_off" ]; then ok "STRATA_DEEPEN=0 disables"; else bad "STRATA_DEEPEN=0 disables"; fi
 bad_json="$(printf 'not json' | bash "$GATE"; echo "exit=$?")"
