@@ -32,7 +32,7 @@ Think and Plan; the user can also ask for it ("go deeper", «глубже»).
 - **Once per ask.** A pass the gate already ran is reused by `feature`, not repeated (range
   subagents included). The gate runs in every project, so its note also names the skill file — where
   the plugin is off, the model follows the pass by hand (the context gate does the same).
-- **Not on machine messages.** A prompt that opens with a harness tag, or matches a prefix in
+- **Not on machine messages.** A prompt that opens with a known harness tag (a list, so a custom element like `<report-table>` is still a person), or matches a prefix in
   `${XDG_CONFIG_HOME:-~/.config}/strata/deepen-skip` / `STRATA_DEEPEN_SKIP` (relays from other chats), passes untouched.
 
 Related: [[native-invocation]] (how it is reached without a command), [[diff-review]] (the other

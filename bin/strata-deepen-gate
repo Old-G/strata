@@ -11,8 +11,8 @@
 # Not a plugin hook — the plugin ships none (ADR #1). ~/.claude/settings.json calls the newest
 # installed copy from the plugin cache; install: reference/deepen-gate.md.
 #
-# Machine messages pass too: a prompt that opens with a harness tag (`<task-notification>` and the
-# like) and any prompt matching a skip pattern — one Python regex per line, matched at the start, from
+# Machine messages pass too: a prompt that opens with a known harness tag (`<task-notification>`,
+# `<system-reminder>`, `<local-command-stdout>`…) and any prompt matching a skip pattern — one Python regex per line, matched at the start, from
 # STRATA_DEEPEN_SKIP_FILE (default ${XDG_CONFIG_HOME:-~/.config}/strata/deepen-skip) and STRATA_DEEPEN_SKIP. That is where
 # an app that relays messages between chats names its relay prefix.
 #
@@ -31,7 +31,11 @@ BUILD = re.compile(
 )
 # Why: a background-task notice or a scheduled wake-up is the harness talking, not a request; the
 # deepen pass on it costs a skill load and a 5-8 line restatement of a message nobody wrote.
-HARNESS_TAG = re.compile(r"<[a-z]+-[\w-]*>")  # hyphenated, so a pasted <div> or <b> is still a person
+# Only tags the harness itself writes: a pasted <div> or a custom element (<report-table>) is still a
+# person. Another app's tag goes into the skip file as a pattern (`<my-tag>`).
+HARNESS_TAG = re.compile(
+    r"<(task-notification|system-reminder|teammate-message|command-(name|message|args)|"
+    r"local-command-(stdout|stderr|caveat)|bash-(input|stdout|stderr))>")
 
 
 def skip_patterns():
@@ -49,7 +53,7 @@ def skip_patterns():
     for ln in lines:
         try:
             out.append(re.compile(ln))
-        except re.error:
+        except Exception:  # re.error, and OverflowError on `x{4294967296}`: one bad line, not the gate
             pass
     return out
 

@@ -39,8 +39,10 @@ skill file, so where `strata:deepen` is not loaded the model follows the pass by
 
 - `STRATA_DEEPEN=0` — off (per shell or in settings `env`).
 - `STRATA_DEEPEN_MIN_CHARS` — shorter messages pass (default 25), so "yes, go" never triggers it.
-- Machine messages pass. A prompt that opens with a hyphenated harness tag (`<task-notification>`
-  and the like; a pasted `<div>` still counts as a person) is the harness reporting, not a request.
+- Machine messages pass. A prompt that opens with a tag the harness writes (`<task-notification>`,
+  `<system-reminder>`, `<local-command-stdout>`, `<command-name>`…; a pasted `<div>` or a custom
+  element like `<report-table>` still counts as a person) is the harness reporting, not a request.
+  Another app's tag goes in the skip file as a pattern. A line that fails to compile is dropped alone.
   More prefixes go in `${XDG_CONFIG_HOME:-~/.config}/strata/deepen-skip` (`STRATA_DEEPEN_SKIP_FILE`
   moves it): one Python regex per line as written (only the line break is dropped), matched at the
   start of the prompt, `#` for comments — for example the prefix an app puts on messages it relays between chats.
