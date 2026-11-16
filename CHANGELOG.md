@@ -6,6 +6,17 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [0.18.3] — 2026-11-16
+
+### Fixed
+- **Deepen gate took a custom element for the harness.** Any hyphenated opening tag counted as a
+  machine message, so a request starting `<report-table> … add a CSV export` got no note. Only the
+  tags the harness writes (`<task-notification>`, `<system-reminder>`, `<local-command-*>`,
+  `<command-*>`, `<bash-*>`, `<teammate-message>`) pass now; another app's tag goes in the skip file.
+- **One overflowing skip pattern turned the deepen gate off.** `Relay{4294967296}` raises
+  `OverflowError`, not `re.error`, and the outer handler silenced the whole gate. Each line that
+  fails to compile is now dropped alone.
+
 ## [0.18.2] — 2026-11-14
 
 ### Fixed
